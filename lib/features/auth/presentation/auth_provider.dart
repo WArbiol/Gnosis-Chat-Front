@@ -1,15 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gnosis_chat/features/auth/data/auth_remote_source.dart';
+// TODO: swap back to AuthRemoteSource when Supabase is ready
+import 'package:gnosis_chat/features/auth/data/auth_mock_source.dart';
+import 'package:gnosis_chat/features/auth/data/auth_repository.dart';
 import 'package:gnosis_chat/features/auth/domain/auth_state.dart';
+import 'package:gnosis_chat/features/auth/domain/social_provider.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
-  (ref) => AuthNotifier(AuthRemoteSource()),
+  (ref) => AuthNotifier(AuthMockSource()),
 );
 
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._repo) : super(const AuthState.initial());
 
-  final AuthRemoteSource _repo;
+  final AuthRepository _repo;
+
+  Future<void> signInWithProvider(SocialProvider provider) async {
+    state = const AuthState.loading();
+    try {
+      final user = await _repo.signInWithProvider(provider);
+      state = AuthState.authenticated(user);
+    } catch (e) {
+      state = AuthState.error(e.toString());
+    }
+  }
 
   Future<void> login(String email, String password) async {
     state = const AuthState.loading();

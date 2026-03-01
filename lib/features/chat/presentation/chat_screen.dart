@@ -49,10 +49,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final chatState = ref.watch(chatProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gnosis Chat'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Gnosis Chat'), centerTitle: true),
       body: Stack(
         children: [
           Column(
@@ -60,7 +57,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               Expanded(
                 child: chatState.when(
                   data: (messages) => messages.isEmpty
-                      ? const Center(child: Text('Ask Gnosis anything...'))
+                      ? const Center(child: Text('Pergunte ao Gnosis...'))
                       : ListView.builder(
                           controller: _scrollCtrl,
                           padding: const EdgeInsets.symmetric(
@@ -107,7 +104,7 @@ class _InputBar extends StatelessWidget {
                 maxLines: 5,
                 textInputAction: TextInputAction.newline,
                 decoration: InputDecoration(
-                  hintText: 'Ask the Gnosis...',
+                  hintText: 'Pergunte ao Gnosis...',
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -124,7 +121,7 @@ class _InputBar extends StatelessWidget {
             IconButton.filled(
               onPressed: onSend,
               icon: const Icon(Icons.send_rounded),
-              tooltip: 'Send',
+              tooltip: 'Enviar',
             ),
           ],
         ),

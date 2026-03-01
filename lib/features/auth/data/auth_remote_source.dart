@@ -1,8 +1,15 @@
 import 'package:gnosis_chat/features/auth/data/auth_repository.dart';
+import 'package:gnosis_chat/features/auth/domain/social_provider.dart';
 import 'package:gnosis_chat/features/auth/domain/user_entity.dart';
 
 class AuthRemoteSource implements AuthRepository {
   // TODO: inject Supabase client
+
+  @override
+  Future<UserEntity> signInWithProvider(SocialProvider provider) async {
+    // TODO: Supabase.instance.client.auth.signInWithOAuth(OAuthProvider.{provider})
+    throw UnimplementedError();
+  }
 
   @override
   Future<UserEntity> signup({

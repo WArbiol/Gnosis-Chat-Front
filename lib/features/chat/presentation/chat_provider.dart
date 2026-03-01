@@ -5,12 +5,10 @@ import 'package:gnosis_chat/services/api/api_client.dart';
 import 'package:uuid/uuid.dart';
 
 final chatProvider =
-    StateNotifierProvider<ChatNotifier, AsyncValue<List<MessageEntity>>>(
-  (ref) {
-    final api = ref.watch(apiClientProvider);
-    return ChatNotifier(ChatRemoteSource(api));
-  },
-);
+    StateNotifierProvider<ChatNotifier, AsyncValue<List<MessageEntity>>>((ref) {
+      final api = ref.watch(apiClientProvider);
+      return ChatNotifier(ChatRemoteSource(api));
+    });
 
 const _uuid = Uuid();
 
@@ -30,20 +28,34 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
     // Add user message immediately
     state = AsyncValue.data([...state.valueOrNull ?? [], userMsg]);
 
-    try {
-      final result = await _repo.ask(query);
+    // --- MOCK: simulate word-by-word streaming ---
+    // TODO: replace with real WebSocket/API call via _repo.ask(query)
+    const mockResponse = 'Esta mensagem é apenas um mock';
+    final words = mockResponse.split(' ');
+    final assistantId = _uuid.v4();
+    var accumulated = '';
+
+    for (final word in words) {
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+      accumulated = accumulated.isEmpty ? word : '$accumulated $word';
+
       final assistantMsg = MessageEntity(
-        id: _uuid.v4(),
-        content: result.answer,
+        id: assistantId,
+        content: accumulated,
         role: MessageRole.assistant,
         timestamp: DateTime.now(),
-        citations: result.citations,
-        route: result.route,
       );
-      state = AsyncValue.data([...state.valueOrNull ?? [], assistantMsg]);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+
+      final messages = <MessageEntity>[...state.valueOrNull ?? []];
+      // Replace or append: if last message is this assistant, replace it
+      if (messages.isNotEmpty && messages.last.id == assistantId) {
+        messages[messages.length - 1] = assistantMsg;
+      } else {
+        messages.add(assistantMsg);
+      }
+      state = AsyncValue.data(messages);
     }
+    // --- END MOCK ---
   }
 
   void clearHistory() => state = const AsyncValue.data([]);

@@ -69,6 +69,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider);
 
+    // Auto-scroll when messages update (streaming mock)
+    ref.listen(chatProvider, (_, __) => _scrollToBottom());
+
     return Scaffold(
       body: Stack(
         children: [

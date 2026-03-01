@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/domain/social_provider.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
+import 'package:gnosis_chat/shared/widgets/animated_background.dart';
 import 'package:gnosis_chat/shared/widgets/google_logo.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -71,7 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       body: Stack(
         children: [
           // Background gradient blobs for glass effect
-          _BackgroundBlobs(animation: _glowAnim),
+          AnimatedBackground(animation: _glowAnim),
 
           // Content
           SafeArea(
@@ -214,86 +215,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Animated background blobs that create the light source for glass effects.
-class _BackgroundBlobs extends StatelessWidget {
-  const _BackgroundBlobs({required this.animation});
-
-  final Animation<double> animation;
-
-  @override
-  Widget build(BuildContext context) {
-    final screen = MediaQuery.sizeOf(context);
-
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, _) {
-        return Stack(
-          children: [
-            // Gold blob — upper left
-            Positioned(
-              top: screen.height * 0.30,
-              left: -70,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.flameLight.withValues(
-                        alpha: animation.value * 0.35,
-                      ),
-                      AppColors.flameLight.withValues(alpha: 0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // Blue blob — lower right
-            Positioned(
-              top: screen.height * 0.50,
-              right: -100,
-              child: Container(
-                width: 240,
-                height: 240,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.primary.withValues(
-                        alpha: animation.value * 0.3,
-                      ),
-                      AppColors.primary.withValues(alpha: 0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // Subtle gold — bottom left
-            Positioned(
-              bottom: -screen.height * 0.02,
-              left: -screen.width * 0.05,
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.accent.withValues(alpha: animation.value * 0.2),
-                      AppColors.accent.withValues(alpha: 0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }

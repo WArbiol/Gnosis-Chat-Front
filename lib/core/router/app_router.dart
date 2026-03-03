@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/features/auth/presentation/login_screen.dart';
-import 'package:gnosis_chat/features/chat/presentation/chat_screen.dart';
+import 'package:gnosis_chat/features/chat/presentation/chat_shell.dart';
 import 'package:gnosis_chat/features/subscription/presentation/subscription_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -14,7 +14,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/chat',
       name: 'chat',
-      builder: (context, state) => const ChatScreen(),
+      builder: (context, state) => const ChatShell(),
     ),
     GoRoute(
       path: '/subscription',

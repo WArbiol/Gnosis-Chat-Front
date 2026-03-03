@@ -1,16 +1,19 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/message_bubble.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/typing_indicator.dart';
 import 'package:gnosis_chat/shared/widgets/animated_background.dart';
 import 'package:gnosis_chat/shared/widgets/error_view.dart';
 import 'package:gnosis_chat/shared/widgets/loading_overlay.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({super.key});
+  const ChatScreen({super.key, this.onMenuTap, this.onProfileTap});
+
+  final VoidCallback? onMenuTap;
+  final VoidCallback? onProfileTap;
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -22,6 +25,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   final _scrollCtrl = ScrollController();
   late final AnimationController _glowCtrl;
   late final Animation<double> _glowAnim;
+
+  final _knownMessageIds = <String>{};
 
   @override
   void initState() {
@@ -49,7 +54,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     final query = _queryCtrl.text.trim();
     if (query.isEmpty) return;
     _queryCtrl.clear();
+    HapticFeedback.lightImpact();
+
+    // Wire loading controller
+    final loadingCtrl = ref.read(isLoadingProvider.notifier);
+    ref.read(chatProvider.notifier).setLoadingController(loadingCtrl);
+
     await ref.read(chatProvider.notifier).ask(query);
+    HapticFeedback.mediumImpact();
     _scrollToBottom();
   }
 
@@ -70,55 +82,142 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     final chatState = ref.watch(chatProvider);
 
     // Auto-scroll when messages update (streaming mock)
-    ref.listen(chatProvider, (_, __) => _scrollToBottom());
+    ref.listen(chatProvider, (_, _) => _scrollToBottom());
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // Subtle animated background blobs
-          AnimatedBackground(animation: _glowAnim, intensity: 0.45),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: Stack(
+          children: [
+            // Subtle animated background blobs
+            AnimatedBackground(animation: _glowAnim, intensity: 0.45),
 
-          // Main content
-          SafeArea(
-            child: Column(
-              children: [
-                // Custom premium AppBar
-                _PremiumAppBar(glowAnim: _glowAnim),
+            // Main content
+            SafeArea(
+              child: Column(
+                children: [
+                  // Custom premium AppBar
+                  _PremiumAppBar(
+                    glowAnim: _glowAnim,
+                    onMenuTap: widget.onMenuTap,
+                    onProfileTap: widget.onProfileTap,
+                  ),
 
-                // Chat body
-                Expanded(
-                  child: chatState.when(
-                    data: (messages) => messages.isEmpty
-                        ? _EmptyState(glowAnim: _glowAnim)
-                        : ListView.builder(
-                            controller: _scrollCtrl,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            itemCount: messages.length,
-                            itemBuilder: (context, index) =>
-                                MessageBubble(message: messages[index]),
+                  // Chat body
+                  Expanded(
+                    child: chatState.when(
+                      data: (messages) {
+                        if (messages.isEmpty) {
+                          return _EmptyState(glowAnim: _glowAnim);
+                        }
+
+                        final isLoading = ref.watch(isLoadingProvider);
+                        final itemCount = messages.length + (isLoading ? 1 : 0);
+
+                        return ListView.builder(
+                          controller: _scrollCtrl,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
                           ),
-                    loading: () => const LoadingOverlay(),
-                    error: (e, _) => ErrorView(
-                      message: e.toString(),
-                      onRetry: () => ref.invalidate(chatProvider),
+                          itemCount: itemCount,
+                          itemBuilder: (context, index) {
+                            // Typing indicator as last item
+                            if (index == messages.length && isLoading) {
+                              return const Padding(
+                                padding: EdgeInsets.only(top: 4),
+                                child: TypingIndicator(),
+                              );
+                            }
+
+                            final msg = messages[index];
+                            final isNew = !_knownMessageIds.contains(msg.id);
+                            if (isNew) _knownMessageIds.add(msg.id);
+
+                            return _AnimatedMessage(
+                              key: ValueKey(msg.id),
+                              animate: isNew,
+                              child: MessageBubble(message: msg),
+                            );
+                          },
+                        );
+                      },
+                      loading: () => const LoadingOverlay(),
+                      error: (e, _) => ErrorView(
+                        message: e.toString(),
+                        onRetry: () => ref.invalidate(chatProvider),
+                      ),
                     ),
                   ),
-                ),
 
-                // Premium input bar
-                _GlassInputBar(
-                  controller: _queryCtrl,
-                  hasText: _queryCtrl.text.trim().isNotEmpty,
-                  onSend: _sendMessage,
-                ),
-              ],
+                  // Premium input bar
+                  _GlassInputBar(
+                    controller: _queryCtrl,
+                    hasText: _queryCtrl.text.trim().isNotEmpty,
+                    onSend: _sendMessage,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Animated message entrance — fade + slide up
+// ---------------------------------------------------------------------------
+class _AnimatedMessage extends StatefulWidget {
+  const _AnimatedMessage({
+    super.key,
+    required this.animate,
+    required this.child,
+  });
+
+  final bool animate;
+  final Widget child;
+
+  @override
+  State<_AnimatedMessage> createState() => _AnimatedMessageState();
+}
+
+class _AnimatedMessageState extends State<_AnimatedMessage>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fadeAnim;
+  late final Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: widget.animate ? 0 : 1,
+    );
+    _fadeAnim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.15),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+
+    if (widget.animate) _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnim,
+      child: SlideTransition(position: _slideAnim, child: widget.child),
     );
   }
 }
@@ -127,9 +226,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 // Custom transparent AppBar
 // ---------------------------------------------------------------------------
 class _PremiumAppBar extends StatelessWidget {
-  const _PremiumAppBar({required this.glowAnim});
+  const _PremiumAppBar({
+    required this.glowAnim,
+    this.onMenuTap,
+    this.onProfileTap,
+  });
 
   final Animation<double> glowAnim;
+  final VoidCallback? onMenuTap;
+  final VoidCallback? onProfileTap;
 
   @override
   Widget build(BuildContext context) {
@@ -139,9 +244,7 @@ class _PremiumAppBar extends StatelessWidget {
         children: [
           // Sidebar / conversations icon
           IconButton(
-            onPressed: () {
-              // TODO: open conversations drawer
-            },
+            onPressed: onMenuTap,
             icon: const Icon(Icons.menu_rounded),
             tooltip: 'Conversas',
             iconSize: 24,
@@ -174,9 +277,7 @@ class _PremiumAppBar extends StatelessWidget {
 
           // Profile avatar
           IconButton(
-            onPressed: () {
-              // TODO: open profile / settings
-            },
+            onPressed: onProfileTap,
             icon: Container(
               width: 32,
               height: 32,
@@ -393,9 +494,9 @@ class _GlassInputBarState extends State<_GlassInputBar> {
                   child: Container(
                     width: 36,
                     height: 36,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [AppColors.accent, AppColors.accentLight],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,

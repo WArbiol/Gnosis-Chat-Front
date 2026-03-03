@@ -10,12 +10,22 @@ final chatProvider =
       return ChatNotifier(ChatRemoteSource(api));
     });
 
+/// Tracks whether the AI is currently generating a response.
+final isLoadingProvider = StateProvider<bool>((ref) => false);
+
 const _uuid = Uuid();
 
 class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
   ChatNotifier(this._repo) : super(const AsyncValue.data([]));
 
   final ChatRemoteSource _repo;
+
+  /// Reference to the provider ref, set externally.
+  StateController<bool>? _loadingCtrl;
+
+  void setLoadingController(StateController<bool> ctrl) {
+    _loadingCtrl = ctrl;
+  }
 
   Future<void> ask(String query) async {
     final userMsg = MessageEntity(
@@ -28,8 +38,13 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
     // Add user message immediately
     state = AsyncValue.data([...state.valueOrNull ?? [], userMsg]);
 
-    // --- MOCK: simulate word-by-word streaming ---
+    // Show typing indicator
+    _loadingCtrl?.state = true;
+
+    // --- MOCK: simulate API delay + word-by-word streaming ---
     // TODO: replace with real WebSocket/API call via _repo.ask(query)
+    await Future<void>.delayed(const Duration(seconds: 2));
+
     const mockResponse = 'Esta mensagem é apenas um mock';
     final words = mockResponse.split(' ');
     final assistantId = _uuid.v4();
@@ -55,8 +70,14 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
       }
       state = AsyncValue.data(messages);
     }
+
+    // Hide typing indicator
+    _loadingCtrl?.state = false;
     // --- END MOCK ---
   }
 
   void clearHistory() => state = const AsyncValue.data([]);
+
+  void loadMessages(List<MessageEntity> messages) =>
+      state = AsyncValue.data(List.of(messages));
 }

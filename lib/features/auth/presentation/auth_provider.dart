@@ -48,4 +48,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _repo.logout();
     state = const AuthState.unauthenticated();
   }
+
+  void unlockSecondChamber() {
+    state.maybeWhen(
+      authenticated: (user) {
+        state = AuthState.authenticated(user.copyWith(chamberLevel: 2));
+      },
+      orElse: () {},
+    );
+  }
+
+  void revertToFirstChamber() {
+    state.maybeWhen(
+      authenticated: (user) {
+        state = AuthState.authenticated(user.copyWith(chamberLevel: 1));
+      },
+      orElse: () {},
+    );
+  }
 }

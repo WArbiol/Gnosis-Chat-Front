@@ -72,7 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       body: Stack(
         children: [
           // Background gradient blobs for glass effect
-          AnimatedBackground(animation: _glowAnim),
+          AnimatedBackground(animation: _glowAnim, showTopLeftGold: false),
 
           // Content
           SafeArea(

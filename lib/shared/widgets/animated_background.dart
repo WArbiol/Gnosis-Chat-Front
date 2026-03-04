@@ -10,10 +10,12 @@ class AnimatedBackground extends StatelessWidget {
     super.key,
     required this.animation,
     this.intensity = 1.0,
+    this.showTopLeftGold = true,
   });
 
   final Animation<double> animation;
   final double intensity;
+  final bool showTopLeftGold;
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +26,17 @@ class AnimatedBackground extends StatelessWidget {
       builder: (context, _) {
         return Stack(
           children: [
+            // Subtle gold — upper left
+            if (showTopLeftGold)
+              Positioned(
+                top: screen.height * 0.02,
+                left: screen.width * 0.08,
+                child: _Blob(
+                  size: 200,
+                  color: AppColors.accent,
+                  alpha: animation.value * 0.25 * intensity,
+                ),
+              ),
             // Gold blob — upper left
             Positioned(
               top: screen.height * 0.30,
@@ -31,13 +44,13 @@ class AnimatedBackground extends StatelessWidget {
               child: _Blob(
                 size: 200,
                 color: AppColors.flameLight,
-                alpha: animation.value * 0.35 * intensity,
+                alpha: animation.value * 0.3 * intensity,
               ),
             ),
             // Blue blob — lower right
             Positioned(
               top: screen.height * 0.50,
-              right: -100,
+              right: -50, // -100
               child: _Blob(
                 size: 240,
                 color: AppColors.primary,

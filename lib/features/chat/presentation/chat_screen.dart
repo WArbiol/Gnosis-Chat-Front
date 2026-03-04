@@ -8,6 +8,9 @@ import 'package:gnosis_chat/features/chat/presentation/widgets/typing_indicator.
 import 'package:gnosis_chat/shared/widgets/animated_background.dart';
 import 'package:gnosis_chat/shared/widgets/error_view.dart';
 import 'package:gnosis_chat/shared/widgets/loading_overlay.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/inline_cta_banner.dart';
+import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
+import 'package:go_router/go_router.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, this.onMenuTap, this.onProfileTap});
@@ -81,6 +84,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider);
 
+    // Check limit
+    final userMessagesCount =
+        chatState.valueOrNull
+            ?.where((m) => m.role == MessageRole.user)
+            .length ??
+        0;
+    final maxReached = userMessagesCount >= 3;
+
     // Auto-scroll when messages update (streaming mock)
     ref.listen(chatProvider, (_, _) => _scrollToBottom());
 
@@ -113,7 +124,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                         }
 
                         final isLoading = ref.watch(isLoadingProvider);
-                        final itemCount = messages.length + (isLoading ? 1 : 0);
+                        final itemCount =
+                            messages.length +
+                            (isLoading ? 1 : 0) +
+                            (maxReached ? 1 : 0);
 
                         return ListView.builder(
                           controller: _scrollCtrl,
@@ -123,8 +137,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                           ),
                           itemCount: itemCount,
                           itemBuilder: (context, index) {
-                            // Typing indicator as last item
-                            if (index == messages.length && isLoading) {
+                            // Absolute last item -> Banner, if limit reached
+                            if (maxReached && index == itemCount - 1) {
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 8,
+                                  bottom: 24,
+                                ),
+                                child: InlineCtaBanner(
+                                  onUpgradeTap: () =>
+                                      context.push('/subscription'),
+                                ),
+                              );
+                            }
+
+                            // Typing indicator
+                            if (isLoading && index == messages.length) {
                               return const Padding(
                                 padding: EdgeInsets.only(top: 4),
                                 child: TypingIndicator(),
@@ -152,11 +180,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                   ),
 
                   // Premium input bar
-                  _GlassInputBar(
-                    controller: _queryCtrl,
-                    hasText: _queryCtrl.text.trim().isNotEmpty,
-                    onSend: _sendMessage,
-                  ),
+                  if (!maxReached)
+                    _GlassInputBar(
+                      controller: _queryCtrl,
+                      hasText: _queryCtrl.text.trim().isNotEmpty,
+                      onSend: _sendMessage,
+                    ),
                 ],
               ),
             ),

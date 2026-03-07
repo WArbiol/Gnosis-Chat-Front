@@ -11,7 +11,7 @@ class MessageEntity with _$MessageEntity {
     required String id,
     required String content,
     required MessageRole role,
-    required DateTime timestamp,
+    @JsonKey(name: 'created_at') required DateTime timestamp,
     @Default([]) List<CitationEntity> citations,
     @Default('') String route,
   }) = _MessageEntity;
@@ -23,7 +23,7 @@ class MessageEntity with _$MessageEntity {
 @freezed
 class CitationEntity with _$CitationEntity {
   const factory CitationEntity({
-    required String pdfName,
+    @JsonKey(name: 'pdf_name') required String pdfName,
     required int page,
     @Default('') String snippet,
   }) = _CitationEntity;

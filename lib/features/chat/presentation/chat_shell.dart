@@ -37,14 +37,6 @@ class _ChatShellState extends ConsumerState<ChatShell>
       curve: Curves.easeOutCubic,
       reverseCurve: Curves.easeInCubic,
     );
-
-    // Auto-create a first conversation on start
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final convState = ref.read(conversationProvider);
-      if (convState.conversations.isEmpty) {
-        ref.read(conversationProvider.notifier).createConversation();
-      }
-    });
   }
 
   @override
@@ -69,7 +61,7 @@ class _ChatShellState extends ConsumerState<ChatShell>
   }
 
   void _onNewConversation() {
-    ref.read(conversationProvider.notifier).createConversation();
+    ref.read(conversationProvider.notifier).resetActiveId();
     _closePanel();
   }
 

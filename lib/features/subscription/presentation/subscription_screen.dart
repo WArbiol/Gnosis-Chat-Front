@@ -220,7 +220,9 @@ class _PlanCard extends StatelessWidget {
                 // Features
                 _FeatureItem(
                   icon: Icons.chat_bubble_outline_rounded,
-                  text: '${plan.questionLimit} perguntas/mês',
+                  text: plan.type == PlanType.free
+                      ? '${plan.questionLimit} perguntas/semana'
+                      : '${plan.questionLimit} perguntas/mês',
                   tint: tint,
                 ),
                 if (plan.interestLimit > 0) ...[

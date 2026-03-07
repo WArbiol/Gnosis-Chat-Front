@@ -1,7 +1,20 @@
+import 'package:flutter/foundation.dart';
+
 class AppConstants {
   AppConstants._();
 
-  static const String apiBaseUrl = 'http://localhost:8000/api/v1';
+  static const String appName = 'Gnosis Chat';
+
+  static String get apiBaseUrl {
+    if (kIsWeb) {
+      return 'http://localhost:8000/api/v1/';
+    }
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8000/api/v1/';
+    }
+    return 'http://localhost:8000/api/v1/';
+  }
+
   static const Duration apiTimeout = Duration(seconds: 30);
 
   static const int maxQueryLength = 2000;

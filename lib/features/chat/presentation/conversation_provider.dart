@@ -1,14 +1,24 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gnosis_chat/features/chat/data/conversation_cache.dart';
+import 'package:gnosis_chat/features/chat/data/conversation_remote_source.dart';
 import 'package:gnosis_chat/features/chat/domain/conversation_entity.dart';
 import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
-import 'package:uuid/uuid.dart';
+import 'package:gnosis_chat/services/api/api_client.dart';
 
-const _uuid = Uuid();
+final conversationRemoteSourceProvider = Provider<ConversationRemoteSource>((
+  ref,
+) {
+  final api = ref.watch(apiClientProvider);
+  return ConversationRemoteSource(api.dio);
+});
 
 final conversationProvider =
     StateNotifierProvider<ConversationNotifier, ConversationState>((ref) {
-      return ConversationNotifier(ref);
+      final repo = ref.watch(conversationRemoteSourceProvider);
+      final cache = ref.watch(conversationCacheProvider);
+      return ConversationNotifier(ref, repo, cache)..loadConversations();
     });
 
 class ConversationState {
@@ -33,39 +43,91 @@ class ConversationState {
 }
 
 class ConversationNotifier extends StateNotifier<ConversationState> {
-  ConversationNotifier(this._ref) : super(const ConversationState());
+  ConversationNotifier(this._ref, this._repo, this._cache)
+    : super(const ConversationState());
 
   final Ref _ref;
+  final ConversationRemoteSource _repo;
+  final ConversationCache _cache;
+
+  Future<void> loadConversations() async {
+    // 1. Load from offline cache immediately for fast UI
+    if (_cache.hasData) {
+      final cachedList = _cache.loadConversations();
+      state = state.copyWith(conversations: cachedList);
+      // NOTE: We no longer auto-select the first conversation on startup (Option A: Always New Chat)
+    }
+
+    // 2. Fetch fresh data from backend
+    try {
+      final list = await _repo.listConversations();
+      state = state.copyWith(conversations: list);
+
+      // Save full list to cache
+      await _cache.saveConversations(list);
+
+      // NOTE: We no longer auto-select the first conversation on startup (Option A: Always New Chat)
+    } catch (e) {
+      // Handle error cleanly, rely on cached state
+    }
+  }
+
+  /// Resets the active conversation to null (Draft state) without calling the backend.
+  void resetActiveId() {
+    state = state.copyWith(activeId: () => null);
+    _ref.read(chatProvider.notifier).clearHistory();
+    debugPrint('CONV: Active state reset to Draft');
+  }
 
   /// Creates a new empty conversation and activates it.
-  void createConversation() {
-    final now = DateTime.now();
-    final conv = ConversationEntity(
-      id: _uuid.v4(),
-      title: 'Nova conversa',
-      createdAt: now,
-      updatedAt: now,
-    );
+  Future<void> createConversation() async {
+    debugPrint('CONV: Starting createConversation...');
+    try {
+      final conv = await _repo.createConversation('Nova conversa');
+      debugPrint('CONV: Created ID: ${conv.id}');
+      state = state.copyWith(
+        conversations: [conv, ...state.conversations],
+        activeId: () => conv.id,
+      );
 
-    state = state.copyWith(
-      conversations: [conv, ...state.conversations],
-      activeId: () => conv.id,
-    );
+      await _cache.saveSingle(conv);
 
-    _ref.read(chatProvider.notifier).clearHistory();
+      // We clear history only if we were NOT in the middle of sending a message
+      // But usually, JIT ask() calls this BEFORE adding the optimistic message.
+      _ref.read(chatProvider.notifier).clearHistory();
+      debugPrint('CONV: State updated with activeId: ${conv.id}');
+    } catch (e, stack) {
+      debugPrint('CONV: ERROR creating conversation: $e');
+      debugPrint(stack.toString());
+    }
   }
 
-  /// Selects an existing conversation and loads its messages.
-  void selectConversation(String id) {
-    final conv = state.conversations.where((c) => c.id == id).firstOrNull;
-    if (conv == null) return;
+  /// Selects an existing conversation and loads its messages from the backend.
+  Future<void> selectConversation(String id) async {
+    final existingConv = state.conversations
+        .where((c) => c.id == id)
+        .firstOrNull;
+    if (existingConv == null) return;
 
     state = state.copyWith(activeId: () => id);
-    _ref.read(chatProvider.notifier).loadMessages(conv.messages);
+    _ref.read(chatProvider.notifier).clearHistory(); // clear while loading
+
+    try {
+      final fullConv = await _repo.getConversation(id);
+      _ref.read(chatProvider.notifier).loadMessages(fullConv.messages);
+
+      // Update local state with the loaded messages count/preview
+      syncMessages(fullConv.messages);
+
+      // Save details to cache
+      await _cache.saveSingle(fullConv);
+    } catch (e) {
+      // handle error
+    }
   }
 
-  /// Deletes a conversation. If it was active, clears the chat.
-  void deleteConversation(String id) {
+  /// Deletes a conversation from remote and local state.
+  Future<void> deleteConversation(String id) async {
     final wasActive = state.activeId == id;
     final updated = state.conversations.where((c) => c.id != id).toList();
 
@@ -77,10 +139,17 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
     if (wasActive) {
       _ref.read(chatProvider.notifier).clearHistory();
     }
+
+    try {
+      await _repo.deleteConversation(id);
+      await _cache.deleteSingle(id);
+    } catch (e) {
+      // Optionally rollback state or show error
+    }
   }
 
-  /// Updates the active conversation with the current chat messages.
-  /// Called after each message to keep conversations in sync.
+  /// Updates the active conversation with the current chat messages locally.
+  /// (Called repeatedly by ChatNotifier for instant UI).
   void syncMessages(List<MessageEntity> messages) {
     if (state.activeId == null) return;
 
@@ -91,14 +160,31 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
           ? _truncate(messages.first.content, 40)
           : 'Nova conversa';
 
+      // Self-healing: if the backend title is still "Nova conversa" but we have content,
+      // push the calculated title to the server to fix it permanently.
+      if (title != 'Nova conversa' && c.title == 'Nova conversa') {
+        _repo.updateConversation(c.id, title).catchError((e) {
+          debugPrint('CONV: Failed to push self-healing title: $e');
+          return c; // Return current as fallback to satisfy type
+        });
+      }
+
+      final lastPreview = messages.isNotEmpty ? messages.last.content : null;
+
       return c.copyWith(
         messages: messages,
+        messageCount: messages.length,
+        lastMessagePreview: lastPreview,
         title: title,
         updatedAt: DateTime.now(),
       );
     }).toList();
 
     state = state.copyWith(conversations: updated);
+
+    // Also update the local cache for this single conversation
+    final activeConv = updated.firstWhere((c) => c.id == state.activeId);
+    _cache.saveSingle(activeConv);
   }
 
   /// Searches conversations by title (case-insensitive).
@@ -108,6 +194,11 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
     return state.conversations
         .where((c) => c.title.toLowerCase().contains(lower))
         .toList();
+  }
+
+  void clearAll() {
+    state = const ConversationState();
+    _cache.clear(); // I'll need to add this to ConversationCache
   }
 
   String _truncate(String text, int maxLength) {

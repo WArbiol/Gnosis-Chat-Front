@@ -2,11 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/app.dart';
 
-void main() {
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:gnosis_chat/features/chat/data/conversation_cache.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // TODO: initialize Supabase
-  // await Supabase.initialize(url: ..., anonKey: ...);
+  await dotenv.load(fileName: '.env');
+
+  // Allow dart-define for CI/scripts, fallback to .env for IDE debugging
+  const supabaseUrl = String.fromEnvironment('SUPABASE_URL', defaultValue: '');
+  const supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: '',
+  );
+
+  await Supabase.initialize(
+    url: supabaseUrl.isNotEmpty
+        ? supabaseUrl
+        : dotenv.env['SUPABASE_URL'] ?? '',
+    anonKey: supabaseAnonKey.isNotEmpty
+        ? supabaseAnonKey
+        : dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+  );
+
+  await Hive.initFlutter();
+  await Hive.openBox<String>(ConversationCache.boxName);
 
   runApp(const ProviderScope(child: GnosisApp()));
 }

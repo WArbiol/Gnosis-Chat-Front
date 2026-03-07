@@ -58,12 +58,20 @@ class ProfileBottomSheet extends ConsumerWidget {
                     width: 2,
                   ),
                   color: AppColors.surfaceVariant,
+                  image: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
+                      ? DecorationImage(
+                          image: NetworkImage(user.avatarUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: const Icon(
-                  Icons.person_rounded,
-                  size: 36,
-                  color: AppColors.onSurfaceVariant,
-                ),
+                child: user?.avatarUrl == null || user!.avatarUrl!.isEmpty
+                    ? const Icon(
+                        Icons.person_rounded,
+                        size: 36,
+                        color: AppColors.onSurfaceVariant,
+                      )
+                    : null,
               ),
 
               const SizedBox(height: 16),

@@ -24,6 +24,7 @@ mixin _$MessageEntity {
   String get id => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
   MessageRole get role => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
   DateTime get timestamp => throw _privateConstructorUsedError;
   List<CitationEntity> get citations => throw _privateConstructorUsedError;
   String get route => throw _privateConstructorUsedError;
@@ -49,7 +50,7 @@ abstract class $MessageEntityCopyWith<$Res> {
     String id,
     String content,
     MessageRole role,
-    DateTime timestamp,
+    @JsonKey(name: 'created_at') DateTime timestamp,
     List<CitationEntity> citations,
     String route,
   });
@@ -122,7 +123,7 @@ abstract class _$$MessageEntityImplCopyWith<$Res>
     String id,
     String content,
     MessageRole role,
-    DateTime timestamp,
+    @JsonKey(name: 'created_at') DateTime timestamp,
     List<CitationEntity> citations,
     String route,
   });
@@ -187,7 +188,7 @@ class _$MessageEntityImpl implements _MessageEntity {
     required this.id,
     required this.content,
     required this.role,
-    required this.timestamp,
+    @JsonKey(name: 'created_at') required this.timestamp,
     final List<CitationEntity> citations = const [],
     this.route = '',
   }) : _citations = citations;
@@ -202,6 +203,7 @@ class _$MessageEntityImpl implements _MessageEntity {
   @override
   final MessageRole role;
   @override
+  @JsonKey(name: 'created_at')
   final DateTime timestamp;
   final List<CitationEntity> _citations;
   @override
@@ -269,7 +271,7 @@ abstract class _MessageEntity implements MessageEntity {
     required final String id,
     required final String content,
     required final MessageRole role,
-    required final DateTime timestamp,
+    @JsonKey(name: 'created_at') required final DateTime timestamp,
     final List<CitationEntity> citations,
     final String route,
   }) = _$MessageEntityImpl;
@@ -284,6 +286,7 @@ abstract class _MessageEntity implements MessageEntity {
   @override
   MessageRole get role;
   @override
+  @JsonKey(name: 'created_at')
   DateTime get timestamp;
   @override
   List<CitationEntity> get citations;
@@ -304,6 +307,7 @@ CitationEntity _$CitationEntityFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$CitationEntity {
+  @JsonKey(name: 'pdf_name')
   String get pdfName => throw _privateConstructorUsedError;
   int get page => throw _privateConstructorUsedError;
   String get snippet => throw _privateConstructorUsedError;
@@ -325,7 +329,11 @@ abstract class $CitationEntityCopyWith<$Res> {
     $Res Function(CitationEntity) then,
   ) = _$CitationEntityCopyWithImpl<$Res, CitationEntity>;
   @useResult
-  $Res call({String pdfName, int page, String snippet});
+  $Res call({
+    @JsonKey(name: 'pdf_name') String pdfName,
+    int page,
+    String snippet,
+  });
 }
 
 /// @nodoc
@@ -376,7 +384,11 @@ abstract class _$$CitationEntityImplCopyWith<$Res>
   ) = __$$CitationEntityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String pdfName, int page, String snippet});
+  $Res call({
+    @JsonKey(name: 'pdf_name') String pdfName,
+    int page,
+    String snippet,
+  });
 }
 
 /// @nodoc
@@ -420,7 +432,7 @@ class __$$CitationEntityImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$CitationEntityImpl implements _CitationEntity {
   const _$CitationEntityImpl({
-    required this.pdfName,
+    @JsonKey(name: 'pdf_name') required this.pdfName,
     required this.page,
     this.snippet = '',
   });
@@ -429,6 +441,7 @@ class _$CitationEntityImpl implements _CitationEntity {
       _$$CitationEntityImplFromJson(json);
 
   @override
+  @JsonKey(name: 'pdf_name')
   final String pdfName;
   @override
   final int page;
@@ -474,7 +487,7 @@ class _$CitationEntityImpl implements _CitationEntity {
 
 abstract class _CitationEntity implements CitationEntity {
   const factory _CitationEntity({
-    required final String pdfName,
+    @JsonKey(name: 'pdf_name') required final String pdfName,
     required final int page,
     final String snippet,
   }) = _$CitationEntityImpl;
@@ -483,6 +496,7 @@ abstract class _CitationEntity implements CitationEntity {
       _$CitationEntityImpl.fromJson;
 
   @override
+  @JsonKey(name: 'pdf_name')
   String get pdfName;
   @override
   int get page;

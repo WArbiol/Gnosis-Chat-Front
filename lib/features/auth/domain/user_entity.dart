@@ -8,9 +8,10 @@ class UserEntity with _$UserEntity {
   const factory UserEntity({
     required String id,
     required String email,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
     @Default('free') String plan,
-    @Default(1) int chamberLevel,
-    @Default(0) int questionCount,
+    @JsonKey(name: 'chamber_level') @Default(1) int chamberLevel,
+    @JsonKey(name: 'question_count') @Default(0) int questionCount,
   }) = _UserEntity;
 
   factory UserEntity.fromJson(Map<String, dynamic> json) =>

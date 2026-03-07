@@ -10,16 +10,18 @@ _$UserEntityImpl _$$UserEntityImplFromJson(Map<String, dynamic> json) =>
     _$UserEntityImpl(
       id: json['id'] as String,
       email: json['email'] as String,
+      avatarUrl: json['avatar_url'] as String?,
       plan: json['plan'] as String? ?? 'free',
-      chamberLevel: (json['chamberLevel'] as num?)?.toInt() ?? 1,
-      questionCount: (json['questionCount'] as num?)?.toInt() ?? 0,
+      chamberLevel: (json['chamber_level'] as num?)?.toInt() ?? 1,
+      questionCount: (json['question_count'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$UserEntityImplToJson(_$UserEntityImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'email': instance.email,
+      'avatar_url': instance.avatarUrl,
       'plan': instance.plan,
-      'chamberLevel': instance.chamberLevel,
-      'questionCount': instance.questionCount,
+      'chamber_level': instance.chamberLevel,
+      'question_count': instance.questionCount,
     };

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
+import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/message_bubble.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/typing_indicator.dart';
@@ -83,6 +84,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider);
+    final user = ref.watch(authProvider).whenOrNull(authenticated: (u) => u);
 
     // Check limit
     final userMessagesCount =
@@ -111,6 +113,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                   // Custom premium AppBar
                   _PremiumAppBar(
                     glowAnim: _glowAnim,
+                    avatarUrl: user?.avatarUrl,
                     onMenuTap: widget.onMenuTap,
                     onProfileTap: widget.onProfileTap,
                   ),
@@ -257,11 +260,13 @@ class _AnimatedMessageState extends State<_AnimatedMessage>
 class _PremiumAppBar extends StatelessWidget {
   const _PremiumAppBar({
     required this.glowAnim,
+    this.avatarUrl,
     this.onMenuTap,
     this.onProfileTap,
   });
 
   final Animation<double> glowAnim;
+  final String? avatarUrl;
   final VoidCallback? onMenuTap;
   final VoidCallback? onProfileTap;
 
@@ -318,10 +323,27 @@ class _PremiumAppBar extends StatelessWidget {
                 ),
                 color: AppColors.surfaceVariant,
               ),
-              child: const Icon(
-                Icons.person_rounded,
-                size: 18,
-                color: AppColors.onSurfaceVariant,
+              child: ClipOval(
+                child: avatarUrl != null && avatarUrl!.isNotEmpty
+                    ? Image.network(
+                        avatarUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint(
+                            'DEBUG IMAGE: Failed to load avatar: $error',
+                          );
+                          return const Icon(
+                            Icons.person_rounded,
+                            size: 18,
+                            color: AppColors.onSurfaceVariant,
+                          );
+                        },
+                      )
+                    : const Icon(
+                        Icons.person_rounded,
+                        size: 18,
+                        color: AppColors.onSurfaceVariant,
+                      ),
               ),
             ),
             tooltip: 'Perfil',

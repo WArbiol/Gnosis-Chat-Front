@@ -1,4 +1,4 @@
-import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -48,7 +48,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     if (mounted) setState(() => _loadingProvider = null);
   }
 
-  bool get _showApple => Platform.isIOS || Platform.isLinux;
+  bool get _showApple =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.macOS);
 
   @override
   Widget build(BuildContext context) {

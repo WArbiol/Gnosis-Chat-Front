@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
-import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -36,19 +36,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _checkAuthAndRedirect() async {
-    // ⚠️ FASE 1 MOCK: Artificial delay to show the logo fade-in
-    // TODO: Remover isso na fase 2.
-    await Future.delayed(const Duration(milliseconds: 1500));
+    // Keep a small minimum delay so the logo glow is visible
+    await Future.delayed(const Duration(milliseconds: 600));
 
     if (!mounted) return;
 
-    // Use current auth state for redirection
-    final authState = ref.read(authProvider);
+    // Use current auth state via Supabase for redirection
+    final session = Supabase.instance.client.auth.currentSession;
 
-    authState.maybeWhen(
-      authenticated: (_) => context.go('/chat'),
-      orElse: () => context.go('/login'),
-    );
+    if (session != null) {
+      context.go('/chat');
+    } else {
+      context.go('/login');
+    }
   }
 
   @override
@@ -59,18 +59,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Escuta mudanças de authState para o caso de estar num loading longo.
-    ref.listen(authProvider, (_, next) {
-      if (!mounted) return;
-
-      // TODO: Ajustar lógica na fase 2 caso aja um 'loading' global persistente.
-      next.maybeWhen(
-        authenticated: (_) => context.go('/chat'),
-        unauthenticated: () => context.go('/login'),
-        error: (_) => context.go('/login'),
-        orElse: () {},
-      );
-    });
+    // We let Supabase state changes trigger GoRouter redirect via app_router
+    // The riverpod listen below is not strictly required if GoRouter handles it.
 
     return Scaffold(
       backgroundColor: AppColors.background,

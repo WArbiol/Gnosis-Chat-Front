@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -327,6 +328,12 @@ class _PremiumAppBar extends StatelessWidget {
                 child: avatarUrl != null && avatarUrl!.isNotEmpty
                     ? Image.network(
                         avatarUrl!,
+                        headers: kIsWeb
+                            ? null
+                            : const {
+                                'User-Agent':
+                                    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                              },
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           debugPrint(

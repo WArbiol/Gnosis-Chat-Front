@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -58,20 +59,32 @@ class ProfileBottomSheet extends ConsumerWidget {
                     width: 2,
                   ),
                   color: AppColors.surfaceVariant,
-                  image: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(user.avatarUrl!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
                 ),
+                clipBehavior: Clip.antiAlias,
                 child: user?.avatarUrl == null || user!.avatarUrl!.isEmpty
                     ? const Icon(
                         Icons.person_rounded,
                         size: 36,
                         color: AppColors.onSurfaceVariant,
                       )
-                    : null,
+                    : Image.network(
+                        user.avatarUrl!,
+                        headers: kIsWeb
+                            ? null
+                            : const {
+                                'User-Agent':
+                                    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                              },
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint('Avatar Load Error: $error');
+                          return const Icon(
+                            Icons.person_rounded,
+                            size: 36,
+                            color: AppColors.onSurfaceVariant,
+                          );
+                        },
+                      ),
               ),
 
               const SizedBox(height: 16),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/app.dart';
@@ -26,6 +27,9 @@ void main() async {
     anonKey: supabaseAnonKey.isNotEmpty
         ? supabaseAnonKey
         : dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: kIsWeb ? AuthFlowType.implicit : AuthFlowType.pkce,
+    ),
   );
 
   await Hive.initFlutter();

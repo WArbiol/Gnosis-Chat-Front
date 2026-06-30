@@ -1,17 +1,77 @@
-# gnosis_chat
+# Gnosis Chat (Frontend)
 
-A new Flutter project.
+> Intelligent chat interface based on RAG over 90 gnostic PDFs — iOS, Android & Web.
 
-## Getting Started
+This repository contains the frontend client code built with Flutter.
 
-This project is a starting point for a Flutter application.
+> [!NOTE]  
+> The Python/FastAPI backend that handles the RAG pipeline, agentic workflows, database migrations, and integrations is hosted in a **private repository**.
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## 🛠️ Stack
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+| Layer | Technology |
+|---|---|
+| **Framework** | Flutter (Dart 3.x) |
+| **State Management** | Riverpod |
+| **Routing** | GoRouter |
+| **Database & Auth Client** | Supabase Auth + PostgreSQL |
+| **Payments Integration** | Stripe |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+Make sure you have Flutter installed on your system. You can check the installation using `flutter doctor`.
+
+### Installation
+
+1. Install dependencies:
+   ```bash
+   flutter pub get
+   ```
+
+2. Configure environment variables. Create a `.env` file in the root directory:
+   ```properties
+   # Supabase configuration
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=sb_publishable_...
+
+   # Backend API Url
+   BACKEND_URL=http://localhost:8000
+   ```
+   *(Make sure never to commit your `.env` file to version control)*
+
+3. Run the application:
+   ```bash
+   flutter run
+   ```
+
+---
+
+## 📂 Project Structure
+
+```
+gnosis-chat-front/
+├── android/          # Native Android configuration
+├── ios/              # Native iOS configuration
+├── lib/              # Flutter Dart source files
+│   ├── main.dart     # Application entrypoint
+│   └── ...           # Features, routing, state providers, and UI pages
+├── assets/           # Static images, assets, and icons
+├── web/              # Web platform support
+└── pubspec.yaml      # Dart package definitions
+```
+
+---
+
+## 🔗 Architecture Overview
+
+The frontend communicates with the private backend API and Supabase direct services:
+
+```
+Flutter Client (App/Web) ──> Supabase Auth / Database (User session)
+                      └──> FastAPI Backend (Private Repo) ──> LangGraph RAG Agent
+```

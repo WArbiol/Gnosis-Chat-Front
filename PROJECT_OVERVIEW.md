@@ -37,7 +37,6 @@ Gnosis-chat é um app mobile de chat inteligente baseado em RAG (Retrieval-Augme
 ### Público-Alvo e Escopo do MVP
 - **Usuários:** Estudiosos de hermetismo, gnosticismo e espiritualidade esotérica
 - **Plataformas:** iOS e Android (Flutter)
-- **MVP:** Autenticação, chat RAG, citações, segunda câmara, pagamentos básicos
 - **Escala MVP:** até ~200 usuários ativos / mês
 
 ---
@@ -49,7 +48,7 @@ Gnosis-chat é um app mobile de chat inteligente baseado em RAG (Retrieval-Augme
 ```
 [Flutter App]
       │
-      │ HTTPS / JWT
+      │ HTTPS (SSE / JWT)
       ▼
 [FastAPI — Railway]
       │
@@ -59,8 +58,8 @@ Gnosis-chat é um app mobile de chat inteligente baseado em RAG (Retrieval-Augme
 [Supabase]                             [Qdrant Cloud]
 Auth + PostgreSQL + Storage             Vector DB (2 collections)
 (users, sessions,                       ├── gnosis_books
- chamber_level, pdfs)                   │   (90 PDFs, metadata: pdf_name,
-                                        │    page, access_level)
+ chamber_level, pdfs,                   │   (90 PDFs, metadata: pdf_name,
+ LangGraph checkpointer state)          │    page, access_level)
                                         └── user_interests
                                             (interesses inferidos por user_id;
                                              quota: Basic=20 | Premium=200)
@@ -69,41 +68,42 @@ Auth + PostgreSQL + Storage             Vector DB (2 collections)
                      │
                      ▼
              [LangGraph — Agentic RAG]
-          (Parser/Planner ⇄ Retriever ⇄ Evaluator → Synthesizer)
+     (Orchestrator hub central com 8 nós)
                      │
-       ┌─────────────┴─────────────┐
+       ┌─────────────┼─────────────┐
        │             │             │
-[3.0 Flash Lite] [LlamaIndex]  [Gemini 3.0 Flash]
- (Routing/Eval)   RAG Engine    (Síntese / Texto Final)
-                + emb-001       (Estrito: "Sem ref. no corpus")
-                     │
-                     ▼
-               [Stripe API]
-         (validação de plano antes de cada query)
+[3.0 Flash Lite] [Vertex AI]   [Gemini 3.0 Flash]
+ (Orchestrator,   Ranking API   (Síntese / Writer)
+  Critique, Judge, (Re-ranking   (Citações rigorosas)
+  Recap, Direct)   top ~10 docs)
 ```
 
 ### Fluxo RAG Detalhado
 
 ```
 INGESTÃO DE PDFs (offline, 1x por corpus update):
-  PDF → pymupdf → Qdrant (gnosis_books) com metadados ampliados: (author, book_name, chamber)
+  PDF → pymupdf → Qdrant (gnosis_books) com metadados: (author, book_name, chamber)
 
 QUERY (online, por mensagem do usuário):
-  1. FastAPI recebe query + `ui_filters` (Filtros: Livros, Autor, Câmara) escolhidos no App + JWT
-  2. Middleware valida chamber_level e quota
-  3. LangGraph Node 1 (Planner/Router usando Gemini 3.0 Flash Lite):
-         ↳ Se `ui_filters` vazios, infere pelo texto qual Autor/Livro buscar.
-         ↳ Reescreve a query para o Qdrant e fixa um Top-K flexível (ex: 5 a 11 chunks).
-  4. LangGraph Node 2 (Retriever): Faz fetch no Qdrant
-  5. LangGraph Node 3 (Evaluator usando 3.0 Flash Lite): Lê os chunks vs Pergunta.
-         ↳ Se o contexto RESPONDE a pergunta: avança pro Synthesizer.
-         ↳ Se o contexto falha: loop (MAX 2x) pedindo nova combinação de `k` ou ajustando o filtro.
-  6. LangGraph Node 4 (Synthesizer usando Gemini 3.0 Flash):
-         ↳ Escreve resposta retórica baseada na documentação gnóstica rigorosa.
-         ↳ Fallback estrito: se os loops acabaram e não há contexto válido, exige-se dizer estritamente: "Não há referências sobre isso no corpus literário".
-  * UX UI de Streaming (Flutter): Exibe pílulas transitórias de tool calls acima do chat ("Procurando em Samael...", "Avaliando textos...") limitando a frustração da latência ocasionada pelos retries do RAG.
-```
-
+  1. FastAPI recebe query + `ui_filters` + JWT.
+  2. Middleware valida chamber_level e quota.
+  3. LangGraph Node 1 (Orchestrator usando Gemini 3.0 Flash Lite):
+         ↳ Se query simples, decide rota (ex: DIRECT_RESPONSE ou 1 sub-query ao Researcher).
+         ↳ Se query complexa, decompõe em sub-queries e dispara N Researchers em paralelo.
+  4. LangGraph Node 2 (Researcher):
+         ↳ Executa Query Transformation.
+         ↳ Busca ~30 chunks no Qdrant (gnosis_books + user_interests).
+         ↳ Re-rankeia para o top ~10 usando Vertex AI Ranking API.
+  5. LangGraph Node 3 (Critique usando 3.0 Flash Lite): Avalia chunks vs Pergunta.
+         ↳ Se suficiente: avança para o Writer.
+         ↳ Se insuficiente: reporta ao Orchestrator com sugestões (loop máx. 2x).
+  6. LangGraph Node 4 (Writer usando Gemini 3.0 Flash): Escreve a resposta final com citações estruturadas.
+  7. LangGraph Node 5 (Judge usando Gemini 3.0 Flash Lite): Audita resposta contra alucinações.
+         ↳ Se aprovado: avança para o Recap.
+         ↳ Se rejeitado: retorna ao Orchestrator para reescrita (loop máx. 1x).
+  8. LangGraph Node 6 (Recap usando Gemini 3.0 Flash Lite): Gera um resumo curto de 2-3 frases.
+  9. Ask User (HIL): Se o Orchestrator identificar ambiguidade, pausa o grafo e solicita esclarecimentos ao usuário através do checkpointer Postgres.
+  10. UX UI de Streaming (Flutter): O app lê o stream SSE (Server-Sent Events) recebendo eventos de status ("status"), tokens da resposta em tempo real ("token") e o payload final consolidado ("final").
 ---
 
 ## 3. Stack Técnica Final (DECIDIDA)
@@ -158,11 +158,10 @@ QUERY (online, por mensagem do usuário):
 - **Justificativa:** Deploy via Git push, $5/mês elimina cold starts (sem hibernação), preview environments por PR, DX superior para times pequenos com Python.
 - **Modal.com rejeitado:** Cold starts graves incompatíveis com UX premium de app meditativo/esotérico.
 
-### ADR-B5: LangGraph como Orquestrador (Escopo Redefinido)
-- **Decisão:** LangGraph sobre LangChain puro
-- **Justificativa:** Grafo auditável com nós isolados (`router`, `retriever`, `synthesizer`). Integração nativa com LangSmith para observabilidade de cada nó. Suporte a streaming por nó para UX responsiva no Flutter.
-- **Escopo redefinido (2026-02-27):** LangGraph **não** gerencia memória de conversa via checkpointer PostgreSQL. O contexto histórico é tratado via `RAG_USER` (interesses inferidos em `user_interests`). O StateGraph gerencia apenas o fluxo de orquestração da query atual.
-- **Alternativa avaliada:** FastAPI puro com funções sequenciais — funcional para o grafo simples, mas perde observabilidade nativa do LangSmith e streaming por nó sem implementação adicional.
+### ADR-B5: LangGraph como Orquestrador (Com Checkpointer PostgreSQL)
+- **Decisão:** LangGraph com persistência de estado ativa via `PostgresSaver`.
+- **Justificativa:** Diferente da versão inicial stateless, a necessidade de suportar a feature `Ask User` (Human-in-the-Loop) no MVP exige a retenção do estado exato da máquina de estados do grafo entre turnos de conversação. Usaremos a infraestrutura PostgreSQL do Supabase já configurada para salvar os checkpoints.
+- **Resiliência:** Essa abordagem permite suspender a execução do grafo, coletar o input do usuário na UI do Flutter horas depois, e restabelecer a execução do grafo a partir do nó correto, mesmo em caso de reinicialização da API no Railway.
 
 ### ADR-B6: Qdrant `user_interests` — Interesses Inferidos por Plano
 - **Decisão:** Collection `user_interests` separada de `gnosis_books` no mesmo Qdrant Cloud. Quota enforçada no backend antes de cada upsert.
@@ -171,11 +170,12 @@ QUERY (online, por mensagem do usuário):
 - **Justificativa:** Zero novo serviço; payload filter nativo por `user_id`; personalização sem armazenar histórico literal.
 - **Alternativa rejeitada:** pgvector/Supabase — funcional, mas mistura concerns relacionais + vetoriais e não aproveita o HNSW do Qdrant.
 
-### ADR-B7: Agentic RAG Multi-Pass & Edge Cases (Evolução do Router)
-- **Decisão:** Uso do LangGraph num padrão self-reflexivo. O _Gemini 3.0 Flash Lite_ funciona como `Planner/Parser` (redefine query profunda, gerencia o `Top-K` dinâmico e aplica restrições de MetaData para Livro/Autor/Câmara) e como `Evaluator` (critica o contexto retornado; Max Loops = 2).
-- **Fallback Estrito:** Se os loops excederem sem sucesso, o _Gemini 3.0 Flash_ (nó final) deve rigidamente admitir "Não há referências sobre isso no corpus literário". Alucinações proibidas.
-- **Filtro UI UX:** Botão/Aba "Filtros". A 2ª Câmara fica estritamente invisível se o `chamber_level = 1` para não poluir ou gerar frustração.
-- **UX Streaming Event:** Como a latência escala no looping, o backend faz streaming iterativo de 'Tool calls/Pílulas de status' (ex: "Buscando em Samael...") lidos pelo Flutter para diminuir a percepção da latência.
+### ADR-B7: Agentic RAG com Orquestrador Central e Limites de Sessão
+- **Decisão:** Orquestrador centralizado do LangGraph operando com 8 nós especializados e loops reflexivos controlados por limites estritos na sessão.
+- **Limites por Sessão:** Máximo de 7 chamadas ao Researcher (pesquisa + retries do Critique), máximo de 2 loops Critique → Orchestrator, máximo de 1 loop Judge → Orchestrator e no máximo 2 chamadas Ask User para evitar loops infinitos ou custos excessivos de API.
+- **Re-Ranking:** Para melhorar o recall sem sobrecarregar o prompt do Writer, recuperamos ~30 chunks e filtramos os top ~10 mais relevantes usando a **Vertex AI Ranking API** (Google Cloud), que tem faturamento unificado no GCP e metade do custo do Cohere Rerank.
+- **Reflexão (Critique/Judge):** O Critique avalia a relevância das fontes antes da redação. O Judge (Gemini 3.0 Flash Lite) faz uma auditoria rigorosa da resposta redigida pelo Writer (Gemini 3.0 Flash) para evitar alucinações e certificar as citações.
+- **Feedback Loop:** Em caso de ambiguidade, o orquestrador redireciona ao nó `Ask User` para coletar dados do usuário e retoma o grafo.
 
 ### ADR-B9: Persistência de Conversas — Schema Normalizado + Optimistic Write (2026-03-05)
 - **Decisão:** 3 tabelas normalizadas (`conversations` → `messages` → `citations`) no Supabase PostgreSQL com RLS cascadeado. Optimistic write path (ChatGPT-style).
@@ -230,15 +230,16 @@ FIXED:
   vector_db:     Qdrant Cloud
     collections:   gnosis_books (90 PDFs) + user_interests (interesses inferidos)
   embeddings:    Google gemini-embedding-001 (3072d → 768d via MRL)
-  llm_inference: Gemini 3.0 Flash Lite (Planner / Evaluator)
-  llm_synthesis: Gemini 3.0 Flash (Final Texto)
-  agentic_rag:   LangGraph com Self-Correction/Evaluator Loops
+  re_ranking:    Vertex AI Ranking API (Google Cloud)
+  llm_inference: Gemini 3.0 Flash Lite (Orchestrator, Critique, Judge, Recap, Direct Response)
+  llm_synthesis: Gemini 3.0 Flash (Writer / Resposta Final)
+  agentic_rag:   LangGraph com orquestração centralizada de 8 nós e loops reflexivos
   auth:          Supabase Auth
   db:            Supabase PostgreSQL
   payments:      Stripe
   deploy:        Railway
   rag_engine:    LlamaIndex
-  orchestrator:  LangGraph (grafo de orquestração; sem checkpointer de memória)
+  orchestrator:  LangGraph (com checkpointer PostgreSQL / PostgresSaver para HIL)
   logging:       LangSmith
 ```
 
@@ -481,29 +482,29 @@ flutter run
 - [ ] Testar ciclo completo: free → checkout → upgrade → webhook → plan atualizado
 
 ### Fase 4: Backend RAG Funcional 🧠
-> _⚠️ Custo começa aqui: Gemini 2.5 Flash pay-per-use (~$3–8/mês no MVP)._
+> _⚠️ Custo começa aqui: Gemini 3.0 Flash pay-per-use (~$3–8/mês no MVP)._
 - [ ] Criar collections no Qdrant: `gnosis_books` e `user_interests` (com schema de metadata)
 - [ ] Implementar `scripts/ingest.py` completo (pymupdf + OCR + embeddings → `gnosis_books`)
 - [ ] Ingerir os 90 PDFs (60 public + 30 chamber_2) com metadata tags
 - [ ] Configurar Supabase Storage (Bucket `gnosis-pdfs`) com políticas RLS (`chamber_level`)
 - [ ] Endpoint FastAPI para gerar Signed URLs e proteger acesso (`GET /api/v1/pdfs/{name}`)
-- [ ] Wiring do `retriever.py` (QdrantVectorStore + GeminiEmbedding — ambas as collections)
-- [ ] Implementar `router.py` (Query Router: Gemini Flash → RAG_BOOKS | RAG_USER | RAG_BOTH | DIRECT)
-- [ ] Implementar `synthesizer.py` (Gemini Flash + prompt de síntese + citações)
+- [ ] Configurar `PostgresSaver` conectando o checkpointer do LangGraph no Supabase PostgreSQL
+- [ ] Implementar os 8 nós do grafo de agentes (`app/agents/`) centrados no `Orchestrator`
+- [ ] Integrar a **Vertex AI Ranking API** para a etapa de Re-ranking no `Researcher`
 - [ ] Implementar `interest_tracker.py` (inferência de interesses + upsert + sliding window)
-- [ ] Wiring do `pipeline.py` (LangGraph StateGraph: router → retriever → synthesizer)
-- [ ] Testar RAG end-to-end via `POST /api/v1/conversations/{id}/ask`
-- [ ] Configurar LangSmith (observabilidade do grafo + Query Router)
+- [ ] Configurar LangSmith (observabilidade do grafo + transições de nós)
+- [ ] Testar RAG end-to-end via `POST /api/v1/conversations/{id}/ask` com shell client
 
 ### Fase 5: Mobile — Integração Chat + Streaming 📡
-> _Conecta o Flutter ao backend RAG real._
+> _Conecta o Flutter ao backend RAG real via SSE._
 - [ ] Wiring do `chat_remote_source.dart` → `POST /api/v1/conversations/{id}/ask`
-- [ ] Adicionar streaming de resposta (Server-Sent Events ou WebSocket)
+- [ ] Adicionar consumo de streaming de resposta via **Server-Sent Events (SSE)**
+- [ ] Tratar os eventos `status` (pílulas de status dos agentes), `token` (palavras geradas) e `final` (citações e recap)
 - [ ] Exibir citações de PDF na UI do chat como cards ou chips interativos
 - [ ] Implementar Modal/Pop-up com Leitor de PDF interno (`syncfusion_flutter_pdfviewer` ou `pdfrx`). O modal carrega PDF on-demand via Signed URL e faz `jumpToPage` direto para a citação.
 - [ ] **Pull-to-refresh** — `RefreshIndicator` no chat para re-fetch de mensagens
 - [ ] Remover o mock de 3 mensagens "⚠️ Limite atingido · [✨ Fazer Upgrade]" (para que dependa de quotas reais)
-- [ ] Testar chat end-to-end Flutter ↔ FastAPI ↔ RAG
+- [ ] Testar chat end-to-end Flutter ↔ FastAPI ↔ RAG via SSE e HIL (Human-in-the-Loop)
 
 ### Fase 6: Segunda Câmara + Personalização RAG 🔒
 - [ ] Validar filtro de `chamber_level` no RAG end-to-end

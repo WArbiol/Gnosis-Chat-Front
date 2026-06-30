@@ -1,6 +1,6 @@
 # Gnosis Chat (Frontend)
 
-> Intelligent chat interface based on RAG over 90 gnostic PDFs — iOS, Android & Web.
+> Intelligent chat interface based on RAG over 150 gnostic PDFs — iOS, Android & Web.
 
 This repository contains the frontend client code built with Flutter.
 

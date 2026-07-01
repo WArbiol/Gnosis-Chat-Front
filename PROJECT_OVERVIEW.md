@@ -115,7 +115,7 @@ QUERY (online, por mensagem do usuário):
 | **Orquestrador** | LangGraph | latest stable | $0 |
 | **RAG Engine** | LlamaIndex | latest stable | $0 |
 | **Vector DB** | Qdrant Cloud | Free tier (1GB) | $0 |
-| **Embeddings** | Google gemini-embedding-001 | Free tier AI Studio | $0 |
+| **Embeddings** | Google gemini-embedding-2-preview | Free tier AI Studio | $0 |
 | **LLM (Internal)** | Gemini 3.0 Flash Lite | Pay-per-use (ultra baixo) | ~$1 |
 | **LLM (Output)**| Gemini 3.0 Flash | Pay-per-use | ~$3–8 |
 | **Auth** | Supabase Auth | Free tier | $0 |
@@ -135,9 +135,9 @@ QUERY (online, por mensagem do usuário):
 - **Justificativa:** Payload filtering nativo — busca vetorial com filtro de `chamber_level` acontece *antes* do HNSW scan, sem post-processing SQL. Latência <50ms vs ~200ms do pgvector para 270k vetores.
 - **Alternativa rejeitada:** pgvector/Supabase — funcional, mas query híbrida SQL+vetor é mais lenta e o filtro de acesso é implementado em SQL WHERE, não no índice vetorial.
 
-### ADR-B2: Google gemini-embedding-001 (gratuito) — Atualizado 2026-07-01
-- **Decisão:** gemini-embedding-001 (768d padrão) sobre text-embedding-004 (descontinuado) e OpenAI text-embedding-3-small (1536d)
-- **Justificativa:** É o modelo de embedding unificado atual do Google Gemini para texto. Ele gera vetores de 768 dimensões por padrão, sendo compatível com a coleção do Qdrant e entregando precisão semântica de ponta.
+### ADR-B2: Google gemini-embedding-2-preview (gratuito) — Atualizado 2026-07-01
+- **Decisão:** gemini-embedding-2-preview (768d padrão) sobre gemini-embedding-001 e OpenAI text-embedding-3-small (1536d)
+- **Justificativa:** É o modelo de embedding multimodal mais recente do ecossistema do Google Gemini. Ele gera vetores de 768 dimensões por padrão (compatível com a nossa coleção do Qdrant), suporta um context window estendido de 8.192 tokens e é otimizado para tarefas de RAG de alta precisão.
 - **Trade-off aceito:** 768d é a dimensão padrão perfeita e está alinhado de ponta a ponta no backend e no ingestor.
 
 ### ADR-B3: Supabase Auth (não Firebase)
@@ -229,7 +229,7 @@ FIXED:
   backend:       FastAPI (Python 3.12)
   vector_db:     Qdrant Cloud
     collections:   gnosis_books (90 PDFs) + user_interests (interesses inferidos)
-  embeddings:    Google gemini-embedding-001 (768d)
+  embeddings:    Google gemini-embedding-2-preview (768d)
   re_ranking:    Vertex AI Ranking API (Google Cloud)
   llm_inference: Gemini 3.0 Flash Lite (Orchestrator, Critique, Judge, Recap, Direct Response)
   llm_synthesis: Gemini 3.0 Flash (Writer / Resposta Final)

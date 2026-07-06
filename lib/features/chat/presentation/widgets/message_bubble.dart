@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
@@ -103,9 +104,28 @@ class MessageBubble extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SelectableText(
-          message.content,
-          style: TextStyle(color: textColor, height: 1.5),
+        MarkdownBody(
+          data: message.content,
+          selectable: true,
+          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+            p: TextStyle(color: textColor, fontSize: 15, height: 1.5),
+            blockquote: TextStyle(
+              color: textColor.withValues(alpha: 0.8),
+              fontStyle: FontStyle.italic,
+              fontSize: 14,
+            ),
+            blockquoteDecoration: BoxDecoration(
+              color: AppColors.surfaceVariant.withValues(alpha: 0.25),
+              border: Border(
+                left: BorderSide(
+                  color: AppColors.accent.withValues(alpha: 0.5),
+                  width: 3,
+                ),
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            blockquotePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
         ),
         if (message.citations.isNotEmpty) ...[
           const SizedBox(height: 8),

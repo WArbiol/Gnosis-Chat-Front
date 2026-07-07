@@ -147,24 +147,173 @@ class _CitationChip extends StatelessWidget {
 
   final CitationEntity citation;
 
+  void _showCitationSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _CitationBottomSheet(citation: citation),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => _showCitationSheet(context),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: AppColors.surfaceVariant.withValues(alpha: 0.6),
+          border: Border.all(
+            color: AppColors.accent.withValues(alpha: 0.2),
+            width: 0.5,
+          ),
+        ),
+        child: Text(
+          '${citation.pdfName} p.${citation.page}',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: AppColors.accentLight,
+            letterSpacing: 0.3,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CitationBottomSheet extends StatelessWidget {
+  const _CitationBottomSheet({required this.citation});
+
+  final CitationEntity citation;
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 36),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: AppColors.surfaceVariant.withValues(alpha: 0.6),
-        border: Border.all(
-          color: AppColors.accent.withValues(alpha: 0.2),
-          width: 0.5,
+        color: AppColors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(
+          top: BorderSide(
+            color: AppColors.accent.withValues(alpha: 0.2),
+            width: 1,
+          ),
         ),
       ),
-      child: Text(
-        '${citation.pdfName} p.${citation.page}',
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: AppColors.accentLight,
-          letterSpacing: 0.3,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: AppColors.onSurfaceVariant.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.menu_book_rounded,
+                color: AppColors.accent,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  citation.pdfName,
+                  style: const TextStyle(
+                    color: AppColors.onSurface,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Página ${citation.page}',
+            style: const TextStyle(
+              color: AppColors.accentLight,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * 0.3,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: const Border(
+                left: BorderSide(
+                  color: AppColors.accent,
+                  width: 3,
+                ),
+              ),
+            ),
+            child: SingleChildScrollView(
+              child: SelectableText(
+                citation.snippet.isNotEmpty ? '“${citation.snippet}”' : 'Trecho não disponível.',
+                style: const TextStyle(
+                  color: AppColors.onSurface,
+                  fontSize: 15,
+                  fontStyle: FontStyle.italic,
+                  height: 1.6,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          if (citation.snippet.isNotEmpty)
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: citation.snippet));
+                  HapticFeedback.lightImpact();
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Trecho copiado para a área de transferência!'),
+                      duration: Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                  foregroundColor: AppColors.accentLight,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: AppColors.accent.withValues(alpha: 0.3),
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.copy_all_rounded, size: 18),
+                label: const Text(
+                  'Copiar Trecho',
+                  style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.3),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

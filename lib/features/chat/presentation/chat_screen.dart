@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
+import 'package:gnosis_chat/features/auth/domain/user_entity.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/message_bubble.dart';
@@ -114,81 +115,91 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                   // Custom premium AppBar
                   _PremiumAppBar(
                     glowAnim: _glowAnim,
-                    avatarUrl: user?.avatarUrl,
+                    user: user,
                     onMenuTap: widget.onMenuTap,
                     onProfileTap: widget.onProfileTap,
                   ),
 
                   // Chat body
                   Expanded(
-                    child: chatState.when(
-                      data: (messages) {
-                        if (messages.isEmpty) {
-                          return _EmptyState(glowAnim: _glowAnim);
-                        }
-
-                        final isLoading = ref.watch(isLoadingProvider);
-                        final itemCount =
-                            messages.length +
-                            (isLoading ? 1 : 0) +
-                            (maxReached ? 1 : 0);
-
-                        return ListView.builder(
-                          controller: _scrollCtrl,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          itemCount: itemCount,
-                          itemBuilder: (context, index) {
-                            // Absolute last item -> Banner, if limit reached
-                            if (maxReached && index == itemCount - 1) {
-                              return Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 8,
-                                  bottom: 24,
-                                ),
-                                child: InlineCtaBanner(
-                                  onUpgradeTap: () =>
-                                      context.push('/subscription'),
-                                ),
-                              );
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 850),
+                        child: chatState.when(
+                          data: (messages) {
+                            if (messages.isEmpty) {
+                              return _EmptyState(glowAnim: _glowAnim);
                             }
 
-                            // Typing indicator
-                            if (isLoading && index == messages.length) {
-                              return const Padding(
-                                padding: EdgeInsets.only(top: 4),
-                                child: TypingIndicator(),
-                              );
-                            }
+                            final isLoading = ref.watch(isLoadingProvider);
+                            final itemCount =
+                                messages.length +
+                                (isLoading ? 1 : 0) +
+                                (maxReached ? 1 : 0);
 
-                            final msg = messages[index];
-                            final isNew = !_knownMessageIds.contains(msg.id);
-                            if (isNew) _knownMessageIds.add(msg.id);
+                            return ListView.builder(
+                              controller: _scrollCtrl,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              itemCount: itemCount,
+                              itemBuilder: (context, index) {
+                                // Absolute last item -> Banner, if limit reached
+                                if (maxReached && index == itemCount - 1) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 8,
+                                      bottom: 24,
+                                    ),
+                                    child: InlineCtaBanner(
+                                      onUpgradeTap: () =>
+                                          context.push('/subscription'),
+                                    ),
+                                  );
+                                }
 
-                            return _AnimatedMessage(
-                              key: ValueKey(msg.id),
-                              animate: isNew,
-                              child: MessageBubble(message: msg),
+                                // Typing indicator
+                                if (isLoading && index == messages.length) {
+                                  return const Padding(
+                                    padding: EdgeInsets.only(top: 4),
+                                    child: TypingIndicator(),
+                                  );
+                                }
+
+                                final msg = messages[index];
+                                final isNew = !_knownMessageIds.contains(msg.id);
+                                if (isNew) _knownMessageIds.add(msg.id);
+
+                                return _AnimatedMessage(
+                                  key: ValueKey(msg.id),
+                                  animate: isNew,
+                                  child: MessageBubble(message: msg),
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                      loading: () => const LoadingOverlay(),
-                      error: (e, _) => ErrorView(
-                        message: e.toString(),
-                        onRetry: () => ref.invalidate(chatProvider),
+                          loading: () => const LoadingOverlay(),
+                          error: (e, _) => ErrorView(
+                            message: e.toString(),
+                            onRetry: () => ref.invalidate(chatProvider),
+                          ),
+                        ),
                       ),
                     ),
                   ),
 
                   // Premium input bar
                   if (!maxReached)
-                    _GlassInputBar(
-                      controller: _queryCtrl,
-                      hasText: _queryCtrl.text.trim().isNotEmpty,
-                      onSend: _sendMessage,
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 850),
+                        child: _GlassInputBar(
+                          controller: _queryCtrl,
+                          hasText: _queryCtrl.text.trim().isNotEmpty,
+                          onSend: _sendMessage,
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -261,20 +272,48 @@ class _AnimatedMessageState extends State<_AnimatedMessage>
 class _PremiumAppBar extends StatelessWidget {
   const _PremiumAppBar({
     required this.glowAnim,
-    this.avatarUrl,
+    this.user,
     this.onMenuTap,
     this.onProfileTap,
   });
 
   final Animation<double> glowAnim;
-  final String? avatarUrl;
+  final UserEntity? user;
   final VoidCallback? onMenuTap;
   final VoidCallback? onProfileTap;
+
+  Widget _buildFallbackAvatar(String? email, double size, double fontSize) {
+    final initial = (email != null && email.isNotEmpty) ? email[0].toUpperCase() : '?';
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [
+            AppColors.accent,
+            AppColors.accentLight,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: fontSize,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           // Sidebar / conversations icon
@@ -325,9 +364,9 @@ class _PremiumAppBar extends StatelessWidget {
                 color: AppColors.surfaceVariant,
               ),
               child: ClipOval(
-                child: avatarUrl != null && avatarUrl!.isNotEmpty
+                child: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
                     ? Image.network(
-                        avatarUrl!,
+                        user!.avatarUrl!,
                         headers: kIsWeb
                             ? null
                             : const {
@@ -339,18 +378,10 @@ class _PremiumAppBar extends StatelessWidget {
                           debugPrint(
                             'DEBUG IMAGE: Failed to load avatar: $error',
                           );
-                          return const Icon(
-                            Icons.person_rounded,
-                            size: 18,
-                            color: AppColors.onSurfaceVariant,
-                          );
+                          return _buildFallbackAvatar(user?.email, 32, 14);
                         },
                       )
-                    : const Icon(
-                        Icons.person_rounded,
-                        size: 18,
-                        color: AppColors.onSurfaceVariant,
-                      ),
+                    : _buildFallbackAvatar(user?.email, 32, 14),
               ),
             ),
             tooltip: 'Perfil',

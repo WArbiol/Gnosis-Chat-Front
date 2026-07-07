@@ -12,6 +12,34 @@ import 'package:gnosis_chat/shared/providers/user_provider.dart';
 class ProfileBottomSheet extends ConsumerWidget {
   const ProfileBottomSheet({super.key});
 
+  Widget _buildFallbackAvatar(String? email, double size, double fontSize) {
+    final initial = (email != null && email.isNotEmpty) ? email[0].toUpperCase() : '?';
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [
+            AppColors.accent,
+            AppColors.accentLight,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: fontSize,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
@@ -62,11 +90,7 @@ class ProfileBottomSheet extends ConsumerWidget {
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: user?.avatarUrl == null || user!.avatarUrl!.isEmpty
-                    ? const Icon(
-                        Icons.person_rounded,
-                        size: 36,
-                        color: AppColors.onSurfaceVariant,
-                      )
+                    ? _buildFallbackAvatar(user?.email, 72, 28)
                     : Image.network(
                         user.avatarUrl!,
                         headers: kIsWeb
@@ -78,11 +102,7 @@ class ProfileBottomSheet extends ConsumerWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           debugPrint('Avatar Load Error: $error');
-                          return const Icon(
-                            Icons.person_rounded,
-                            size: 36,
-                            color: AppColors.onSurfaceVariant,
-                          );
+                          return _buildFallbackAvatar(user.email, 72, 28);
                         },
                       ),
               ),

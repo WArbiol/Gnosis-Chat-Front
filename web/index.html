@@ -31,6 +31,12 @@
 
   <title>gnosis_chat</title>
   <link rel="manifest" href="manifest.json">
+  
+  <!-- Scripts do pdf.js exigidos pelo Syncfusion PDF Viewer para rodar na Web -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+  <script type="text/javascript">
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js";
+  </script>
 </head>
 <body>
   <!--

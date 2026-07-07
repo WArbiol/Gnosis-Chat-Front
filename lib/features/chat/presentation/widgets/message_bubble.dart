@@ -3,9 +3,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:dio/dio.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
+import 'package:gnosis_chat/services/api/api_client.dart';
 
 class MessageBubble extends StatelessWidget {
   const MessageBubble({super.key, required this.message});
@@ -25,7 +29,8 @@ class MessageBubble extends StatelessWidget {
         alignment: _isUser ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.sizeOf(context).width * 0.78,
+            maxWidth:
+                (MediaQuery.sizeOf(context).width * 0.78).clamp(0.0, 660.0),
           ),
           margin: const EdgeInsets.symmetric(vertical: 4),
           child: _isUser ? _userBubble(context) : _aiBubble(context),
@@ -183,10 +188,83 @@ class _CitationChip extends StatelessWidget {
   }
 }
 
-class _CitationBottomSheet extends StatelessWidget {
+class _CitationBottomSheet extends ConsumerStatefulWidget {
   const _CitationBottomSheet({required this.citation});
 
   final CitationEntity citation;
+
+  @override
+  ConsumerState<_CitationBottomSheet> createState() => _CitationBottomSheetState();
+}
+
+class _CitationBottomSheetState extends ConsumerState<_CitationBottomSheet> {
+  bool _isLoading = false;
+
+  Future<void> _openPdf() async {
+    setState(() {
+      _isLoading = true;
+    });
+    HapticFeedback.lightImpact();
+
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      final response = await apiClient.dio.get(
+        '/pdfs/url',
+        queryParameters: {'book_name': widget.citation.pdfName},
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final url = data['url'] as String;
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        Navigator.of(context).pop(); // close sheet
+
+        context.pushNamed(
+          'pdf-viewer',
+          extra: {
+            'url': url,
+            'bookName': widget.citation.pdfName,
+            'page': widget.citation.page,
+          },
+        );
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        String errorMsg = 'Erro ao carregar o PDF. Tente novamente.';
+        if (e.response?.statusCode == 404) {
+          errorMsg = 'PDF ainda não disponível para este livro.';
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro inesperado: $e'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +306,7 @@ class _CitationBottomSheet extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  citation.pdfName,
+                  widget.citation.pdfName,
                   style: const TextStyle(
                     color: AppColors.onSurface,
                     fontSize: 16,
@@ -240,7 +318,7 @@ class _CitationBottomSheet extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Página ${citation.page}',
+            'Página ${widget.citation.page}',
             style: const TextStyle(
               color: AppColors.accentLight,
               fontSize: 14,
@@ -266,7 +344,7 @@ class _CitationBottomSheet extends StatelessWidget {
             ),
             child: SingleChildScrollView(
               child: SelectableText(
-                citation.snippet.isNotEmpty ? '“${citation.snippet}”' : 'Trecho não disponível.',
+                widget.citation.snippet.isNotEmpty ? '“${widget.citation.snippet}”' : 'Trecho não disponível.',
                 style: const TextStyle(
                   color: AppColors.onSurface,
                   fontSize: 15,
@@ -277,13 +355,46 @@ class _CitationBottomSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          if (citation.snippet.isNotEmpty)
+          Row(
+            children: [
+              Expanded(
+                child: _isLoading
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                          ),
+                        ),
+                      )
+                    : ElevatedButton.icon(
+                        onPressed: _openPdf,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent,
+                          foregroundColor: AppColors.background,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.menu_book_rounded, size: 20),
+                        label: const Text(
+                          'Abrir na Página',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
+                      ),
+              ),
+            ],
+          ),
+          if (widget.citation.snippet.isNotEmpty) ...[
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Clipboard.setData(ClipboardData(text: citation.snippet));
+                  Clipboard.setData(ClipboardData(text: widget.citation.snippet));
                   HapticFeedback.lightImpact();
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -313,11 +424,13 @@ class _CitationBottomSheet extends StatelessWidget {
                 ),
               ),
             ),
+          ],
         ],
       ),
     );
   }
 }
+
 
 // ---------------------------------------------------------------------------
 // Long press context menu

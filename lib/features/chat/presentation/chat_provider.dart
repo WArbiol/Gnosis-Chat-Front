@@ -67,8 +67,9 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
       final nextMessages = [...currentMessages, userMsg, aiMessage];
       state = AsyncValue.data(nextMessages);
       convNotifier.syncMessages(nextMessages);
-    } catch (e) {
-      // Handle error natively (e.g rollback optimistic message)
+    } catch (e, stack) {
+      debugPrint('CHAT: Error sending message: $e');
+      debugPrint('$stack');
     } finally {
       // Hide typing indicator
       _loadingCtrl?.state = false;

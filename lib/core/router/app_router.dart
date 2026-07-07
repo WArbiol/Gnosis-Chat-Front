@@ -5,6 +5,7 @@ import 'package:gnosis_chat/features/auth/presentation/login_screen.dart';
 import 'package:gnosis_chat/features/auth/presentation/splash_screen.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_shell.dart';
 import 'package:gnosis_chat/features/subscription/presentation/subscription_screen.dart';
+import 'package:gnosis_chat/features/chat/presentation/pdf_viewer_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/splash',
@@ -28,6 +29,21 @@ final GoRouter appRouter = GoRouter(
       path: '/subscription',
       name: 'subscription',
       builder: (context, state) => const SubscriptionScreen(),
+    ),
+    GoRoute(
+      path: '/pdf-viewer',
+      name: 'pdf-viewer',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>? ?? {};
+        final url = extra['url'] as String? ?? '';
+        final bookName = extra['bookName'] as String? ?? '';
+        final initialPage = extra['page'] as int? ?? 1;
+        return PdfViewerScreen(
+          url: url,
+          bookName: bookName,
+          initialPage: initialPage,
+        );
+      },
     ),
   ],
   redirect: (context, state) {

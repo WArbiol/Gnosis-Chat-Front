@@ -1,9 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
-import 'package:gnosis_chat/features/auth/domain/user_entity.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/message_bubble.dart';
@@ -15,6 +13,10 @@ import 'package:gnosis_chat/features/chat/presentation/widgets/inline_cta_banner
 import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/utils/extensions.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/animated_message.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/empty_state.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/glass_input_bar.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/premium_app_bar.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, this.onMenuTap, this.onProfileTap});
@@ -118,7 +120,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
+            child: const Text(
               'Cancelar',
               style: TextStyle(color: AppColors.onSurfaceVariant),
             ),
@@ -188,7 +190,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
               child: Column(
                 children: [
                   // Custom premium AppBar
-                  _PremiumAppBar(
+                  PremiumAppBar(
                     glowAnim: _glowAnim,
                     user: user,
                     onMenuTap: widget.onMenuTap,
@@ -203,7 +205,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                         child: chatState.when(
                           data: (messages) {
                             if (messages.isEmpty) {
-                              return _EmptyState(glowAnim: _glowAnim);
+                              return EmptyState(glowAnim: _glowAnim);
                             }
 
                             final isLoading = ref.watch(isLoadingProvider);
@@ -246,7 +248,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 final isNew = !_knownMessageIds.contains(msg.id);
                                 if (isNew) _knownMessageIds.add(msg.id);
 
-                                return _AnimatedMessage(
+                                return AnimatedMessage(
                                   key: ValueKey(msg.id),
                                   animate: isNew,
                                   child: MessageBubble(message: msg),
@@ -269,7 +271,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                     Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 850),
-                        child: _GlassInputBar(
+                        child: GlassInputBar(
                           controller: _queryCtrl,
                           hasText: _queryCtrl.text.trim().isNotEmpty,
                           onSend: _sendMessage,
@@ -280,409 +282,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Animated message entrance — fade + slide up
-// ---------------------------------------------------------------------------
-class _AnimatedMessage extends StatefulWidget {
-  const _AnimatedMessage({
-    super.key,
-    required this.animate,
-    required this.child,
-  });
-
-  final bool animate;
-  final Widget child;
-
-  @override
-  State<_AnimatedMessage> createState() => _AnimatedMessageState();
-}
-
-class _AnimatedMessageState extends State<_AnimatedMessage>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-  late final Animation<double> _fadeAnim;
-  late final Animation<Offset> _slideAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-      value: widget.animate ? 0 : 1,
-    );
-    _fadeAnim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.15),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
-
-    if (widget.animate) _ctrl.forward();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnim,
-      child: SlideTransition(position: _slideAnim, child: widget.child),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Custom transparent AppBar
-// ---------------------------------------------------------------------------
-class _PremiumAppBar extends StatelessWidget {
-  const _PremiumAppBar({
-    required this.glowAnim,
-    this.user,
-    this.onMenuTap,
-    this.onProfileTap,
-  });
-
-  final Animation<double> glowAnim;
-  final UserEntity? user;
-  final VoidCallback? onMenuTap;
-  final VoidCallback? onProfileTap;
-
-  Widget _buildFallbackAvatar(String? email, double size, double fontSize) {
-    final initial = (email != null && email.isNotEmpty) ? email[0].toUpperCase() : '?';
-    return Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [
-            AppColors.accent,
-            AppColors.accentLight,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        initial,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: fontSize,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          // Sidebar / conversations icon
-          IconButton(
-            onPressed: onMenuTap,
-            icon: const Icon(Icons.menu_rounded),
-            tooltip: 'Conversas',
-            iconSize: 24,
-            style: IconButton.styleFrom(
-              foregroundColor: AppColors.onSurface,
-              fixedSize: const Size(48, 48),
-            ),
-          ),
-
-          const Spacer(),
-
-          // Gold gradient title
-          ShaderMask(
-            shaderCallback: (bounds) => const LinearGradient(
-              colors: [AppColors.accent, AppColors.accentLight],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ).createShader(bounds),
-            child: Text(
-              'Gnosis',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                letterSpacing: 1.5,
-              ),
-            ),
-          ),
-
-          const Spacer(),
-
-          // Profile avatar
-          IconButton(
-            onPressed: onProfileTap,
-            icon: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.accent.withValues(alpha: 0.4),
-                  width: 1.5,
-                ),
-                color: AppColors.surfaceVariant,
-              ),
-              child: ClipOval(
-                child: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
-                    ? Image.network(
-                        user!.avatarUrl!,
-                        headers: kIsWeb
-                            ? null
-                            : const {
-                                'User-Agent':
-                                    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                              },
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          debugPrint(
-                            'DEBUG IMAGE: Failed to load avatar: $error',
-                          );
-                          return _buildFallbackAvatar(user?.email, 32, 14);
-                        },
-                      )
-                    : _buildFallbackAvatar(user?.email, 32, 14),
-              ),
-            ),
-            tooltip: 'Perfil',
-            style: IconButton.styleFrom(fixedSize: const Size(48, 48)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Empty state — logo with glow + welcome text
-// ---------------------------------------------------------------------------
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.glowAnim});
-
-  final Animation<double> glowAnim;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo with animated glow
-            AnimatedBuilder(
-              animation: glowAnim,
-              builder: (context, child) {
-                return Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.accent.withValues(
-                          alpha: glowAnim.value * 0.4,
-                        ),
-                        blurRadius: 60,
-                        spreadRadius: 20,
-                      ),
-                      BoxShadow(
-                        color: AppColors.primary.withValues(
-                          alpha: glowAnim.value * 0.2,
-                        ),
-                        blurRadius: 80,
-                        spreadRadius: 10,
-                      ),
-                    ],
-                  ),
-                  child: child,
-                );
-              },
-              child: Image.asset(
-                'assets/images/logo.png',
-                width: 120,
-                height: 120,
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Welcome text with gold gradient
-            ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: [AppColors.accent, AppColors.accentLight],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ).createShader(bounds),
-              child: Text(
-                'Pergunte ao Gnosis...',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            Text(
-              'Conhecimento sagrado ao seu alcance',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.onSurfaceVariant,
-                letterSpacing: 0.3,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Glassmorphism input bar
-// ---------------------------------------------------------------------------
-class _GlassInputBar extends StatefulWidget {
-  const _GlassInputBar({
-    required this.controller,
-    required this.hasText,
-    required this.onSend,
-  });
-
-  final TextEditingController controller;
-  final bool hasText;
-  final VoidCallback onSend;
-
-  @override
-  State<_GlassInputBar> createState() => _GlassInputBarState();
-}
-
-class _GlassInputBarState extends State<_GlassInputBar> {
-  final _focusNode = FocusNode();
-  bool _hasFocus = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode.addListener(() {
-      setState(() => _hasFocus = _focusNode.hasFocus);
-    });
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(26),
-            color: AppColors.surfaceVariant.withValues(alpha: 0.55),
-            border: Border.all(
-              color: _hasFocus
-                  ? AppColors.accent.withValues(alpha: 0.45)
-                  : Colors.white.withValues(alpha: 0.08),
-              width: _hasFocus ? 1.5 : 1,
-            ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Theme(
-                  data: Theme.of(context).copyWith(
-                    inputDecorationTheme: const InputDecorationTheme(),
-                  ),
-                  child: TextField(
-                    controller: widget.controller,
-                    focusNode: _focusNode,
-                    minLines: 1,
-                    maxLines: 5,
-                    textInputAction: TextInputAction.newline,
-                    style: const TextStyle(
-                      color: AppColors.onSurface,
-                      fontSize: 15,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Pergunte ao Gnosis...',
-                      hintStyle: TextStyle(
-                        color: AppColors.onSurfaceVariant.withValues(
-                          alpha: 0.5,
-                        ),
-                        fontSize: 15,
-                      ),
-                      filled: false,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Send button
-              AnimatedScale(
-                scale: widget.hasText ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOut,
-                child: AnimatedOpacity(
-                  opacity: widget.hasText ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [AppColors.accent, AppColors.accentLight],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: widget.onSend,
-                        borderRadius: BorderRadius.circular(18),
-                        child: const Icon(
-                          Icons.arrow_upward_rounded,
-                          color: AppColors.background,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

@@ -44,10 +44,18 @@ class ConversationRemoteSource {
     return ConversationEntity.fromJson(response.data);
   }
 
-  Future<MessageEntity> sendMessage(String conversationId, String query) async {
+  Future<MessageEntity> sendMessage(
+    String conversationId,
+    String query, {
+    Map<String, dynamic>? uiFilters,
+  }) async {
     final response = await _dio.post(
       'chat/ask',
-      data: {'conversation_id': conversationId, 'query': query},
+      data: {
+        'conversation_id': conversationId,
+        'query': query,
+        'ui_filters': uiFilters,
+      },
       options: Options(
         responseType: ResponseType.plain,
         receiveTimeout: const Duration(minutes: 5),
@@ -124,5 +132,11 @@ class ConversationRemoteSource {
       citations: citations,
       route: finalData['route'] ?? 'RAG',
     );
+  }
+
+  Future<List<Map<String, dynamic>>> getPdfCatalog() async {
+    final response = await _dio.get('pdfs/catalog');
+    final data = response.data as List;
+    return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
 }

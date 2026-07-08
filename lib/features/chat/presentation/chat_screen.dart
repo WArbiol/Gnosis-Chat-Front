@@ -14,6 +14,7 @@ import 'package:gnosis_chat/shared/widgets/loading_overlay.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/inline_cta_banner.dart';
 import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gnosis_chat/core/utils/extensions.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, this.onMenuTap, this.onProfileTap});
@@ -66,9 +67,83 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     final loadingCtrl = ref.read(isLoadingProvider.notifier);
     ref.read(chatProvider.notifier).setLoadingController(loadingCtrl);
 
-    await ref.read(chatProvider.notifier).ask(query);
-    HapticFeedback.mediumImpact();
-    _scrollToBottom();
+    try {
+      await ref.read(chatProvider.notifier).ask(query);
+      HapticFeedback.mediumImpact();
+      _scrollToBottom();
+    } catch (e) {
+      if (mounted) {
+        final errStr = e.toString();
+        if (errStr.contains('Você atingiu o limite') || errStr.contains('LIMIT_EXCEEDED') || errStr.contains('limite de 3 mensagens')) {
+          _showUpgradeDialog(context);
+        } else {
+          final cleanMsg = errStr.replaceAll('DioException:', '').trim();
+          context.showSnackBar(cleanMsg, isError: true);
+        }
+      }
+    }
+  }
+
+  void _showUpgradeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: AppColors.accent.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.star_rounded, color: AppColors.accent, size: 28),
+            const SizedBox(width: 8),
+            Text(
+              'Limite de Perguntas',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.onSurface,
+                  ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Você atingiu o limite de perguntas do plano gratuito. Faça o upgrade agora para continuar acessando o conhecimento sagrado sem limites!',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: AppColors.onSurfaceVariant),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.push('/subscription');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: AppColors.background,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+            child: const Text(
+              'Ver Planos',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _scrollToBottom() {

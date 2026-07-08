@@ -110,7 +110,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
           ],
         ),
         content: Text(
-          'Você atingiu o limite de perguntas do plano gratuito. Faça o upgrade agora para continuar acessando o conhecimento sagrado sem limites!',
+          'Você atingiu o limite de 3 perguntas do plano Gratuito. Faça o upgrade para continuar explorando o conhecimento gnóstico livremente.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.onSurfaceVariant,
               ),

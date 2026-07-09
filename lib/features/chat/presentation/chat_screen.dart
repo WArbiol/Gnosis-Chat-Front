@@ -165,13 +165,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     final chatState = ref.watch(chatProvider);
     final user = ref.watch(authProvider).whenOrNull(authenticated: (u) => u);
 
-    // Check limit
-    final userMessagesCount =
-        chatState.valueOrNull
-            ?.where((m) => m.role == MessageRole.user)
-            .length ??
-        0;
-    final maxReached = (user?.plan == 'free') && userMessagesCount >= 3;
+
 
     // Auto-scroll when messages update (streaming mock)
     ref.listen(chatProvider, (_, _) => _scrollToBottom());
@@ -211,8 +205,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                             final isLoading = ref.watch(isLoadingProvider);
                             final itemCount =
                                 messages.length +
-                                (isLoading ? 1 : 0) +
-                                (maxReached ? 1 : 0);
+                                (isLoading ? 1 : 0);
 
                             return ListView.builder(
                               controller: _scrollCtrl,
@@ -222,19 +215,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                               ),
                               itemCount: itemCount,
                               itemBuilder: (context, index) {
-                                // Absolute last item -> Banner, if limit reached
-                                if (maxReached && index == itemCount - 1) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 8,
-                                      bottom: 24,
-                                    ),
-                                    child: InlineCtaBanner(
-                                      onUpgradeTap: () =>
-                                          context.push('/subscription'),
-                                    ),
-                                  );
-                                }
 
                                 // Typing indicator
                                 if (isLoading && index == messages.length) {
@@ -267,17 +247,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                   ),
 
                   // Premium input bar
-                  if (!maxReached)
-                    Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 850),
-                        child: GlassInputBar(
-                          controller: _queryCtrl,
-                          hasText: _queryCtrl.text.trim().isNotEmpty,
-                          onSend: _sendMessage,
-                        ),
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 850),
+                      child: GlassInputBar(
+                        controller: _queryCtrl,
+                        hasText: _queryCtrl.text.trim().isNotEmpty,
+                        onSend: _sendMessage,
                       ),
                     ),
+                  ),
                 ],
               ),
             ),

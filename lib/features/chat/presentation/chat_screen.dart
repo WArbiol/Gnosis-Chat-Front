@@ -171,7 +171,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
             ?.where((m) => m.role == MessageRole.user)
             .length ??
         0;
-    final maxReached = userMessagesCount >= 3;
+    final maxReached = (user?.plan == 'free') && userMessagesCount >= 3;
 
     // Auto-scroll when messages update (streaming mock)
     ref.listen(chatProvider, (_, _) => _scrollToBottom());

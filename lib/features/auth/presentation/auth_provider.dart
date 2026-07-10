@@ -5,6 +5,7 @@ import 'package:gnosis_chat/features/auth/data/auth_remote_source.dart';
 import 'package:gnosis_chat/features/auth/data/auth_repository.dart';
 import 'package:gnosis_chat/features/auth/domain/auth_state.dart' as app;
 import 'package:gnosis_chat/features/auth/domain/social_provider.dart';
+import 'package:gnosis_chat/features/auth/domain/user_entity.dart';
 import 'package:gnosis_chat/features/chat/presentation/conversation_provider.dart';
 import 'package:gnosis_chat/services/api/api_client.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
@@ -110,19 +111,36 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
     state = const app.AuthState.unauthenticated();
   }
 
-  void unlockSecondChamber() {
-    state.maybeWhen(
-      authenticated: (user) {
-        state = app.AuthState.authenticated(user.copyWith(chamberLevel: 2));
+  Future<String?> unlockSecondChamber(String passcode) async {
+    return state.maybeWhen(
+      authenticated: (user) async {
+        try {
+          final result = await _repo.verifySecondChamber(passcode);
+          if (result['valid'] == true) {
+            final updatedUser = UserEntity.fromJson(result['user'] as Map<String, dynamic>);
+            state = app.AuthState.authenticated(updatedUser);
+            return null; // Success
+          } else {
+            return result['reason'] as String? ?? 'Passe incorreto. Tente novamente.';
+          }
+        } catch (e) {
+          debugPrint('AUTH: Error unlocking second chamber: $e');
+          return 'Erro de conexão. Tente novamente mais tarde.';
+        }
       },
-      orElse: () {},
+      orElse: () async => 'Usuário não autenticado.',
     );
   }
 
-  void revertToFirstChamber() {
+  Future<void> revertToFirstChamber() async {
     state.maybeWhen(
-      authenticated: (user) {
-        state = app.AuthState.authenticated(user.copyWith(chamberLevel: 1));
+      authenticated: (user) async {
+        try {
+          final updatedUser = await _repo.updateProfile(chamberLevel: 1);
+          state = app.AuthState.authenticated(updatedUser);
+        } catch (e) {
+          debugPrint('AUTH: Error reverting to first chamber: $e');
+        }
       },
       orElse: () {},
     );

@@ -46,4 +46,28 @@ class AuthMockSource implements AuthRepository {
   Future<UserEntity?> getCurrentUser() async {
     return _currentUser;
   }
+
+  @override
+  Future<UserEntity> updateProfile({int? chamberLevel}) async {
+    if (_currentUser == null) throw Exception('Mock user not logged in');
+    _currentUser = _currentUser!.copyWith(
+      chamberLevel: chamberLevel ?? _currentUser!.chamberLevel,
+    );
+    return _currentUser!;
+  }
+
+  @override
+  Future<Map<String, dynamic>> verifySecondChamber(String passcode) async {
+    if (_currentUser == null) throw Exception('Mock user not logged in');
+    final cleaned = passcode.toLowerCase().trim();
+    final isValid = cleaned.contains('paz') || cleaned.contains('pas') || cleaned.contains('pax');
+    if (isValid) {
+      _currentUser = _currentUser!.copyWith(chamberLevel: 2);
+    }
+    return {
+      'valid': isValid,
+      'reason': isValid ? 'Sucesso' : 'Passe incorreto.',
+      'user': _currentUser!.toJson(),
+    };
+  }
 }

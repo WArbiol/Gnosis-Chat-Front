@@ -89,4 +89,27 @@ class AuthRemoteSource implements AuthRepository {
       );
     }
   }
+
+  @override
+  Future<UserEntity> updateProfile({int? chamberLevel}) async {
+    final response = await _dio.patch(
+      'auth/me',
+      data: {
+        'chamber_level': chamberLevel,
+      }..removeWhere((k, v) => v == null),
+    );
+    return UserEntity.fromJson(response.data);
+  }
+
+  @override
+  Future<Map<String, dynamic>> verifySecondChamber(String passcode) async {
+    final response = await _dio.post(
+      'auth/second-chamber/verify',
+      data: {
+        'passcode': passcode,
+      },
+    );
+    // Returns {"valid": true, "reason": "...", "user": ...}
+    return Map<String, dynamic>.from(response.data);
+  }
 }

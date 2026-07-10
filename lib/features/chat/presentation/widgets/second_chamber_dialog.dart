@@ -26,8 +26,7 @@ class _SecondChamberDialogState extends ConsumerState<SecondChamberDialog> {
   final _passCtrl = TextEditingController();
   String? _error;
   bool _isObscured = true;
-
-  static const _correctPass = '12345';
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -35,7 +34,7 @@ class _SecondChamberDialogState extends ConsumerState<SecondChamberDialog> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final input = _passCtrl.text.trim();
 
     if (input.isEmpty) {
@@ -43,15 +42,27 @@ class _SecondChamberDialogState extends ConsumerState<SecondChamberDialog> {
       return;
     }
 
-    if (input != _correctPass) {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    final errorMsg = await ref.read(authProvider.notifier).unlockSecondChamber(input);
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (errorMsg != null) {
       HapticFeedback.heavyImpact();
-      setState(() => _error = 'Passe incorreto. Tente novamente.');
+      setState(() => _error = errorMsg);
       return;
     }
 
     // Correct!
     HapticFeedback.mediumImpact();
-    ref.read(authProvider.notifier).unlockSecondChamber();
     Navigator.of(context).pop(true);
   }
 
@@ -136,10 +147,11 @@ class _SecondChamberDialogState extends ConsumerState<SecondChamberDialog> {
                 // Input field
                 TextField(
                   controller: _passCtrl,
+                  enabled: !_isLoading,
                   obscureText: _isObscured,
                   autofocus: true,
                   textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => _submit(),
+                  onSubmitted: (_) => _isLoading ? null : _submit(),
                   style: const TextStyle(
                     color: AppColors.onSurface,
                     fontSize: 15,
@@ -234,19 +246,32 @@ class _SecondChamberDialogState extends ConsumerState<SecondChamberDialog> {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: _submit,
+                            onTap: _isLoading ? null : _submit,
                             borderRadius: BorderRadius.circular(12),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 14),
-                              child: Text(
-                                'Entrar',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: AppColors.background,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 15,
-                                ),
-                              ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              child: _isLoading
+                                  ? const Center(
+                                      child: SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                            AppColors.background,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Entrar',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: AppColors.background,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                    ),
                             ),
                           ),
                         ),

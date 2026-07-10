@@ -12,7 +12,6 @@ class PlanEntity with _$PlanEntity {
     required String displayName,
     required double priceMonthly,
     required int questionLimit,
-    required int interestLimit,
     required int chamberLevel,
   }) = _PlanEntity;
 
@@ -27,7 +26,6 @@ extension PlanDefaults on PlanType {
       displayName: 'Gratuito',
       priceMonthly: 0,
       questionLimit: 3,
-      interestLimit: 0,
       chamberLevel: 1,
     ),
     PlanType.basic => const PlanEntity(
@@ -35,7 +33,6 @@ extension PlanDefaults on PlanType {
       displayName: 'Básico',
       priceMonthly: 9.99,
       questionLimit: 100,
-      interestLimit: 20,
       chamberLevel: 1,
     ),
     PlanType.premium => const PlanEntity(
@@ -43,7 +40,6 @@ extension PlanDefaults on PlanType {
       displayName: 'Premium',
       priceMonthly: 29.99,
       questionLimit: 1000,
-      interestLimit: 200,
       chamberLevel: 1,
     ),
   };

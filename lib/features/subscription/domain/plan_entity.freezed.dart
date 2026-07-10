@@ -25,7 +25,6 @@ mixin _$PlanEntity {
   String get displayName => throw _privateConstructorUsedError;
   double get priceMonthly => throw _privateConstructorUsedError;
   int get questionLimit => throw _privateConstructorUsedError;
-  int get interestLimit => throw _privateConstructorUsedError;
   int get chamberLevel => throw _privateConstructorUsedError;
 
   /// Serializes this PlanEntity to a JSON map.
@@ -50,7 +49,6 @@ abstract class $PlanEntityCopyWith<$Res> {
     String displayName,
     double priceMonthly,
     int questionLimit,
-    int interestLimit,
     int chamberLevel,
   });
 }
@@ -74,7 +72,6 @@ class _$PlanEntityCopyWithImpl<$Res, $Val extends PlanEntity>
     Object? displayName = null,
     Object? priceMonthly = null,
     Object? questionLimit = null,
-    Object? interestLimit = null,
     Object? chamberLevel = null,
   }) {
     return _then(
@@ -94,10 +91,6 @@ class _$PlanEntityCopyWithImpl<$Res, $Val extends PlanEntity>
             questionLimit: null == questionLimit
                 ? _value.questionLimit
                 : questionLimit // ignore: cast_nullable_to_non_nullable
-                      as int,
-            interestLimit: null == interestLimit
-                ? _value.interestLimit
-                : interestLimit // ignore: cast_nullable_to_non_nullable
                       as int,
             chamberLevel: null == chamberLevel
                 ? _value.chamberLevel
@@ -123,7 +116,6 @@ abstract class _$$PlanEntityImplCopyWith<$Res>
     String displayName,
     double priceMonthly,
     int questionLimit,
-    int interestLimit,
     int chamberLevel,
   });
 }
@@ -146,7 +138,6 @@ class __$$PlanEntityImplCopyWithImpl<$Res>
     Object? displayName = null,
     Object? priceMonthly = null,
     Object? questionLimit = null,
-    Object? interestLimit = null,
     Object? chamberLevel = null,
   }) {
     return _then(
@@ -167,10 +158,6 @@ class __$$PlanEntityImplCopyWithImpl<$Res>
             ? _value.questionLimit
             : questionLimit // ignore: cast_nullable_to_non_nullable
                   as int,
-        interestLimit: null == interestLimit
-            ? _value.interestLimit
-            : interestLimit // ignore: cast_nullable_to_non_nullable
-                  as int,
         chamberLevel: null == chamberLevel
             ? _value.chamberLevel
             : chamberLevel // ignore: cast_nullable_to_non_nullable
@@ -188,7 +175,6 @@ class _$PlanEntityImpl implements _PlanEntity {
     required this.displayName,
     required this.priceMonthly,
     required this.questionLimit,
-    required this.interestLimit,
     required this.chamberLevel,
   });
 
@@ -204,13 +190,11 @@ class _$PlanEntityImpl implements _PlanEntity {
   @override
   final int questionLimit;
   @override
-  final int interestLimit;
-  @override
   final int chamberLevel;
 
   @override
   String toString() {
-    return 'PlanEntity(type: $type, displayName: $displayName, priceMonthly: $priceMonthly, questionLimit: $questionLimit, interestLimit: $interestLimit, chamberLevel: $chamberLevel)';
+    return 'PlanEntity(type: $type, displayName: $displayName, priceMonthly: $priceMonthly, questionLimit: $questionLimit, chamberLevel: $chamberLevel)';
   }
 
   @override
@@ -225,8 +209,6 @@ class _$PlanEntityImpl implements _PlanEntity {
                 other.priceMonthly == priceMonthly) &&
             (identical(other.questionLimit, questionLimit) ||
                 other.questionLimit == questionLimit) &&
-            (identical(other.interestLimit, interestLimit) ||
-                other.interestLimit == interestLimit) &&
             (identical(other.chamberLevel, chamberLevel) ||
                 other.chamberLevel == chamberLevel));
   }
@@ -239,7 +221,6 @@ class _$PlanEntityImpl implements _PlanEntity {
     displayName,
     priceMonthly,
     questionLimit,
-    interestLimit,
     chamberLevel,
   );
 
@@ -263,7 +244,6 @@ abstract class _PlanEntity implements PlanEntity {
     required final String displayName,
     required final double priceMonthly,
     required final int questionLimit,
-    required final int interestLimit,
     required final int chamberLevel,
   }) = _$PlanEntityImpl;
 
@@ -278,8 +258,6 @@ abstract class _PlanEntity implements PlanEntity {
   double get priceMonthly;
   @override
   int get questionLimit;
-  @override
-  int get interestLimit;
   @override
   int get chamberLevel;
 

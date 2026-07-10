@@ -225,14 +225,7 @@ class _PlanCard extends StatelessWidget {
                       : '${plan.questionLimit} perguntas/mês',
                   tint: tint,
                 ),
-                if (plan.interestLimit > 0) ...[
-                  const SizedBox(height: 8),
-                  _FeatureItem(
-                    icon: Icons.psychology_outlined,
-                    text: '${plan.interestLimit} memórias de interesse',
-                    tint: tint,
-                  ),
-                ],
+
 
                 const SizedBox(height: 20),
 

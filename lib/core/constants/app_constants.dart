@@ -19,12 +19,6 @@ class AppConstants {
 
   static const int maxQueryLength = 2000;
 
-  static const Map<String, int> interestLimits = {
-    'free': 0,
-    'basic': 20,
-    'premium': 200,
-  };
-
   static const Map<String, int> questionLimits = {
     'free': 3,
     'basic': 100,

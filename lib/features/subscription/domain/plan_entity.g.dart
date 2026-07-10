@@ -12,7 +12,6 @@ _$PlanEntityImpl _$$PlanEntityImplFromJson(Map<String, dynamic> json) =>
       displayName: json['displayName'] as String,
       priceMonthly: (json['priceMonthly'] as num).toDouble(),
       questionLimit: (json['questionLimit'] as num).toInt(),
-      interestLimit: (json['interestLimit'] as num).toInt(),
       chamberLevel: (json['chamberLevel'] as num).toInt(),
     );
 
@@ -22,7 +21,6 @@ Map<String, dynamic> _$$PlanEntityImplToJson(_$PlanEntityImpl instance) =>
       'displayName': instance.displayName,
       'priceMonthly': instance.priceMonthly,
       'questionLimit': instance.questionLimit,
-      'interestLimit': instance.interestLimit,
       'chamberLevel': instance.chamberLevel,
     };
 

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/second_chamber_dialog.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/second_chamber_success_dialog.dart';
 import 'package:gnosis_chat/shared/providers/user_provider.dart';
 
 class ProfileBottomSheet extends ConsumerWidget {
@@ -177,13 +178,7 @@ class ProfileBottomSheet extends ConsumerWidget {
                   onTap: () async {
                     final unlocked = await SecondChamberDialog.show(context);
                     if (unlocked == true && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('⚜️ Bem-vindo à 2ª Câmara!'),
-                          duration: Duration(seconds: 2),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
+                      await SecondChamberSuccessDialog.show(context);
                     }
                   },
                 ),

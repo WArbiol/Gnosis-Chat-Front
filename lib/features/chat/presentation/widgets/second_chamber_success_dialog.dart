@@ -142,21 +142,7 @@ class SecondChamberSuccessDialog extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
-
-                  // Description
-                  const Text(
-                    'O portal para os mistérios maiores foi desbloqueado. A partir de agora, todas as obras e ensinamentos avançados estão disponíveis para suas consultas com o nosso RAG agêntico.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.onSurface,
-                      fontSize: 14,
-                      height: 1.5,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
 
                   // Action Button
                   Container(

@@ -14,17 +14,16 @@ class ProfileBottomSheet extends ConsumerWidget {
   const ProfileBottomSheet({super.key});
 
   Widget _buildFallbackAvatar(String? email, double size, double fontSize) {
-    final initial = (email != null && email.isNotEmpty) ? email[0].toUpperCase() : '?';
+    final initial = (email != null && email.isNotEmpty)
+        ? email[0].toUpperCase()
+        : '?';
     return Container(
       width: size,
       height: size,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(
-          colors: [
-            AppColors.accent,
-            AppColors.accentLight,
-          ],
+          colors: [AppColors.accent, AppColors.accentLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -122,33 +121,38 @@ class ProfileBottomSheet extends ConsumerWidget {
               const SizedBox(height: 6),
 
               // Plan badge
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.accent.withValues(alpha: 0.15),
-                      AppColors.accentLight.withValues(alpha: 0.08),
-                    ],
-                  ),
-                  border: Border.all(
-                    color: AppColors.accent.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Text(
-                  planLabel,
-                  style: const TextStyle(
-                    color: AppColors.accent,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
+              Builder(
+                builder: (context) {
+                  final tint = _planColor(user?.plan);
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        colors: [
+                          tint.withValues(alpha: 0.15),
+                          tint.withValues(alpha: 0.08),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: tint.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      planLabel,
+                      style: TextStyle(
+                        color: tint,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  );
+                },
               ),
 
               const SizedBox(height: 6),
@@ -158,10 +162,12 @@ class ProfileBottomSheet extends ConsumerWidget {
 
               const SizedBox(height: 28),
 
-              // Manage Plan button
+              // Manage Plan / Subscription button
               _ActionTile(
                 icon: Icons.workspace_premium_rounded,
-                label: 'Gerenciar Plano',
+                label: (user?.plan == 'basic' || user?.plan == 'premium')
+                    ? 'Gerenciar Assinatura'
+                    : 'Gerenciar Plano',
                 onTap: () {
                   Navigator.of(context).pop();
                   context.push('/subscription');
@@ -292,7 +298,15 @@ class ProfileBottomSheet extends ConsumerWidget {
     return switch (plan) {
       'basic' => '✨ Plano Básico',
       'premium' => '👑 Plano Premium',
-      _ => 'Plano Free',
+      _ => 'Plano Gratuito',
+    };
+  }
+
+  static Color _planColor(String? plan) {
+    return switch (plan) {
+      'basic' => AppColors.primary,
+      'premium' => AppColors.accent,
+      _ => AppColors.onSurfaceVariant,
     };
   }
 }

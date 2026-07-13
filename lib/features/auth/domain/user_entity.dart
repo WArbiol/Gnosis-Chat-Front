@@ -12,6 +12,7 @@ class UserEntity with _$UserEntity {
     @Default('free') String plan,
     @JsonKey(name: 'chamber_level') @Default(1) int chamberLevel,
     @JsonKey(name: 'question_count') @Default(0) int questionCount,
+    @JsonKey(name: 'subscription_status') @Default('free') String subscriptionStatus,
   }) = _UserEntity;
 
   factory UserEntity.fromJson(Map<String, dynamic> json) =>

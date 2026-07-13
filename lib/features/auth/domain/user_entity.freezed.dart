@@ -30,6 +30,8 @@ mixin _$UserEntity {
   int get chamberLevel => throw _privateConstructorUsedError;
   @JsonKey(name: 'question_count')
   int get questionCount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'subscription_status')
+  String get subscriptionStatus => throw _privateConstructorUsedError;
 
   /// Serializes this UserEntity to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -55,6 +57,7 @@ abstract class $UserEntityCopyWith<$Res> {
     String plan,
     @JsonKey(name: 'chamber_level') int chamberLevel,
     @JsonKey(name: 'question_count') int questionCount,
+    @JsonKey(name: 'subscription_status') String subscriptionStatus,
   });
 }
 
@@ -79,6 +82,7 @@ class _$UserEntityCopyWithImpl<$Res, $Val extends UserEntity>
     Object? plan = null,
     Object? chamberLevel = null,
     Object? questionCount = null,
+    Object? subscriptionStatus = null,
   }) {
     return _then(
       _value.copyWith(
@@ -106,6 +110,10 @@ class _$UserEntityCopyWithImpl<$Res, $Val extends UserEntity>
                 ? _value.questionCount
                 : questionCount // ignore: cast_nullable_to_non_nullable
                       as int,
+            subscriptionStatus: null == subscriptionStatus
+                ? _value.subscriptionStatus
+                : subscriptionStatus // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -128,6 +136,7 @@ abstract class _$$UserEntityImplCopyWith<$Res>
     String plan,
     @JsonKey(name: 'chamber_level') int chamberLevel,
     @JsonKey(name: 'question_count') int questionCount,
+    @JsonKey(name: 'subscription_status') String subscriptionStatus,
   });
 }
 
@@ -151,6 +160,7 @@ class __$$UserEntityImplCopyWithImpl<$Res>
     Object? plan = null,
     Object? chamberLevel = null,
     Object? questionCount = null,
+    Object? subscriptionStatus = null,
   }) {
     return _then(
       _$UserEntityImpl(
@@ -178,6 +188,10 @@ class __$$UserEntityImplCopyWithImpl<$Res>
             ? _value.questionCount
             : questionCount // ignore: cast_nullable_to_non_nullable
                   as int,
+        subscriptionStatus: null == subscriptionStatus
+            ? _value.subscriptionStatus
+            : subscriptionStatus // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -193,6 +207,7 @@ class _$UserEntityImpl implements _UserEntity {
     this.plan = 'free',
     @JsonKey(name: 'chamber_level') this.chamberLevel = 1,
     @JsonKey(name: 'question_count') this.questionCount = 0,
+    @JsonKey(name: 'subscription_status') this.subscriptionStatus = 'free',
   });
 
   factory _$UserEntityImpl.fromJson(Map<String, dynamic> json) =>
@@ -214,10 +229,13 @@ class _$UserEntityImpl implements _UserEntity {
   @override
   @JsonKey(name: 'question_count')
   final int questionCount;
+  @override
+  @JsonKey(name: 'subscription_status')
+  final String subscriptionStatus;
 
   @override
   String toString() {
-    return 'UserEntity(id: $id, email: $email, avatarUrl: $avatarUrl, plan: $plan, chamberLevel: $chamberLevel, questionCount: $questionCount)';
+    return 'UserEntity(id: $id, email: $email, avatarUrl: $avatarUrl, plan: $plan, chamberLevel: $chamberLevel, questionCount: $questionCount, subscriptionStatus: $subscriptionStatus)';
   }
 
   @override
@@ -233,7 +251,9 @@ class _$UserEntityImpl implements _UserEntity {
             (identical(other.chamberLevel, chamberLevel) ||
                 other.chamberLevel == chamberLevel) &&
             (identical(other.questionCount, questionCount) ||
-                other.questionCount == questionCount));
+                other.questionCount == questionCount) &&
+            (identical(other.subscriptionStatus, subscriptionStatus) ||
+                other.subscriptionStatus == subscriptionStatus));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -246,6 +266,7 @@ class _$UserEntityImpl implements _UserEntity {
     plan,
     chamberLevel,
     questionCount,
+    subscriptionStatus,
   );
 
   /// Create a copy of UserEntity
@@ -270,6 +291,7 @@ abstract class _UserEntity implements UserEntity {
     final String plan,
     @JsonKey(name: 'chamber_level') final int chamberLevel,
     @JsonKey(name: 'question_count') final int questionCount,
+    @JsonKey(name: 'subscription_status') final String subscriptionStatus,
   }) = _$UserEntityImpl;
 
   factory _UserEntity.fromJson(Map<String, dynamic> json) =
@@ -290,6 +312,9 @@ abstract class _UserEntity implements UserEntity {
   @override
   @JsonKey(name: 'question_count')
   int get questionCount;
+  @override
+  @JsonKey(name: 'subscription_status')
+  String get subscriptionStatus;
 
   /// Create a copy of UserEntity
   /// with the given fields replaced by the non-null parameter values.

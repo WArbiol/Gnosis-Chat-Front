@@ -27,7 +27,7 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
     // 1. Initial check for existing session
     final initialSession = sb.Supabase.instance.client.auth.currentSession;
     if (initialSession != null) {
-      _fetchUser();
+      fetchUser();
     }
 
     _supabaseListener = sb.Supabase.instance.client.auth.onAuthStateChange.listen((
@@ -46,7 +46,7 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
           orElse: () => false,
         );
         if (!isAuth || event == sb.AuthChangeEvent.signedIn) {
-          _fetchUser();
+          fetchUser();
         }
       }
     });
@@ -54,7 +54,7 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
 
   StreamSubscription<sb.AuthState>? _supabaseListener;
 
-  Future<void> _fetchUser() async {
+  Future<void> fetchUser() async {
     debugPrint('AUTH: Fetching user profile...');
     try {
       final user = await _repo.getCurrentUser();

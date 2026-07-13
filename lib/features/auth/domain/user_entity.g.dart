@@ -14,6 +14,7 @@ _$UserEntityImpl _$$UserEntityImplFromJson(Map<String, dynamic> json) =>
       plan: json['plan'] as String? ?? 'free',
       chamberLevel: (json['chamber_level'] as num?)?.toInt() ?? 1,
       questionCount: (json['question_count'] as num?)?.toInt() ?? 0,
+      subscriptionStatus: json['subscription_status'] as String? ?? 'free',
     );
 
 Map<String, dynamic> _$$UserEntityImplToJson(_$UserEntityImpl instance) =>
@@ -24,4 +25,5 @@ Map<String, dynamic> _$$UserEntityImplToJson(_$UserEntityImpl instance) =>
       'plan': instance.plan,
       'chamber_level': instance.chamberLevel,
       'question_count': instance.questionCount,
+      'subscription_status': instance.subscriptionStatus,
     };

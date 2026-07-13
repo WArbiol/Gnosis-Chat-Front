@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
@@ -47,6 +48,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen>
     final planState = ref.watch(subscriptionProvider);
     final currentUser = ref.watch(userProvider);
     final currentPlan = currentUser?.plan ?? 'free';
+    final subscriptionProviderName = currentUser?.subscriptionProvider;
 
     // Show snackbar on error
     ref.listen(subscriptionProvider, (prev, next) {
@@ -195,6 +197,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen>
                           onSelect: isCurrentPlan || planState.isLoading
                               ? null
                               : () async {
+                                  if (currentPlan != 'free' && _checkPlatformMismatch(subscriptionProviderName)) {
+                                    return;
+                                  }
                                   if (type == PlanType.free) {
                                     final confirm = await showDialog<bool>(
                                       context: context,
@@ -328,6 +333,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen>
                         Center(
                           child: TextButton.icon(
                             onPressed: () async {
+                              if (_checkPlatformMismatch(subscriptionProviderName)) return;
                               final messenger = ScaffoldMessenger.of(context);
                               try {
                                 await ref
@@ -376,6 +382,39 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen>
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _checkPlatformMismatch(String? provider) {
+    if (provider == null) return false;
+    if (provider == 'apple' && kIsWeb) {
+      _showWarning('Sua assinatura é gerenciada pela Apple. Acesse os Ajustes do seu iPhone para alterá-la.');
+      return true;
+    } else if (provider == 'google' && kIsWeb) {
+      _showWarning('Sua assinatura é gerenciada pelo Google. Acesse a Play Store para alterá-la.');
+      return true;
+    } else if (provider == 'stripe' && !kIsWeb) {
+      _showWarning('Sua assinatura é gerenciada via Web. Acesse gnosis-chat.app no navegador para alterá-la.');
+      return true;
+    }
+    return false;
+  }
+
+  void _showWarning(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Gerenciamento de Assinatura', style: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.bold)),
+        content: Text(message, style: const TextStyle(color: AppColors.onSurfaceVariant)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Entendi', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

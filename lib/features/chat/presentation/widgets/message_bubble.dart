@@ -28,11 +28,13 @@ class MessageBubble extends StatelessWidget {
       child: Align(
         alignment: _isUser ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
+          width: _isUser ? null : double.infinity,
           constraints: BoxConstraints(
-            maxWidth:
-                (MediaQuery.sizeOf(context).width * 0.78).clamp(0.0, 660.0),
+            maxWidth: _isUser
+                ? (MediaQuery.sizeOf(context).width * 0.78).clamp(0.0, 660.0)
+                : double.infinity,
           ),
-          margin: const EdgeInsets.symmetric(vertical: 4),
+          margin: const EdgeInsets.symmetric(vertical: 6),
           child: _isUser ? _userBubble(context) : _aiBubble(context),
         ),
       ),
@@ -75,33 +77,9 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _aiBubble(BuildContext context) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(18),
-        topRight: Radius.circular(18),
-        bottomLeft: Radius.circular(4),
-        bottomRight: Radius.circular(18),
-      ),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(18),
-              topRight: Radius.circular(18),
-              bottomLeft: Radius.circular(4),
-              bottomRight: Radius.circular(18),
-            ),
-            border: Border.all(
-              color: AppColors.accent.withValues(alpha: 0.12),
-              width: 0.5,
-            ),
-          ),
-          child: _content(context, AppColors.onSurface),
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+      child: _content(context, AppColors.onSurface),
     );
   }
 
@@ -109,27 +87,41 @@ class MessageBubble extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        MarkdownBody(
-          data: message.content,
-          selectable: true,
-          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-            p: TextStyle(color: textColor, fontSize: 15, height: 1.5),
-            blockquote: TextStyle(
-              color: textColor.withValues(alpha: 0.8),
-              fontStyle: FontStyle.italic,
-              fontSize: 14,
-            ),
-            blockquoteDecoration: BoxDecoration(
-              color: AppColors.surfaceVariant.withValues(alpha: 0.25),
-              border: Border(
-                left: BorderSide(
-                  color: AppColors.accent.withValues(alpha: 0.5),
-                  width: 3,
+        SelectionArea(
+          child: MarkdownBody(
+            data: message.content,
+            selectable: false, // Prevents Web selection crash, Handled by SelectionArea
+            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+              p: TextStyle(color: textColor, fontSize: 15, height: 1.5),
+              h1: TextStyle(color: textColor, fontSize: 32, fontWeight: FontWeight.w800, height: 1.3, letterSpacing: -0.5),
+              h2: TextStyle(color: textColor, fontSize: 26, fontWeight: FontWeight.bold, height: 1.3, letterSpacing: -0.5),
+              h3: TextStyle(color: textColor, fontSize: 22, fontWeight: FontWeight.bold, height: 1.3),
+              h4: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold, height: 1.4),
+              horizontalRuleDecoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    width: 2,
+                    color: AppColors.onSurfaceVariant.withValues(alpha: 0.2),
+                  ),
                 ),
               ),
-              borderRadius: BorderRadius.circular(4),
+              blockquote: TextStyle(
+                color: textColor.withValues(alpha: 0.8),
+                fontStyle: FontStyle.italic,
+                fontSize: 14,
+              ),
+              blockquoteDecoration: BoxDecoration(
+                color: AppColors.surfaceVariant.withValues(alpha: 0.25),
+                border: Border(
+                  left: BorderSide(
+                    color: AppColors.accent.withValues(alpha: 0.5),
+                    width: 3,
+                  ),
+                ),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              blockquotePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
-            blockquotePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
         ),
         if (message.citations.isNotEmpty) ...[

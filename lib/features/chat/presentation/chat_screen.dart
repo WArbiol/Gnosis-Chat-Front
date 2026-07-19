@@ -9,8 +9,6 @@ import 'package:gnosis_chat/features/chat/presentation/widgets/typing_indicator.
 import 'package:gnosis_chat/shared/widgets/animated_background.dart';
 import 'package:gnosis_chat/shared/widgets/error_view.dart';
 import 'package:gnosis_chat/shared/widgets/loading_overlay.dart';
-import 'package:gnosis_chat/features/chat/presentation/widgets/inline_cta_banner.dart';
-import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/utils/extensions.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/animated_message.dart';
@@ -76,7 +74,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     } catch (e) {
       if (mounted) {
         final errStr = e.toString();
-        if (errStr.contains('Você atingiu o limite') || errStr.contains('LIMIT_EXCEEDED') || errStr.contains('limite de 3 mensagens')) {
+        if (errStr.contains('Você atingiu o limite') ||
+            errStr.contains('LIMIT_EXCEEDED') ||
+            errStr.contains('limite de 3 mensagens')) {
           _showUpgradeDialog(context);
         } else {
           final cleanMsg = errStr.replaceAll('DioException:', '').trim();
@@ -105,17 +105,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
             Text(
               'Limite de Perguntas',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.onSurface,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: AppColors.onSurface,
+              ),
             ),
           ],
         ),
         content: Text(
           'Você atingiu o limite de 3 perguntas do plano Gratuito. Faça o upgrade para continuar explorando o conhecimento gnóstico livremente.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.onSurfaceVariant),
         ),
         actions: [
           TextButton(
@@ -165,8 +165,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     final chatState = ref.watch(chatProvider);
     final user = ref.watch(authProvider).whenOrNull(authenticated: (u) => u);
 
-
-
     // Auto-scroll when messages update (streaming mock)
     ref.listen(chatProvider, (_, _) => _scrollToBottom());
 
@@ -177,7 +175,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
         child: Stack(
           children: [
             // Subtle animated background blobs
-            AnimatedBackground(animation: _glowAnim, intensity: 0.45),
+            AnimatedBackground(animation: _glowAnim, intensity: 0.65),
 
             // Main content
             SafeArea(
@@ -204,8 +202,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
                             final isLoading = ref.watch(isLoadingProvider);
                             final itemCount =
-                                messages.length +
-                                (isLoading ? 1 : 0);
+                                messages.length + (isLoading ? 1 : 0);
 
                             return ListView.builder(
                               controller: _scrollCtrl,
@@ -215,7 +212,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                               ),
                               itemCount: itemCount,
                               itemBuilder: (context, index) {
-
                                 // Typing indicator
                                 if (isLoading && index == messages.length) {
                                   return const Padding(
@@ -225,7 +221,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 }
 
                                 final msg = messages[index];
-                                final isNew = !_knownMessageIds.contains(msg.id);
+                                final isNew = !_knownMessageIds.contains(
+                                  msg.id,
+                                );
                                 if (isNew) _knownMessageIds.add(msg.id);
 
                                 return AnimatedMessage(

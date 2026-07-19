@@ -19,9 +19,9 @@ class AppColors {
   static const Color flameLight = Color(0xFFE05A5A);
 
   // Neutral — deep OLED-optimized darks
-  static const Color background = Color(0xFF08080C);
-  static const Color surface = Color(0xFF12121C);
-  static const Color surfaceVariant = Color(0xFF1C1C2A);
+  static const Color background = Color(0xFF000000);
+  static const Color surface = Color(0xFF121212);
+  static const Color surfaceVariant = Color(0xFF1E1E1E);
   static const Color onSurface = Color(0xFFE8E6E3);
   static const Color onSurfaceVariant = Color(0xFF9E9E9E);
 

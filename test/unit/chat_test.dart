@@ -138,7 +138,7 @@ void main() {
     });
 
     test('toJson serializes only non-empty parameters', () {
-      final filters = const ActiveFilters(
+      const filters = ActiveFilters(
         books: ['Livro A'],
         authors: ['Autor B'],
         chamberLevels: [2],

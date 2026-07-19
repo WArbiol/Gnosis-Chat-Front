@@ -179,18 +179,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
             // Main content
             SafeArea(
-              child: Column(
+              child: Stack(
                 children: [
-                  // Custom premium AppBar
-                  PremiumAppBar(
-                    glowAnim: _glowAnim,
-                    user: user,
-                    onMenuTap: widget.onMenuTap,
-                    onProfileTap: widget.onProfileTap,
-                  ),
-
-                  // Chat body
-                  Expanded(
+                  // Chat body (bottom layer, scrolls under app bar and input)
+                  Positioned.fill(
                     child: ShaderMask(
                       shaderCallback: (Rect bounds) {
                         return const LinearGradient(
@@ -202,66 +194,85 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                             Colors.black,
                             Colors.transparent,
                           ],
-                          stops: [0.0, 0.05, 0.95, 1.0],
+                          stops: [
+                            0.05,
+                            0.12,
+                            0.80,
+                            0.95,
+                          ], // Push top fade zone higher up
                         ).createShader(bounds);
                       },
                       blendMode: BlendMode.dstIn,
                       child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 850),
-                        child: chatState.when(
-                          data: (messages) {
-                            if (messages.isEmpty) {
-                              return EmptyState(glowAnim: _glowAnim);
-                            }
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 850),
+                          child: chatState.when(
+                            data: (messages) {
+                              if (messages.isEmpty) {
+                                return EmptyState(glowAnim: _glowAnim);
+                              }
 
-                            final isLoading = ref.watch(isLoadingProvider);
-                            final itemCount =
-                                messages.length + (isLoading ? 1 : 0);
+                              final isLoading = ref.watch(isLoadingProvider);
+                              final itemCount =
+                                  messages.length + (isLoading ? 1 : 0);
 
-                            return ListView.builder(
-                              controller: _scrollCtrl,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              itemCount: itemCount,
-                              itemBuilder: (context, index) {
-                                // Typing indicator
-                                if (isLoading && index == messages.length) {
-                                  return const Padding(
-                                    padding: EdgeInsets.only(top: 4),
-                                    child: TypingIndicator(),
+                              return ListView.builder(
+                                controller: _scrollCtrl,
+                                padding: const EdgeInsets.only(
+                                  left: 16,
+                                  right: 16,
+                                  top: 100,
+                                  bottom: 120,
+                                ),
+                                itemCount: itemCount,
+                                itemBuilder: (context, index) {
+                                  // Typing indicator
+                                  if (isLoading && index == messages.length) {
+                                    return const Padding(
+                                      padding: EdgeInsets.only(top: 4),
+                                      child: TypingIndicator(),
+                                    );
+                                  }
+
+                                  final msg = messages[index];
+                                  final isNew = !_knownMessageIds.contains(
+                                    msg.id,
                                   );
-                                }
+                                  if (isNew) _knownMessageIds.add(msg.id);
 
-                                final msg = messages[index];
-                                final isNew = !_knownMessageIds.contains(
-                                  msg.id,
-                                );
-                                if (isNew) _knownMessageIds.add(msg.id);
-
-                                return AnimatedMessage(
-                                  key: ValueKey(msg.id),
-                                  animate: isNew,
-                                  child: MessageBubble(message: msg),
-                                );
-                              },
-                            );
-                          },
-                          loading: () => const LoadingOverlay(),
-                          error: (e, _) => ErrorView(
-                            message: e.toString(),
-                            onRetry: () => ref.invalidate(chatProvider),
+                                  return AnimatedMessage(
+                                    key: ValueKey(msg.id),
+                                    animate: isNew,
+                                    child: MessageBubble(message: msg),
+                                  );
+                                },
+                              );
+                            },
+                            loading: () => const LoadingOverlay(),
+                            error: (e, _) => ErrorView(
+                              message: e.toString(),
+                              onRetry: () => ref.invalidate(chatProvider),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
+
+                  // Custom premium AppBar (top layer)
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: PremiumAppBar(
+                      glowAnim: _glowAnim,
+                      user: user,
+                      onMenuTap: widget.onMenuTap,
+                      onProfileTap: widget.onProfileTap,
+                    ),
                   ),
 
-                  // Premium input bar
-                  Center(
+                  // Premium input bar (bottom layer)
+                  Align(
+                    alignment: Alignment.bottomCenter,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 850),
                       child: GlassInputBar(

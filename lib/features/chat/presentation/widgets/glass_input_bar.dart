@@ -5,6 +5,8 @@ import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/glass_filter_sheet.dart';
 
+import 'dart:ui' as ui;
+
 class GlassInputBar extends ConsumerStatefulWidget {
   const GlassInputBar({
     super.key,
@@ -126,21 +128,32 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(26),
-            color: AppColors.surfaceVariant.withValues(alpha: 0.55),
-            border: Border.all(
-              color: _hasFocus
-                  ? AppColors.accent.withValues(alpha: 0.45)
-                  : Colors.white.withValues(alpha: 0.08),
-              width: _hasFocus ? 1.5 : 1,
-            ),
-          ),
-          child: Column(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(26),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(26),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.08),
+                    Colors.white.withValues(alpha: 0.03),
+                  ],
+                ),
+                border: Border.all(
+                  color: _hasFocus
+                      ? AppColors.accent.withValues(alpha: 0.45)
+                      : Colors.white.withValues(alpha: 0.2),
+                  width: _hasFocus ? 1.5 : 1,
+                ),
+              ),
+              child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (chips.isNotEmpty) ...[
@@ -246,6 +259,8 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
               ),
             ],
           ),
+        ),
+        ),
         ),
       ),
     );

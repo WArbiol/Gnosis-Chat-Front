@@ -191,7 +191,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
                   // Chat body
                   Expanded(
-                    child: Center(
+                    child: ShaderMask(
+                      shaderCallback: (Rect bounds) {
+                        return const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black,
+                            Colors.black,
+                            Colors.transparent,
+                          ],
+                          stops: [0.0, 0.05, 0.95, 1.0],
+                        ).createShader(bounds);
+                      },
+                      blendMode: BlendMode.dstIn,
+                      child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 850),
                         child: chatState.when(
@@ -242,6 +257,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                         ),
                       ),
                     ),
+                  ),
                   ),
 
                   // Premium input bar

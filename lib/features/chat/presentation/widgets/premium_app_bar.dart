@@ -52,14 +52,24 @@ class PremiumAppBar extends StatelessWidget {
       child: Row(
         children: [
           // Sidebar / conversations icon
-          IconButton(
-            onPressed: onMenuTap,
-            icon: const Icon(Icons.menu_rounded),
-            tooltip: 'Conversas',
-            iconSize: 24,
-            style: IconButton.styleFrom(
-              foregroundColor: AppColors.onSurface,
-              fixedSize: const Size(48, 48),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: AppColors.onSurfaceVariant.withValues(alpha: 0.1),
+                width: 1,
+              ),
+            ),
+            child: IconButton(
+              onPressed: onMenuTap,
+              icon: const Icon(Icons.menu_rounded),
+              tooltip: 'Conversas',
+              iconSize: 22,
+              style: IconButton.styleFrom(
+                foregroundColor: AppColors.onSurface,
+                fixedSize: const Size(44, 44),
+              ),
             ),
           ),
 

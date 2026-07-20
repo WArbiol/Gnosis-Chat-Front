@@ -9,6 +9,7 @@ import 'package:gnosis_chat/features/auth/domain/user_entity.dart';
 import 'package:gnosis_chat/features/chat/presentation/conversation_provider.dart';
 import 'package:gnosis_chat/services/api/api_client.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
+import 'package:url_launcher/url_launcher.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, app.AuthState>((ref) {
   final api = ref.watch(apiClientProvider);
@@ -38,6 +39,16 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
       debugPrint(
         '!!!!! GNOSIS AUTH EVENT: $event, Session: ${session != null}',
       );
+
+      if (event == sb.AuthChangeEvent.signedIn) {
+        try {
+          if (!kIsWeb) {
+            await closeInAppWebView();
+          }
+        } catch (e) {
+          debugPrint('Error closing in-app webview: $e');
+        }
+      }
 
       if (session != null) {
         // Only fetch if we are not already authenticated or if it's a significant change

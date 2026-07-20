@@ -13,7 +13,7 @@ class AppConstants {
       return 'http://10.0.2.2:8000/api/v1/';
     }
     // Para testar no iPhone, precisamos usar o IP do Mac na rede Wi-Fi local
-    return 'http://192.168.15.200:8000/api/v1/';
+    return 'http://192.168.68.110:8000/api/v1/';
   }
 
   static const Duration apiTimeout = Duration(seconds: 30);

@@ -132,6 +132,16 @@ class MessageBubble extends StatelessWidget {
                 .toList(),
           ),
         ],
+        if (!_isUser) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4.0),
+              child: _MessageActionBar(content: message.content),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -528,4 +538,176 @@ class _ContextAction extends StatelessWidget {
       ),
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Message Actions Bar
+// ---------------------------------------------------------------------------
+class _MessageActionBar extends StatelessWidget {
+  const _MessageActionBar({required this.content});
+
+  final String content;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _CopyButton(content: content),
+        const SizedBox(width: 8),
+        _ShareButton(content: content),
+      ],
+    );
+  }
+}
+
+class _CopyButton extends StatefulWidget {
+  const _CopyButton({required this.content});
+
+  final String content;
+
+  @override
+  State<_CopyButton> createState() => _CopyButtonState();
+}
+
+class _CopyButtonState extends State<_CopyButton> {
+  bool _copied = false;
+
+  void _copy() {
+    Clipboard.setData(ClipboardData(text: _cleanMarkdown(widget.content)));
+    HapticFeedback.lightImpact();
+    setState(() {
+      _copied = true;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Resposta copiada!'),
+        duration: Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.surfaceVariant,
+        width: 160,
+      ),
+    );
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _copied = false;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final border = BorderRadius.circular(17);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _copy,
+        borderRadius: border,
+        child: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _copied
+                ? AppColors.success.withValues(alpha: 0.12)
+                : Colors.white.withValues(alpha: 0.05),
+            border: Border.all(
+              color: _copied
+                  ? AppColors.success.withValues(alpha: 0.3)
+                  : Colors.white.withValues(alpha: 0.12),
+              width: 0.8,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                _copied ? Icons.check_rounded : Icons.content_copy_rounded,
+                key: ValueKey(_copied),
+                size: 14,
+                color: _copied ? AppColors.success : AppColors.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ShareButton extends StatelessWidget {
+  const _ShareButton({required this.content});
+
+  final String content;
+
+  void _share() {
+    HapticFeedback.lightImpact();
+    Share.share(_cleanMarkdown(content));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final border = BorderRadius.circular(17);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _share,
+        borderRadius: border,
+        child: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.05),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.12),
+              width: 0.8,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Icon(
+              Icons.share_rounded,
+              size: 14,
+              color: AppColors.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Helper to strip markdown formatting for copy & share actions
+String _cleanMarkdown(String text) {
+  return text
+      // Replace bold markers **text** or __text__ with text
+      .replaceAll(RegExp(r'\*\*|__'), '')
+      // Replace italic markers *text* or _text_ with text
+      .replaceAll(RegExp(r'\*|_'), '')
+      // Replace heading hashes (### Heading -> Heading)
+      .replaceAll(RegExp(r'^#+\s+', multiLine: true), '')
+      // Convert list indicators to clean unicode bullets (* or - -> •)
+      .replaceAllMapped(RegExp(r'^\s*[\*\-]\s+', multiLine: true), (match) => '• ')
+      // Clean up blockquote indentation (> text -> text)
+      .replaceAll(RegExp(r'^>\s+', multiLine: true), '');
 }

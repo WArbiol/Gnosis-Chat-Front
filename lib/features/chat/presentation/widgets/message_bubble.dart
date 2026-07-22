@@ -1007,17 +1007,6 @@ Future<Uint8List> _generatePdf(
   final fontOblique = pw.Font.helveticaOblique();
   final fontCourier = pw.Font.courier();
 
-  pw.MemoryImage? logoImage;
-  try {
-    final logoData = await rootBundle.load('assets/images/logo_pdf.png');
-    logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
-  } catch (_) {
-    try {
-      final fallbackData = await rootBundle.load('assets/images/logo.png');
-      logoImage = pw.MemoryImage(fallbackData.buffer.asUint8List());
-    } catch (_) {}
-  }
-
   const pageFormat = PdfPageFormat(
     320, // Estreito estilo celular
     568, // Altura finita (estilo iPhone SE) para suportar MultiPage
@@ -1036,40 +1025,18 @@ Future<Uint8List> _generatePdf(
   final lines = sanitizedMarkdown.split('\n');
   final widgets = <pw.Widget>[];
 
-  // Cabeçalho com Logo oficial da Gnosis
+  // Cabeçalho limpo e ultrarrápido
   widgets.add(
     pw.Center(
       child: pw.Column(
         children: [
-          if (logoImage != null)
-            pw.Image(logoImage, width: 44, height: 44)
-          else
-            pw.Container(
-              width: 28,
-              height: 28,
-              decoration: const pw.BoxDecoration(
-                color: accentColor,
-                shape: pw.BoxShape.circle,
-              ),
-              child: pw.Center(
-                child: pw.Text(
-                  'G',
-                  style: pw.TextStyle(
-                    font: fontBold,
-                    fontSize: 16,
-                    color: PdfColors.white,
-                  ),
-                ),
-              ),
-            ),
-          pw.SizedBox(height: 6),
           pw.Text(
             'Pergunte à Gnosis',
             style: pw.TextStyle(
               font: fontBold,
-              fontSize: 20,
-              color: primaryColor,
-              letterSpacing: 1.2,
+              fontSize: 22,
+              color: accentColor,
+              letterSpacing: 1.5,
             ),
           ),
           pw.SizedBox(height: 2),
@@ -1077,15 +1044,15 @@ Future<Uint8List> _generatePdf(
             'Citação & Resposta',
             style: pw.TextStyle(
               font: fontOblique,
-              fontSize: 10.5,
+              fontSize: 11,
               color: PdfColors.grey600,
             ),
           ),
           pw.SizedBox(height: 8),
           pw.Container(
-            height: 1,
+            height: 0.8,
             color: const PdfColor.fromInt(0x4CCB9E28), // 30% opacidade
-            width: 80,
+            width: 60,
           ),
           pw.SizedBox(height: 14),
         ],

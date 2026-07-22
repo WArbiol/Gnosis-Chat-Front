@@ -150,6 +150,24 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
   void setErrorState(Object error, StackTrace stackTrace) =>
       state = AsyncValue.error(error, stackTrace);
 
-  void loadMessages(List<MessageEntity> messages) =>
-      state = AsyncValue.data(List.of(messages));
+  void loadMessages(List<MessageEntity> messages) {
+    final current = state.valueOrNull;
+    if (current != null && _areMessageListsEqual(current, messages)) {
+      return; // Skip duplicate state updates to prevent UI flicker
+    }
+    state = AsyncValue.data(List.of(messages));
+  }
+
+  bool _areMessageListsEqual(List<MessageEntity> a, List<MessageEntity> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id ||
+          a[i].content != b[i].content ||
+          a[i].role != b[i].role ||
+          a[i].citations.length != b[i].citations.length) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

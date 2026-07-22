@@ -302,5 +302,47 @@ void main() {
       expect(messages[0].role, equals(MessageRole.user));
       expect(messages[1].content, equals('Resposta do Gnosis'));
     });
+
+    test('loadMessages ignores duplicate message lists with identical content to prevent re-renders', () {
+      final msg1 = MessageEntity(
+        id: 'msg-1',
+        content: 'Conteúdo A',
+        role: MessageRole.user,
+        timestamp: DateTime.now(),
+      );
+      final msg2 = MessageEntity(
+        id: 'msg-2',
+        content: 'Conteúdo B',
+        role: MessageRole.assistant,
+        timestamp: DateTime.now(),
+      );
+
+      final listA = [msg1, msg2];
+      final listB = [
+        MessageEntity(
+          id: 'msg-1',
+          content: 'Conteúdo A',
+          role: MessageRole.user,
+          timestamp: DateTime.now(),
+        ),
+        MessageEntity(
+          id: 'msg-2',
+          content: 'Conteúdo B',
+          role: MessageRole.assistant,
+          timestamp: DateTime.now(),
+        ),
+      ];
+
+      final chatNotifier = container.read(chatProvider.notifier);
+      chatNotifier.loadMessages(listA);
+
+      final stateRef1 = container.read(chatProvider);
+
+      // Calling loadMessages with identical listB should NOT alter state instance
+      chatNotifier.loadMessages(listB);
+
+      final stateRef2 = container.read(chatProvider);
+      expect(identical(stateRef1, stateRef2), isTrue);
+    });
   });
 }

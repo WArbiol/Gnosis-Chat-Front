@@ -58,10 +58,18 @@ final GoRouter appRouter = GoRouter(
     final isAuthRoute =
         state.matchedLocation == '/login' || state.matchedLocation == '/splash';
 
-    // Handle Facebook's common quirk: it appends '_=_' to the URL
-    // We catch it here globally and redirect to a clean state.
-    if (state.uri.toString().contains('_=_')) {
-      return isLoggedIn ? '/chat' : '/login';
+    final uriStr = state.uri.toString();
+    final isOAuthCallback =
+        uriStr.contains('access_token=') ||
+        uriStr.contains('refresh_token=') ||
+        uriStr.contains('_=_');
+
+    // Handle OAuth callback fragments: keep on /splash to let Supabase process tokens
+    if (isOAuthCallback) {
+      if (state.matchedLocation != '/splash') {
+        return '/splash';
+      }
+      return null;
     }
 
     // We let splash screen be the entry point to resolve animations and slow auth fetches
@@ -75,5 +83,5 @@ final GoRouter appRouter = GoRouter(
 
     return null;
   },
-  errorBuilder: (context, state) => const LoginScreen(),
+  errorBuilder: (context, state) => const SplashScreen(),
 );

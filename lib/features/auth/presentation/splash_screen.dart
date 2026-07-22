@@ -36,17 +36,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _checkAuthAndRedirect() async {
-    // Keep a small minimum delay so the logo glow is visible
-    await Future.delayed(const Duration(milliseconds: 600));
-
+    await Future.delayed(const Duration(milliseconds: 400));
     if (!mounted) return;
 
-    // Use current auth state via Supabase for redirection
-    final session = Supabase.instance.client.auth.currentSession;
-
+    // Check immediately if already logged in
+    var session = Supabase.instance.client.auth.currentSession;
     if (session != null) {
       context.go('/chat');
-    } else {
+      return;
+    }
+
+    // Wait up to 3 seconds for Supabase to finish parsing OAuth tokens from the URL fragment
+    for (int i = 0; i < 15; i++) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (!mounted) return;
+      session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        context.go('/chat');
+        return;
+      }
+    }
+
+    if (mounted) {
       context.go('/login');
     }
   }

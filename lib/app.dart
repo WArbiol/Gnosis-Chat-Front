@@ -8,7 +8,7 @@ class GnosisApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Gnosis Chat',
+      title: 'Pergunte à Gnosis',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

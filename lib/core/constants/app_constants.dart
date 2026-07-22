@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'Gnosis Chat';
+  static const String appName = 'Pergunte à Gnosis';
 
   static String get apiBaseUrl {
     if (kIsWeb) {

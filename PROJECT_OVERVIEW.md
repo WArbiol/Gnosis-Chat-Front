@@ -7,7 +7,7 @@
 ## 1. Visão do Produto
 
 ### Objetivo
-Gnosis-chat é um app mobile de chat inteligente baseado em RAG (Retrieval-Augmented Generation) sobre um corpus fechado de **90 PDFs gnósticos**. O usuário faz perguntas em linguagem natural e recebe respostas fundamentadas, com citações de trechos dos documentos originais.
+**Pergunte à Gnosis** é um app mobile de chat inteligente baseado em RAG (Retrieval-Augmented Generation) sobre um corpus fechado de **90 PDFs gnósticos**. O usuário faz perguntas em linguagem natural e recebe respostas fundamentadas, com citações de trechos dos documentos originais.
 
 ### Principais Features (MVP)
 | Feature | Descrição |

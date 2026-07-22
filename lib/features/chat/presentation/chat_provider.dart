@@ -136,6 +136,8 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
 
   void clearHistory() => state = const AsyncValue.data([]);
 
+  void setLoadingState() => state = const AsyncValue.loading();
+
   void loadMessages(List<MessageEntity> messages) =>
       state = AsyncValue.data(List.of(messages));
 }

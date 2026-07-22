@@ -9,10 +9,10 @@ import 'package:gnosis_chat/features/chat/presentation/widgets/message_bubble.da
 import 'package:gnosis_chat/features/chat/presentation/widgets/typing_indicator.dart';
 import 'package:gnosis_chat/shared/widgets/animated_background.dart';
 import 'package:gnosis_chat/shared/widgets/error_view.dart';
-import 'package:gnosis_chat/shared/widgets/loading_overlay.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/utils/extensions.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/animated_message.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/chat_skeleton_loading.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/empty_state.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/glass_input_bar.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/premium_app_bar.dart';
@@ -169,6 +169,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     final chatState = ref.watch(chatProvider);
     final user = ref.watch(authProvider).whenOrNull(authenticated: (u) => u);
 
+    // Clear knownMessageIds when active conversation changes
+    ref.listen(conversationProvider.select((s) => s.activeId), (prev, next) {
+      if (prev != next) {
+        _knownMessageIds.clear();
+      }
+    });
+
     // Auto-scroll only when new messages are added to the list
     ref.listen(chatProvider, (prev, next) {
       final prevCount = prev?.valueOrNull?.length ?? 0;
@@ -263,7 +270,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 },
                               );
                             },
-                            loading: () => const LoadingOverlay(),
+                            loading: () => const ChatSkeletonLoading(),
                             error: (e, _) => ErrorView(
                               message: e.toString(),
                               onRetry: () => ref.invalidate(chatProvider),

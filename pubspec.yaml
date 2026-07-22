@@ -45,6 +45,9 @@ dependencies:
   syncfusion_flutter_pdfviewer: ^26.1.1
   url_launcher: ^6.3.0
   pdf: ^3.12.0
+  flutter_markdown_latex: ^0.3.4
+  flutter_math_fork: ^0.7.4
+  markdown: ^7.3.1
 
 
 

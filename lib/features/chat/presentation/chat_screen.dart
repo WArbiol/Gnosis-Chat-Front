@@ -151,12 +151,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollCtrl.hasClients) {
-        _scrollCtrl.animateTo(
-          _scrollCtrl.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+      if (!mounted) return;
+      if (_scrollCtrl.hasClients && _scrollCtrl.position.hasContentDimensions) {
+        try {
+          _scrollCtrl.animateTo(
+            _scrollCtrl.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        } catch (_) {}
       }
     });
   }
@@ -166,8 +169,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     final chatState = ref.watch(chatProvider);
     final user = ref.watch(authProvider).whenOrNull(authenticated: (u) => u);
 
-    // Auto-scroll when messages update (streaming mock)
-    ref.listen(chatProvider, (_, _) => _scrollToBottom());
+    // Auto-scroll only when new messages are added to the list
+    ref.listen(chatProvider, (prev, next) {
+      final prevCount = prev?.valueOrNull?.length ?? 0;
+      final nextCount = next.valueOrNull?.length ?? 0;
+      if (nextCount > prevCount) {
+        _scrollToBottom();
+      }
+    });
 
     return Scaffold(
       body: GestureDetector(

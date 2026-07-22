@@ -36,5 +36,12 @@ void main() {
 
       expect(result, equals('"Gnosis" é \'conhecimento\''));
     });
+
+    test('normalizes decomposed NFD Unicode combining marks to NFC (Orientação Conjugal)', () {
+      const input = 'Orientac\u0327a\u0303o Conjugal';
+      final result = sanitizeTextForPdf(input);
+
+      expect(result, equals('Orientação Conjugal'));
+    });
   });
 }

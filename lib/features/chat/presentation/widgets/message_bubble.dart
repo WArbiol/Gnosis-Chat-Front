@@ -897,6 +897,37 @@ String sanitizeTextForPdf(String text) => _sanitizeTextForPdf(text);
 String _sanitizeTextForPdf(String text) {
   var sanitized = text;
 
+  // 0. Convert NFD decomposed Unicode combining marks (e.g. c + \u0327 = ç, a + \u0303 = ã) to NFC precomposed characters
+  sanitized = sanitized
+      .replaceAll('c\u0327', 'ç')
+      .replaceAll('C\u0327', 'Ç')
+      .replaceAll('a\u0303', 'ã')
+      .replaceAll('A\u0303', 'Ã')
+      .replaceAll('o\u0303', 'õ')
+      .replaceAll('O\u0303', 'Õ')
+      .replaceAll('a\u0301', 'á')
+      .replaceAll('e\u0301', 'é')
+      .replaceAll('i\u0301', 'í')
+      .replaceAll('o\u0301', 'ó')
+      .replaceAll('u\u0301', 'ú')
+      .replaceAll('A\u0301', 'Á')
+      .replaceAll('E\u0301', 'É')
+      .replaceAll('I\u0301', 'Í')
+      .replaceAll('O\u0301', 'Ó')
+      .replaceAll('U\u0301', 'Ú')
+      .replaceAll('a\u0302', 'â')
+      .replaceAll('e\u0302', 'ê')
+      .replaceAll('i\u0302', 'î')
+      .replaceAll('o\u0302', 'ô')
+      .replaceAll('u\u0302', 'û')
+      .replaceAll('A\u0302', 'Â')
+      .replaceAll('E\u0302', 'Ê')
+      .replaceAll('I\u0302', 'Î')
+      .replaceAll('O\u0302', 'Ô')
+      .replaceAll('U\u0302', 'Û')
+      .replaceAll('a\u0300', 'à')
+      .replaceAll('A\u0300', 'À');
+
   // 1. Convert typographic dashes, quotes & special punctuation to PDF-safe equivalents
   sanitized = sanitized
       .replaceAll(RegExp(r'\s*—\s*'), ' - ')
@@ -1157,7 +1188,7 @@ Future<Uint8List> _generatePdf(
               ),
               pw.Expanded(
                 child: pw.Text(
-                  '${citation.pdfName} (pág. ${citation.page})',
+                  '${_sanitizeTextForPdf(citation.pdfName)} (pág. ${citation.page})',
                   style: pw.TextStyle(
                     font: fontRegular,
                     fontSize: 11,

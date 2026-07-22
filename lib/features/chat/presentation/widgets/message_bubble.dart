@@ -188,20 +188,76 @@ class MessageBubble extends StatelessWidget {
               child: _MessageActionBar(message: message),
             ),
           ),
-          if (message.suggestedFollowups.isNotEmpty)
-            Consumer(
-              builder: (context, ref, child) {
-                return SuggestedFollowupsChips(
-                  followups: message.suggestedFollowups,
-                  onTapFollowup: (question) {
-                    ref.read(chatProvider.notifier).ask(question);
-                  },
-                );
-              },
-            ),
+          Builder(
+            builder: (context) {
+              final followups = _getEffectiveFollowups(message);
+              if (followups.isEmpty) return const SizedBox.shrink();
+              return Consumer(
+                builder: (context, ref, child) {
+                  return SuggestedFollowupsChips(
+                    followups: followups,
+                    onTapFollowup: (question) {
+                      ref.read(chatProvider.notifier).ask(question);
+                    },
+                  );
+                },
+              );
+            },
+          ),
         ],
       ],
     );
+  }
+
+  List<String> _getEffectiveFollowups(MessageEntity message) {
+    if (message.suggestedFollowups.isNotEmpty) {
+      return message.suggestedFollowups;
+    }
+
+    if (message.role == MessageRole.assistant && message.route != 'ASK_USER') {
+      final content = message.content.toLowerCase();
+      if (content.contains('pentagrama') ||
+          content.contains('selo') ||
+          content.contains('exorcismo')) {
+        return const [
+          'Como traçar o Pentagrama corretamente no ar?',
+          'Qual o significado dos símbolos no Pentagrama?',
+          'Como usar o Pentagrama na meditação diária?',
+        ];
+      } else if (content.contains('ego') ||
+          content.contains('defeito') ||
+          content.contains('psicolog')) {
+        return const [
+          'Como praticar a morte do Ego?',
+          'Qual a diferença entre Ego e Essência?',
+          'Como a auto-observação auxilia na eliminação do Ego?',
+        ];
+      } else if (content.contains('meditaç') ||
+          content.contains('prática') ||
+          content.contains('mantra')) {
+        return const [
+          'Quais são os mantras para aprofundar a meditação?',
+          'Como acalmar a mente nos exercícios práticos?',
+          'Qual o melhor horário para praticar a meditação?',
+        ];
+      } else if (content.contains('astral') ||
+          content.contains('desdobramento') ||
+          content.contains('sonho')) {
+        return const [
+          'Qual a melhor chave de desdobramento astral?',
+          'Como manter a lucidez durante o sono?',
+          'O que fazer ao despertar no mundo astral?',
+        ];
+      }
+
+      return const [
+        'O que é o Ego no gnosticismo?',
+        'Como praticar a meditação diária?',
+        'Quais são os rituais de defesa espiritual?',
+      ];
+    }
+
+    return const [];
   }
 }
 

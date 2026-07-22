@@ -344,5 +344,58 @@ void main() {
       final stateRef2 = container.read(chatProvider);
       expect(identical(stateRef1, stateRef2), isTrue);
     });
+
+    test('selectConversation sets loading state when conversation has no pre-cached messages', () async {
+      final conv = ConversationEntity(
+        id: 'conv-uncached',
+        title: 'Conversa Sem Cache',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      mockRemote.conversations.add(conv);
+
+      final convNotifier = container.read(conversationProvider.notifier);
+      await convNotifier.loadConversations();
+
+      // Trigger selection
+      final selectFuture = convNotifier.selectConversation('conv-uncached');
+
+      // Before remote fetch resolves, chatProvider should be in loading state
+      expect(container.read(chatProvider).isLoading, isTrue);
+
+      await selectFuture;
+      expect(container.read(conversationProvider).activeId, equals('conv-uncached'));
+      expect(container.read(chatProvider).hasValue, isTrue);
+    });
+
+    test('selectConversation loads existing cached messages instantly before fetching remote update', () async {
+      final cachedMessage = MessageEntity(
+        id: 'msg-cached-1',
+        content: 'Pergunta salva no cache',
+        role: MessageRole.user,
+        timestamp: DateTime.now(),
+      );
+      final convWithCache = ConversationEntity(
+        id: 'conv-cached',
+        title: 'Conversa Com Cache',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        messages: [cachedMessage],
+        messageCount: 1,
+        lastMessagePreview: 'Pergunta salva no cache',
+      );
+      mockRemote.conversations.add(convWithCache);
+
+      final convNotifier = container.read(conversationProvider.notifier);
+      await convNotifier.loadConversations();
+
+      // Trigger selection
+      await convNotifier.selectConversation('conv-cached');
+
+      expect(container.read(conversationProvider).activeId, equals('conv-cached'));
+      final messages = container.read(chatProvider).value!;
+      expect(messages.length, equals(1));
+      expect(messages.first.content, equals('Pergunta salva no cache'));
+    });
   });
 }

@@ -129,7 +129,14 @@ class ConversationRemoteSource {
     }).toList();
 
     final rawFollowups = finalData['suggested_followups'] as List? ?? [];
-    final suggestedFollowups = rawFollowups.map((e) => e.toString()).toList();
+    var suggestedFollowups = rawFollowups.map((e) => e.toString()).toList();
+    if (suggestedFollowups.isEmpty && !isHil) {
+      suggestedFollowups = const [
+        'O que é o Ego no gnosticismo?',
+        'Como praticar a meditação diária?',
+        'Quais são os rituais de defesa espiritual?',
+      ];
+    }
 
     return MessageEntity(
       id: finalData['message_id'] ?? const Uuid().v4(),

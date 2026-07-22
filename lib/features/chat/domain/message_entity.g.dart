@@ -17,6 +17,11 @@ _$MessageEntityImpl _$$MessageEntityImplFromJson(Map<String, dynamic> json) =>
               ?.map((e) => CitationEntity.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      suggestedFollowups:
+          (json['suggested_followups'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       route: json['route'] as String? ?? '',
     );
 
@@ -27,6 +32,7 @@ Map<String, dynamic> _$$MessageEntityImplToJson(_$MessageEntityImpl instance) =>
       'role': _$MessageRoleEnumMap[instance.role]!,
       'created_at': instance.timestamp.toIso8601String(),
       'citations': instance.citations,
+      'suggested_followups': instance.suggestedFollowups,
       'route': instance.route,
     };
 

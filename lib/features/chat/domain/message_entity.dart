@@ -13,6 +13,7 @@ class MessageEntity with _$MessageEntity {
     required MessageRole role,
     @JsonKey(name: 'created_at') required DateTime timestamp,
     @Default([]) List<CitationEntity> citations,
+    @JsonKey(name: 'suggested_followups') @Default([]) List<String> suggestedFollowups,
     @Default('') String route,
   }) = _MessageEntity;
 

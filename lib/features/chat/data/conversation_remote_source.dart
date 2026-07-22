@@ -109,6 +109,10 @@ class ConversationRemoteSource {
 
     final isHil = finalData['is_hil'] as bool? ?? false;
     var content = finalData['answer'] as String? ?? '';
+    if (content.startsWith('PAUSE_HIL: ')) {
+      content = content.replaceFirst('PAUSE_HIL: ', '');
+    }
+
     final recap = finalData['recap'] as String? ?? '';
     if (recap.isNotEmpty && !isHil) {
       content += '\n\n> $recap';
@@ -124,13 +128,17 @@ class ConversationRemoteSource {
       );
     }).toList();
 
+    final rawFollowups = finalData['suggested_followups'] as List? ?? [];
+    final suggestedFollowups = rawFollowups.map((e) => e.toString()).toList();
+
     return MessageEntity(
       id: finalData['message_id'] ?? const Uuid().v4(),
-      content: isHil ? 'PAUSE_HIL: $content' : content,
+      content: content,
       role: MessageRole.assistant,
       timestamp: DateTime.now(),
       citations: citations,
-      route: finalData['route'] ?? 'RAG',
+      suggestedFollowups: suggestedFollowups,
+      route: finalData['route'] ?? (isHil ? 'ASK_USER' : 'RAG'),
     );
   }
 

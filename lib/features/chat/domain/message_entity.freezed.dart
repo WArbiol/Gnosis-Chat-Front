@@ -27,6 +27,8 @@ mixin _$MessageEntity {
   @JsonKey(name: 'created_at')
   DateTime get timestamp => throw _privateConstructorUsedError;
   List<CitationEntity> get citations => throw _privateConstructorUsedError;
+  @JsonKey(name: 'suggested_followups')
+  List<String> get suggestedFollowups => throw _privateConstructorUsedError;
   String get route => throw _privateConstructorUsedError;
 
   /// Serializes this MessageEntity to a JSON map.
@@ -52,6 +54,7 @@ abstract class $MessageEntityCopyWith<$Res> {
     MessageRole role,
     @JsonKey(name: 'created_at') DateTime timestamp,
     List<CitationEntity> citations,
+    @JsonKey(name: 'suggested_followups') List<String> suggestedFollowups,
     String route,
   });
 }
@@ -76,6 +79,7 @@ class _$MessageEntityCopyWithImpl<$Res, $Val extends MessageEntity>
     Object? role = null,
     Object? timestamp = null,
     Object? citations = null,
+    Object? suggestedFollowups = null,
     Object? route = null,
   }) {
     return _then(
@@ -100,6 +104,10 @@ class _$MessageEntityCopyWithImpl<$Res, $Val extends MessageEntity>
                 ? _value.citations
                 : citations // ignore: cast_nullable_to_non_nullable
                       as List<CitationEntity>,
+            suggestedFollowups: null == suggestedFollowups
+                ? _value.suggestedFollowups
+                : suggestedFollowups // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
             route: null == route
                 ? _value.route
                 : route // ignore: cast_nullable_to_non_nullable
@@ -125,6 +133,7 @@ abstract class _$$MessageEntityImplCopyWith<$Res>
     MessageRole role,
     @JsonKey(name: 'created_at') DateTime timestamp,
     List<CitationEntity> citations,
+    @JsonKey(name: 'suggested_followups') List<String> suggestedFollowups,
     String route,
   });
 }
@@ -148,6 +157,7 @@ class __$$MessageEntityImplCopyWithImpl<$Res>
     Object? role = null,
     Object? timestamp = null,
     Object? citations = null,
+    Object? suggestedFollowups = null,
     Object? route = null,
   }) {
     return _then(
@@ -172,6 +182,10 @@ class __$$MessageEntityImplCopyWithImpl<$Res>
             ? _value._citations
             : citations // ignore: cast_nullable_to_non_nullable
                   as List<CitationEntity>,
+        suggestedFollowups: null == suggestedFollowups
+            ? _value._suggestedFollowups
+            : suggestedFollowups // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
         route: null == route
             ? _value.route
             : route // ignore: cast_nullable_to_non_nullable
@@ -190,8 +204,11 @@ class _$MessageEntityImpl implements _MessageEntity {
     required this.role,
     @JsonKey(name: 'created_at') required this.timestamp,
     final List<CitationEntity> citations = const [],
+    @JsonKey(name: 'suggested_followups')
+    final List<String> suggestedFollowups = const [],
     this.route = '',
-  }) : _citations = citations;
+  }) : _citations = citations,
+       _suggestedFollowups = suggestedFollowups;
 
   factory _$MessageEntityImpl.fromJson(Map<String, dynamic> json) =>
       _$$MessageEntityImplFromJson(json);
@@ -214,13 +231,23 @@ class _$MessageEntityImpl implements _MessageEntity {
     return EqualUnmodifiableListView(_citations);
   }
 
+  final List<String> _suggestedFollowups;
+  @override
+  @JsonKey(name: 'suggested_followups')
+  List<String> get suggestedFollowups {
+    if (_suggestedFollowups is EqualUnmodifiableListView)
+      return _suggestedFollowups;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_suggestedFollowups);
+  }
+
   @override
   @JsonKey()
   final String route;
 
   @override
   String toString() {
-    return 'MessageEntity(id: $id, content: $content, role: $role, timestamp: $timestamp, citations: $citations, route: $route)';
+    return 'MessageEntity(id: $id, content: $content, role: $role, timestamp: $timestamp, citations: $citations, suggestedFollowups: $suggestedFollowups, route: $route)';
   }
 
   @override
@@ -237,6 +264,10 @@ class _$MessageEntityImpl implements _MessageEntity {
               other._citations,
               _citations,
             ) &&
+            const DeepCollectionEquality().equals(
+              other._suggestedFollowups,
+              _suggestedFollowups,
+            ) &&
             (identical(other.route, route) || other.route == route));
   }
 
@@ -249,6 +280,7 @@ class _$MessageEntityImpl implements _MessageEntity {
     role,
     timestamp,
     const DeepCollectionEquality().hash(_citations),
+    const DeepCollectionEquality().hash(_suggestedFollowups),
     route,
   );
 
@@ -273,6 +305,7 @@ abstract class _MessageEntity implements MessageEntity {
     required final MessageRole role,
     @JsonKey(name: 'created_at') required final DateTime timestamp,
     final List<CitationEntity> citations,
+    @JsonKey(name: 'suggested_followups') final List<String> suggestedFollowups,
     final String route,
   }) = _$MessageEntityImpl;
 
@@ -290,6 +323,9 @@ abstract class _MessageEntity implements MessageEntity {
   DateTime get timestamp;
   @override
   List<CitationEntity> get citations;
+  @override
+  @JsonKey(name: 'suggested_followups')
+  List<String> get suggestedFollowups;
   @override
   String get route;
 

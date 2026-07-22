@@ -1172,7 +1172,6 @@ Future<Uint8List> _generatePdf(
           margin: const pw.EdgeInsets.only(bottom: 8),
           decoration: const pw.BoxDecoration(
             color: PdfColor.fromInt(0xFFF8F9FA),
-            borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
             border: pw.Border(
               left: pw.BorderSide(color: quoteBarColor, width: 3),
             ),

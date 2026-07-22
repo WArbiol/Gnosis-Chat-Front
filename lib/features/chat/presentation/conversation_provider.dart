@@ -110,19 +110,27 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
     if (existingConv == null) return;
 
     state = state.copyWith(activeId: () => id);
-    _ref.read(chatProvider.notifier).clearHistory(); // clear while loading
+
+    // 1. Instant optimistic load from memory/cache (0ms delay, no blank screen flicker!)
+    if (existingConv.messages.isNotEmpty) {
+      _ref.read(chatProvider.notifier).loadMessages(existingConv.messages);
+    } else {
+      _ref.read(chatProvider.notifier).clearHistory();
+    }
 
     try {
+      // 2. Fetch fresh details from backend asynchronously
       final fullConv = await _repo.getConversation(id);
-      _ref.read(chatProvider.notifier).loadMessages(fullConv.messages);
 
-      // Update local state with the loaded messages count/preview
-      syncMessages(fullConv.messages);
+      // Only update chatProvider UI if this conversation is still the active one!
+      if (state.activeId == id) {
+        _ref.read(chatProvider.notifier).loadMessages(fullConv.messages);
+      }
 
-      // Save details to cache
-      await _cache.saveSingle(fullConv);
+      // Update local state with the loaded messages
+      syncMessagesForId(id, fullConv.messages);
     } catch (e) {
-      // handle error
+      debugPrint('CONV: Error fetching conversation details: $e');
     }
   }
 
@@ -152,9 +160,13 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
   /// (Called repeatedly by ChatNotifier for instant UI).
   void syncMessages(List<MessageEntity> messages) {
     if (state.activeId == null) return;
+    syncMessagesForId(state.activeId!, messages);
+  }
 
+  /// Updates a specific conversation by ID with messages locally.
+  void syncMessagesForId(String targetId, List<MessageEntity> messages) {
     final updated = state.conversations.map((c) {
-      if (c.id != state.activeId) return c;
+      if (c.id != targetId) return c;
 
       final title = messages.isNotEmpty
           ? _truncate(messages.first.content, 40)
@@ -182,9 +194,10 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
 
     state = state.copyWith(conversations: updated);
 
-    // Also update the local cache for this single conversation
-    final activeConv = updated.firstWhere((c) => c.id == state.activeId);
-    _cache.saveSingle(activeConv);
+    final targetConv = updated.where((c) => c.id == targetId).firstOrNull;
+    if (targetConv != null) {
+      _cache.saveSingle(targetConv);
+    }
   }
 
   /// Searches conversations by title (case-insensitive).

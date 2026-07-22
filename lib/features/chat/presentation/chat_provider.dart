@@ -110,16 +110,21 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
       );
       debugPrint('CHAT: SUCCESS.');
 
-      // 3. Update UI with the full AI response
+      // 3. Update UI only if the user hasn't switched conversations while waiting
       final nextMessages = [...currentMessages, userMsg, aiMessage];
-      state = AsyncValue.data(nextMessages);
-      convNotifier.syncMessages(nextMessages);
+      final currentActiveId = _ref.read(conversationProvider).activeId;
+      if (currentActiveId == activeId) {
+        state = AsyncValue.data(nextMessages);
+      }
+      convNotifier.syncMessagesForId(activeId, nextMessages);
     } catch (e, stack) {
       debugPrint('CHAT: Error sending message: $e');
       debugPrint('$stack');
-      // Rollback optimistic user message
-      state = AsyncValue.data(currentMessages);
-      convNotifier.syncMessages(currentMessages);
+      final currentActiveId = _ref.read(conversationProvider).activeId;
+      if (currentActiveId == activeId) {
+        state = AsyncValue.data(currentMessages);
+      }
+      convNotifier.syncMessagesForId(activeId, currentMessages);
       rethrow;
     } finally {
       // Hide typing indicator

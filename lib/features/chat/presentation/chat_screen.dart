@@ -197,7 +197,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                           stops: [
                             0.05,
                             0.12,
-                            0.80,
+                            0.85,
                             0.95,
                           ], // Push top fade zone higher up
                         ).createShader(bounds);

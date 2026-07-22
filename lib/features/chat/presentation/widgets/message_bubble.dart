@@ -216,45 +216,35 @@ class MessageBubble extends StatelessWidget {
 
     if (message.role == MessageRole.assistant && message.route != 'ASK_USER') {
       final content = message.content.toLowerCase();
-      if (content.contains('pentagrama') ||
-          content.contains('selo') ||
-          content.contains('exorcismo')) {
+      if (RegExp(r'\b(pentagrama|pentagramas|exorcismo|exorcismos)\b')
+          .hasMatch(content)) {
         return const [
           'Como traçar o Pentagrama corretamente no ar?',
           'Qual o significado dos símbolos no Pentagrama?',
           'Como usar o Pentagrama na meditação diária?',
         ];
-      } else if (content.contains('ego') ||
-          content.contains('defeito') ||
-          content.contains('psicolog')) {
+      } else if (RegExp(r'\b(ego|egos|defeito|defeitos|psicologia)\b')
+          .hasMatch(content)) {
         return const [
           'Como praticar a morte do Ego?',
           'Qual a diferença entre Ego e Essência?',
           'Como a auto-observação auxilia na eliminação do Ego?',
         ];
-      } else if (content.contains('meditaç') ||
-          content.contains('prática') ||
-          content.contains('mantra')) {
+      } else if (RegExp(r'\b(meditação|meditacao|mantra|mantras)\b')
+          .hasMatch(content)) {
         return const [
           'Quais são os mantras para aprofundar a meditação?',
           'Como acalmar a mente nos exercícios práticos?',
           'Qual o melhor horário para praticar a meditação?',
         ];
-      } else if (content.contains('astral') ||
-          content.contains('desdobramento') ||
-          content.contains('sonho')) {
+      } else if (RegExp(r'\b(astral|desdobramento|sonho|sonhos)\b')
+          .hasMatch(content)) {
         return const [
           'Qual a melhor chave de desdobramento astral?',
           'Como manter a lucidez durante o sono?',
           'O que fazer ao despertar no mundo astral?',
         ];
       }
-
-      return const [
-        'O que é o Ego no gnosticismo?',
-        'Como praticar a meditação diária?',
-        'Quais são os rituais de defesa espiritual?',
-      ];
     }
 
     return const [];

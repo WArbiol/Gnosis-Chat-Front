@@ -323,8 +323,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                               ),
                             ),
                             error: (e, _) => ErrorView(
-                              message: e.toString(),
-                              onRetry: () => ref.invalidate(chatProvider),
+                              message: e.toString().contains('connection') || e.toString().contains('XMLHttpRequest')
+                                  ? 'Falha de conexão com o servidor. Verifique se a API está online.'
+                                  : e.toString().replaceAll('DioException:', '').trim(),
+                              onRetry: () {
+                                if (activeId != null) {
+                                  ref.read(conversationProvider.notifier).selectConversation(activeId);
+                                } else {
+                                  ref.invalidate(chatProvider);
+                                }
+                              },
                             ),
                           ),
                         ),

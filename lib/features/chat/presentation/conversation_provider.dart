@@ -142,11 +142,13 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
 
       // Update local state with the loaded messages
       syncMessagesForId(id, fullConv.messages);
-    } catch (e) {
+    } catch (e, st) {
       debugPrint('CONV: Error fetching conversation details: $e');
-      if (e.toString().contains('404')) {
-        debugPrint('CONV: Conversation 404 not found on server, removing locally...');
-        deleteConversation(id);
+      if (state.activeId == id) {
+        final currentMsgs = _ref.read(chatProvider).valueOrNull ?? [];
+        if (currentMsgs.isEmpty) {
+          _ref.read(chatProvider.notifier).setErrorState(e, st);
+        }
       }
     }
   }

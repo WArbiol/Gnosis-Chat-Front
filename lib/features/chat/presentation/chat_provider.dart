@@ -147,6 +147,9 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
 
   void setLoadingState() => state = const AsyncValue.loading();
 
+  void setErrorState(Object error, StackTrace stackTrace) =>
+      state = AsyncValue.error(error, stackTrace);
+
   void loadMessages(List<MessageEntity> messages) =>
       state = AsyncValue.data(List.of(messages));
 }

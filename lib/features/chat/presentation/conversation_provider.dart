@@ -115,7 +115,7 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
     if (existingConv.messages.isNotEmpty) {
       _ref.read(chatProvider.notifier).loadMessages(existingConv.messages);
     } else {
-      _ref.read(chatProvider.notifier).setLoadingState();
+      _ref.read(chatProvider.notifier).clearHistory();
     }
 
     try {

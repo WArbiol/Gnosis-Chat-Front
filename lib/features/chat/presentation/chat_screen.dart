@@ -12,7 +12,6 @@ import 'package:gnosis_chat/shared/widgets/error_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/utils/extensions.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/animated_message.dart';
-import 'package:gnosis_chat/features/chat/presentation/widgets/chat_skeleton_loading.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/empty_state.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/glass_input_bar.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/premium_app_bar.dart';
@@ -225,12 +224,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                           constraints: const BoxConstraints(maxWidth: 850),
                           child: chatState.when(
                             data: (messages) {
+                              final activeId =
+                                  ref.watch(conversationProvider).activeId;
+
                               if (messages.isEmpty) {
-                                return EmptyState(glowAnim: _glowAnim);
+                                if (activeId == null) {
+                                  return EmptyState(glowAnim: _glowAnim);
+                                }
+                                return const Center(
+                                  child: SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: AppColors.accent,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  ),
+                                );
                               }
 
-                               final activeId =
-                                   ref.watch(conversationProvider).activeId;
                                final loadingId =
                                    ref.watch(loadingConversationIdProvider);
                                final isLoading =
@@ -270,7 +282,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 },
                               );
                             },
-                            loading: () => const ChatSkeletonLoading(),
+                            loading: () => const Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: AppColors.accent,
+                                  strokeWidth: 2.5,
+                                ),
+                              ),
+                            ),
                             error: (e, _) => ErrorView(
                               message: e.toString(),
                               onRetry: () => ref.invalidate(chatProvider),

@@ -148,6 +148,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     );
   }
 
+  void _jumpToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_scrollCtrl.hasClients && _scrollCtrl.position.hasContentDimensions) {
+        try {
+          _scrollCtrl.jumpTo(_scrollCtrl.position.maxScrollExtent);
+        } catch (_) {}
+      }
+    });
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -168,18 +179,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     final chatState = ref.watch(chatProvider);
     final user = ref.watch(authProvider).whenOrNull(authenticated: (u) => u);
 
-    // Clear knownMessageIds when active conversation changes
+    // Reset known messages and jump to bottom instantly when switching conversations
     ref.listen(conversationProvider.select((s) => s.activeId), (prev, next) {
       if (prev != next) {
         _knownMessageIds.clear();
+        _jumpToBottom();
       }
     });
 
-    // Auto-scroll only when new messages are added to the list
+    // Auto-scroll logic for chat messages
     ref.listen(chatProvider, (prev, next) {
-      final prevCount = prev?.valueOrNull?.length ?? 0;
-      final nextCount = next.valueOrNull?.length ?? 0;
-      if (nextCount > prevCount) {
+      final prevList = prev?.valueOrNull ?? [];
+      final nextList = next.valueOrNull ?? [];
+
+      if (prevList.isEmpty && nextList.isNotEmpty) {
+        // Initial load of history: jump to bottom instantly without animation jump
+        _jumpToBottom();
+      } else if (nextList.length > prevList.length && prevList.isNotEmpty) {
+        // New incoming message in active conversation: animate scroll down
         _scrollToBottom();
       }
     });

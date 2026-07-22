@@ -10,7 +10,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:dio/dio.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
@@ -1003,28 +1002,21 @@ Future<Uint8List> _generatePdf(
 ) async {
   final pdf = pw.Document();
 
-  pw.Font fontRegular;
-  pw.Font fontBold;
-  pw.Font fontOblique;
-  pw.Font fontCourier;
-
-  try {
-    fontRegular = await PdfGoogleFonts.robotoRegular();
-    fontBold = await PdfGoogleFonts.robotoBold();
-    fontOblique = await PdfGoogleFonts.robotoItalic();
-    fontCourier = await PdfGoogleFonts.courierPrimeRegular();
-  } catch (_) {
-    fontRegular = pw.Font.helvetica();
-    fontBold = pw.Font.helveticaBold();
-    fontOblique = pw.Font.helveticaOblique();
-    fontCourier = pw.Font.courier();
-  }
+  final fontRegular = pw.Font.helvetica();
+  final fontBold = pw.Font.helveticaBold();
+  final fontOblique = pw.Font.helveticaOblique();
+  final fontCourier = pw.Font.courier();
 
   pw.MemoryImage? logoImage;
   try {
-    final logoData = await rootBundle.load('assets/images/logo.png');
+    final logoData = await rootBundle.load('assets/images/logo_pdf.png');
     logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
-  } catch (_) {}
+  } catch (_) {
+    try {
+      final fallbackData = await rootBundle.load('assets/images/logo.png');
+      logoImage = pw.MemoryImage(fallbackData.buffer.asUint8List());
+    } catch (_) {}
+  }
 
   const pageFormat = PdfPageFormat(
     320, // Estreito estilo celular

@@ -94,11 +94,9 @@ class MessageBubble extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SelectionArea(
-          child: MarkdownBody(
-            data: message.content,
-            selectable:
-                false, // Prevents Web selection crash, Handled by SelectionArea
+        MarkdownBody(
+          data: message.content,
+          selectable: false,
             builders: {
               'latex': LatexElementBuilder(
                 textStyle: TextStyle(color: textColor, fontSize: 15),
@@ -168,7 +166,6 @@ class MessageBubble extends StatelessWidget {
                   ),
                 ),
           ),
-        ),
         if (message.citations.isNotEmpty) ...[
           const SizedBox(height: 8),
           Wrap(

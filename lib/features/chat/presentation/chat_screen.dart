@@ -34,6 +34,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   late final Animation<double> _glowAnim;
 
   final _knownMessageIds = <String>{};
+  bool _isPositionedForConversation = false;
+  String? _lastPositionedConvId;
 
   @override
   void initState() {
@@ -178,11 +180,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider);
     final user = ref.watch(authProvider).whenOrNull(authenticated: (u) => u);
+    final activeId = ref.watch(conversationProvider).activeId;
+
+    if (activeId != _lastPositionedConvId) {
+      _lastPositionedConvId = activeId;
+      _isPositionedForConversation = false;
+    }
 
     // Reset known messages and jump to bottom instantly when switching conversations
     ref.listen(conversationProvider.select((s) => s.activeId), (prev, next) {
       if (prev != next) {
         _knownMessageIds.clear();
+        _isPositionedForConversation = false;
         _jumpToBottom();
       }
     });
@@ -241,9 +250,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                           constraints: const BoxConstraints(maxWidth: 850),
                           child: chatState.when(
                             data: (messages) {
-                              final activeId =
-                                  ref.watch(conversationProvider).activeId;
-
                               if (messages.isEmpty) {
                                 if (activeId == null) {
                                   return EmptyState(glowAnim: _glowAnim);
@@ -260,43 +266,64 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 );
                               }
 
-                               final loadingId =
-                                   ref.watch(loadingConversationIdProvider);
-                               final isLoading =
-                                   loadingId != null && loadingId == activeId;
-                               final itemCount =
-                                   messages.length + (isLoading ? 1 : 0);
+                              final loadingId =
+                                  ref.watch(loadingConversationIdProvider);
+                              final isLoading =
+                                  loadingId != null && loadingId == activeId;
+                              final itemCount =
+                                  messages.length + (isLoading ? 1 : 0);
 
-                              return ListView.builder(
-                                controller: _scrollCtrl,
-                                padding: const EdgeInsets.only(
-                                  left: 16,
-                                  right: 16,
-                                  top: 100,
-                                  bottom: 120,
-                                ),
-                                itemCount: itemCount,
-                                itemBuilder: (context, index) {
-                                  // Typing indicator
-                                  if (isLoading && index == messages.length) {
-                                    return const Padding(
-                                      padding: EdgeInsets.only(top: 4),
-                                      child: TypingIndicator(),
-                                    );
+                              if (!_isPositionedForConversation) {
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  if (!mounted) return;
+                                  if (_scrollCtrl.hasClients &&
+                                      _scrollCtrl.position.hasContentDimensions) {
+                                    try {
+                                      _scrollCtrl.jumpTo(
+                                        _scrollCtrl.position.maxScrollExtent,
+                                      );
+                                    } catch (_) {}
+                                    setState(() {
+                                      _isPositionedForConversation = true;
+                                    });
                                   }
+                                });
+                              }
 
-                                  final msg = messages[index];
-                                  final isNew = !_knownMessageIds.contains(
-                                    msg.id,
-                                  );
-                                  if (isNew) _knownMessageIds.add(msg.id);
+                              return AnimatedOpacity(
+                                duration: const Duration(milliseconds: 150),
+                                opacity: _isPositionedForConversation ? 1.0 : 0.0,
+                                child: ListView.builder(
+                                  controller: _scrollCtrl,
+                                  padding: const EdgeInsets.only(
+                                    left: 16,
+                                    right: 16,
+                                    top: 100,
+                                    bottom: 120,
+                                  ),
+                                  itemCount: itemCount,
+                                  itemBuilder: (context, index) {
+                                    // Typing indicator
+                                    if (isLoading && index == messages.length) {
+                                      return const Padding(
+                                        padding: EdgeInsets.only(top: 4),
+                                        child: TypingIndicator(),
+                                      );
+                                    }
 
-                                  return AnimatedMessage(
-                                    key: ValueKey(msg.id),
-                                    animate: isNew,
-                                    child: MessageBubble(message: msg),
-                                  );
-                                },
+                                    final msg = messages[index];
+                                    final isNew = !_knownMessageIds.contains(
+                                      msg.id,
+                                    );
+                                    if (isNew) _knownMessageIds.add(msg.id);
+
+                                    return AnimatedMessage(
+                                      key: ValueKey(msg.id),
+                                      animate: isNew,
+                                      child: MessageBubble(message: msg),
+                                    );
+                                  },
+                                ),
                               );
                             },
                             loading: () => const Center(

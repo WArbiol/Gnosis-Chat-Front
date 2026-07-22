@@ -928,14 +928,26 @@ String _sanitizeTextForPdf(String text) {
       .replaceAll('a\u0300', 'à')
       .replaceAll('A\u0300', 'À');
 
-  // 1. Convert typographic dashes, quotes & special punctuation to PDF-safe equivalents
+  // 1. Normalize spaces (non-breaking spaces, zero-width spaces, narrow no-break spaces)
   sanitized = sanitized
-      .replaceAll(RegExp(r'\s*—\s*'), ' - ')
-      .replaceAll(RegExp(r'\s*–\s*'), ' - ')
+      .replaceAll('\u00A0', ' ')
+      .replaceAll('\u202F', ' ')
+      .replaceAll('\u200B', '');
+
+  // 2. Convert ALL Unicode dash/hyphen variants & quotes to PDF-safe equivalents
+  sanitized = sanitized
+      .replaceAll('\u2014', '-') // em-dash (—)
+      .replaceAll('\u2013', '-') // en-dash (–)
+      .replaceAll('\u2015', '-') // horizontal bar (―)
+      .replaceAll('\u2012', '-') // figure dash (‒)
+      .replaceAll('\u2011', '-') // non-breaking hyphen
+      .replaceAll('\u2010', '-') // hyphen
+      .replaceAll('\u2212', '-') // minus sign (−)
       .replaceAll('“', '"')
       .replaceAll('”', '"')
       .replaceAll('‘', "'")
-      .replaceAll('’', "'");
+      .replaceAll('’', "'")
+      .replaceAll('…', '...');
 
   // 2. Remove / clean up LaTeX math delimiters ($$...$$, $...$, \[...\], \(...\))
   sanitized = sanitized

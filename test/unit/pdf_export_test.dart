@@ -3,11 +3,11 @@ import 'package:gnosis_chat/features/chat/presentation/widgets/message_bubble.da
 
 void main() {
   group('PDF Export Text Sanitization Tests', () {
-    test('converts em-dash and en-dash into safe hyphens', () {
-      const input = 'Gnosis — sabedoria antiga–meditação';
+    test('converts em-dash, en-dash and non-breaking spaces into safe ASCII hyphens', () {
+      const input = 'artes \u00A0—\u00A0 como a música — ou realize';
       final result = sanitizeTextForPdf(input);
 
-      expect(result, contains('Gnosis - sabedoria antiga - meditação'));
+      expect(result, equals('artes  -  como a música - ou realize'));
     });
 
     test('preserves cedilla and accented Portuguese characters', () {

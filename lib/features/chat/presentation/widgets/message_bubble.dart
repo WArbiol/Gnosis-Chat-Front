@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:dio/dio.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
@@ -1001,9 +1002,23 @@ Future<Uint8List> _generatePdf(
   List<CitationEntity> citations,
 ) async {
   final pdf = pw.Document();
-  final fontRegular = pw.Font.helvetica();
-  final fontBold = pw.Font.helveticaBold();
-  final fontOblique = pw.Font.helveticaOblique();
+
+  pw.Font fontRegular;
+  pw.Font fontBold;
+  pw.Font fontOblique;
+  pw.Font fontCourier;
+
+  try {
+    fontRegular = await PdfGoogleFonts.robotoRegular();
+    fontBold = await PdfGoogleFonts.robotoBold();
+    fontOblique = await PdfGoogleFonts.robotoItalic();
+    fontCourier = await PdfGoogleFonts.courierPrimeRegular();
+  } catch (_) {
+    fontRegular = pw.Font.helvetica();
+    fontBold = pw.Font.helveticaBold();
+    fontOblique = pw.Font.helveticaOblique();
+    fontCourier = pw.Font.courier();
+  }
 
   const pageFormat = PdfPageFormat(
     320, // Estreito estilo celular
@@ -1011,7 +1026,7 @@ Future<Uint8List> _generatePdf(
     marginLeft: 16,
     marginRight: 16,
     marginTop: 20,
-    marginBottom: 20,
+    marginBottom: 24,
   );
 
   const textColor = PdfColor.fromInt(0xFF2C2C2C);
@@ -1023,18 +1038,37 @@ Future<Uint8List> _generatePdf(
   final lines = sanitizedMarkdown.split('\n');
   final widgets = <pw.Widget>[];
 
-  // Cabeçalho
+  // Cabeçalho com Emblema e Branding Gnosis
   widgets.add(
     pw.Center(
       child: pw.Column(
         children: [
+          pw.Container(
+            width: 28,
+            height: 28,
+            decoration: const pw.BoxDecoration(
+              color: accentColor,
+              shape: pw.BoxShape.circle,
+            ),
+            child: pw.Center(
+              child: pw.Text(
+                'G',
+                style: pw.TextStyle(
+                  font: fontBold,
+                  fontSize: 16,
+                  color: PdfColors.white,
+                ),
+              ),
+            ),
+          ),
+          pw.SizedBox(height: 6),
           pw.Text(
             'Pergunte à Gnosis',
             style: pw.TextStyle(
               font: fontBold,
-              fontSize: 22,
-              color: accentColor,
-              letterSpacing: 1.5,
+              fontSize: 20,
+              color: primaryColor,
+              letterSpacing: 1.2,
             ),
           ),
           pw.SizedBox(height: 2),
@@ -1042,15 +1076,15 @@ Future<Uint8List> _generatePdf(
             'Citação & Resposta',
             style: pw.TextStyle(
               font: fontOblique,
-              fontSize: 11,
+              fontSize: 10.5,
               color: PdfColors.grey600,
             ),
           ),
           pw.SizedBox(height: 8),
           pw.Container(
-            height: 0.8,
+            height: 1,
             color: const PdfColor.fromInt(0x4CCB9E28), // 30% opacidade
-            width: 60,
+            width: 80,
           ),
           pw.SizedBox(height: 14),
         ],
@@ -1058,8 +1092,48 @@ Future<Uint8List> _generatePdf(
     ),
   );
 
+  bool inCodeBlock = false;
+  final codeBuffer = StringBuffer();
+
   for (final line in lines) {
     final trimmed = line.trim();
+
+    // Suporte a blocos de código Markdown (```)
+    if (trimmed.startsWith('```')) {
+      if (inCodeBlock) {
+        // Fecha o bloco de código
+        widgets.add(
+          pw.Container(
+            width: double.infinity,
+            padding: const pw.EdgeInsets.all(8),
+            margin: const pw.EdgeInsets.only(bottom: 6),
+            decoration: const pw.BoxDecoration(
+              color: PdfColor.fromInt(0xFF1E1E1E),
+              borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
+            ),
+            child: pw.Text(
+              codeBuffer.toString().trimRight(),
+              style: pw.TextStyle(
+                font: fontCourier,
+                fontSize: 10,
+                color: const PdfColor.fromInt(0xFFE0E0E0),
+              ),
+            ),
+          ),
+        );
+        codeBuffer.clear();
+        inCodeBlock = false;
+      } else {
+        inCodeBlock = true;
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      codeBuffer.writeln(line);
+      continue;
+    }
+
     if (trimmed.isEmpty) {
       widgets.add(pw.SizedBox(height: 8));
       continue;
@@ -1070,10 +1144,10 @@ Future<Uint8List> _generatePdf(
       final headingLevel = RegExp(r'^#+').stringMatch(trimmed)?.length ?? 1;
       final headingText = trimmed.replaceAll(RegExp(r'^#+\s+'), '');
       final double fontSize = headingLevel == 1
-          ? 22
+          ? 20
           : headingLevel == 2
-          ? 18
-          : 15;
+          ? 17
+          : 14.5;
 
       widgets.add(
         pw.Padding(
@@ -1089,26 +1163,27 @@ Future<Uint8List> _generatePdf(
         ),
       );
     }
-    // 2. Blockquotes
+    // 2. Blockquotes (Card arredondado de destaque)
     else if (trimmed.startsWith('>')) {
       final quoteText = trimmed.replaceAll(RegExp(r'^>\s+'), '');
       widgets.add(
         pw.Container(
-          padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          margin: const pw.EdgeInsets.only(bottom: 6),
+          padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          margin: const pw.EdgeInsets.only(bottom: 8),
           decoration: const pw.BoxDecoration(
-            color: PdfColor.fromInt(0xFFF9F9F9),
+            color: PdfColor.fromInt(0xFFF8F9FA),
+            borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
             border: pw.Border(
-              left: pw.BorderSide(color: quoteBarColor, width: 2.5),
+              left: pw.BorderSide(color: quoteBarColor, width: 3),
             ),
           ),
           child: _buildRichText(
             quoteText,
             fontOblique,
             fontBold,
-            13,
+            12.5,
             const PdfColor.fromInt(0xCC2C2C2C),
-          ), // 80% opacidade
+          ),
         ),
       );
     }
@@ -1132,7 +1207,6 @@ Future<Uint8List> _generatePdf(
           child: pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // Vector circle bullet instead of unicode character (prevents missing glyph boxes)
               pw.Container(
                 width: 3.5,
                 height: 3.5,
@@ -1147,7 +1221,7 @@ Future<Uint8List> _generatePdf(
                   listContent,
                   fontRegular,
                   fontBold,
-                  14,
+                  13.5,
                   textColor,
                 ),
               ),
@@ -1156,12 +1230,12 @@ Future<Uint8List> _generatePdf(
         ),
       );
     }
-    // 4. Parágrafos comuns
+    // 5. Parágrafos comuns
     else {
       widgets.add(
         pw.Padding(
           padding: const pw.EdgeInsets.only(bottom: 6),
-          child: _buildRichText(trimmed, fontRegular, fontBold, 14, textColor),
+          child: _buildRichText(trimmed, fontRegular, fontBold, 13.5, textColor),
         ),
       );
     }
@@ -1175,7 +1249,7 @@ Future<Uint8List> _generatePdf(
         'FONTES CITADAS:',
         style: pw.TextStyle(
           font: fontBold,
-          fontSize: 13,
+          fontSize: 12.5,
           color: primaryColor,
           letterSpacing: 1,
         ),
@@ -1203,8 +1277,8 @@ Future<Uint8List> _generatePdf(
                   '${_sanitizeTextForPdf(citation.pdfName)} (pág. ${citation.page})',
                   style: pw.TextStyle(
                     font: fontRegular,
-                    fontSize: 11,
-                    color: const PdfColor.fromInt(0xCC2C2C2C), // 80% opacidade
+                    fontSize: 10.5,
+                    color: const PdfColor.fromInt(0xCC2C2C2C),
                   ),
                 ),
               ),
@@ -1215,26 +1289,9 @@ Future<Uint8List> _generatePdf(
     }
   }
 
-  // Rodapé sutil
-  widgets.add(
-    pw.Column(
-      children: [
-        pw.SizedBox(height: 16),
-        pw.Container(height: 0.5, color: PdfColors.grey300),
-        pw.SizedBox(height: 6),
-        pw.Center(
-          child: pw.Text(
-            'Gerado via Gnosis Chat RAG',
-            style: pw.TextStyle(
-              font: fontOblique,
-              fontSize: 9.5,
-              color: PdfColors.grey500,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
+  final now = DateTime.now();
+  final dateStr =
+      '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
 
   pdf.addPage(
     pw.MultiPage(
@@ -1244,6 +1301,38 @@ Future<Uint8List> _generatePdf(
         bold: fontBold,
         italic: fontOblique,
       ),
+      footer: (pw.Context context) {
+        return pw.Container(
+          margin: const pw.EdgeInsets.only(top: 8),
+          padding: const pw.EdgeInsets.only(top: 6),
+          decoration: const pw.BoxDecoration(
+            border: pw.Border(
+              top: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+            ),
+          ),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text(
+                'Gnosis Chat • $dateStr',
+                style: pw.TextStyle(
+                  font: fontOblique,
+                  fontSize: 8.5,
+                  color: PdfColors.grey600,
+                ),
+              ),
+              pw.Text(
+                'Página ${context.pageNumber} de ${context.pagesCount}',
+                style: pw.TextStyle(
+                  font: fontOblique,
+                  fontSize: 8.5,
+                  color: PdfColors.grey600,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
       build: (pw.Context context) => widgets,
     ),
   );

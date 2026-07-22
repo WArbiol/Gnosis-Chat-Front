@@ -57,7 +57,7 @@ class EmptyState extends StatelessWidget {
                 end: Alignment.bottomRight,
               ).createShader(bounds),
               child: Text(
-                'Pergunte ao Gnosis...',
+                'Pergunte à Gnosis...',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: Colors.white,

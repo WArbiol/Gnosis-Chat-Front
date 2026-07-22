@@ -93,19 +93,26 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
     final chips = <Widget>[];
 
     for (final book in activeFilters.books) {
-      chips.add(_buildFilterChip(book, () {
-        ref.read(activeFiltersProvider.notifier).state = activeFilters.copyWith(
-          books: activeFilters.books.where((b) => b != book).toList(),
-        );
-      }));
+      chips.add(
+        _buildFilterChip(book, () {
+          ref.read(activeFiltersProvider.notifier).state = activeFilters
+              .copyWith(
+                books: activeFilters.books.where((b) => b != book).toList(),
+              );
+        }),
+      );
     }
 
     for (final author in activeFilters.authors) {
-      chips.add(_buildFilterChip(author, () {
-        ref.read(activeFiltersProvider.notifier).state = activeFilters.copyWith(
-          authors: activeFilters.authors.where((a) => a != author).toList(),
-        );
-      }));
+      chips.add(
+        _buildFilterChip(author, () {
+          ref
+              .read(activeFiltersProvider.notifier)
+              .state = activeFilters.copyWith(
+            authors: activeFilters.authors.where((a) => a != author).toList(),
+          );
+        }),
+      );
     }
 
     final authState = ref.watch(authProvider);
@@ -116,12 +123,15 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
     final hasSecondChamberAccess = user != null && user.chamberLevel >= 2;
 
     if (hasSecondChamberAccess && activeFilters.chamberLevels.length == 1) {
-      final label = activeFilters.chamberLevels.first == 1 ? '1ª Câmara' : '2ª Câmara';
-      chips.add(_buildFilterChip(label, () {
-        ref.read(activeFiltersProvider.notifier).state = activeFilters.copyWith(
-          chamberLevels: const [1, 2],
-        );
-      }));
+      final label = activeFilters.chamberLevels.first == 1
+          ? '1ª Câmara'
+          : '2ª Câmara';
+      chips.add(
+        _buildFilterChip(label, () {
+          ref.read(activeFiltersProvider.notifier).state = activeFilters
+              .copyWith(chamberLevels: const [1, 2]);
+        }),
+      );
     }
 
     return SafeArea(
@@ -154,113 +164,121 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
                 ),
               ),
               child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (chips.isNotEmpty) ...[
-                SizedBox(
-                  height: 32,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Row(children: chips),
-                  ),
-                ),
-                Container(
-                  height: 1,
-                  color: Colors.white.withValues(alpha: 0.08),
-                  margin: const EdgeInsets.symmetric(vertical: 2),
-                ),
-              ],
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Filter Button
-                  IconButton(
-                    icon: Icon(
-                      Icons.tune,
-                      color: activeFilters.isEmpty ? AppColors.onSurfaceVariant : AppColors.accent,
-                      size: 20,
-                    ),
-                    onPressed: () => _showFilterSheet(context),
-                  ),
-
-                  Expanded(
-                    child: Theme(
-                      data: Theme.of(context).copyWith(
-                        inputDecorationTheme: const InputDecorationTheme(),
-                      ),
-                      child: TextField(
-                        controller: widget.controller,
-                        focusNode: _focusNode,
-                        minLines: 1,
-                        maxLines: 5,
-                        textInputAction: TextInputAction.newline,
-                        style: const TextStyle(
-                          color: AppColors.onSurface,
-                          fontSize: 15,
+                  if (chips.isNotEmpty) ...[
+                    SizedBox(
+                      height: 32,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                        decoration: InputDecoration(
-                          hintText: 'Pergunte ao Gnosis...',
-                          hintStyle: TextStyle(
-                            color: AppColors.onSurfaceVariant.withValues(
-                              alpha: 0.5,
+                        child: Row(children: chips),
+                      ),
+                    ),
+                    Container(
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.08),
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                    ),
+                  ],
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Filter Button
+                      IconButton(
+                        icon: Icon(
+                          Icons.tune,
+                          color: activeFilters.isEmpty
+                              ? AppColors.onSurfaceVariant
+                              : AppColors.accent,
+                          size: 20,
+                        ),
+                        onPressed: () => _showFilterSheet(context),
+                      ),
+
+                      Expanded(
+                        child: Theme(
+                          data: Theme.of(context).copyWith(
+                            inputDecorationTheme: const InputDecorationTheme(),
+                          ),
+                          child: TextField(
+                            controller: widget.controller,
+                            focusNode: _focusNode,
+                            minLines: 1,
+                            maxLines: 5,
+                            textInputAction: TextInputAction.newline,
+                            style: const TextStyle(
+                              color: AppColors.onSurface,
+                              fontSize: 15,
                             ),
-                            fontSize: 15,
-                          ),
-                          filled: false,
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 10,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Send button
-                  AnimatedScale(
-                    scale: widget.hasText ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOut,
-                    child: AnimatedOpacity(
-                      opacity: widget.hasText ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [AppColors.accent, AppColors.accentLight],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: widget.onSend,
-                            borderRadius: BorderRadius.circular(18),
-                            child: const Icon(
-                              Icons.arrow_upward_rounded,
-                              color: AppColors.background,
-                              size: 20,
+                            decoration: InputDecoration(
+                              hintText: 'Pergunte à Gnosis...',
+                              hintStyle: TextStyle(
+                                color: AppColors.onSurfaceVariant.withValues(
+                                  alpha: 0.5,
+                                ),
+                                fontSize: 15,
+                              ),
+                              filled: false,
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 10,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+
+                      // Send button
+                      AnimatedScale(
+                        scale: widget.hasText ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOut,
+                        child: AnimatedOpacity(
+                          opacity: widget.hasText ? 1.0 : 0.0,
+                          duration: const Duration(milliseconds: 200),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.accent,
+                                  AppColors.accentLight,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: widget.onSend,
+                                borderRadius: BorderRadius.circular(18),
+                                child: const Icon(
+                                  Icons.arrow_upward_rounded,
+                                  color: AppColors.background,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                    ],
                   ),
-                  const SizedBox(width: 4),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-        ),
         ),
       ),
     );

@@ -22,6 +22,7 @@ class MessageEntity with _$MessageEntity {
     var rawContent = json['content'] as String? ?? '';
     List<String> extractedFollowups = [];
 
+    // Backwards compatibility for legacy HTML comment tags if present
     final regExp = RegExp(r'<!--followups:(.*?)-->', dotAll: true);
     final match = regExp.firstMatch(rawContent);
     if (match != null) {

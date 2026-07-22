@@ -1,7 +1,12 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_latex/flutter_markdown_latex.dart';
+import 'package:markdown/markdown.dart' as md;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -9,6 +14,8 @@ import 'package:dio/dio.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
+import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/suggested_followups_chips.dart';
 import 'package:gnosis_chat/services/api/api_client.dart';
 
 class MessageBubble extends StatelessWidget {
@@ -92,6 +99,15 @@ class MessageBubble extends StatelessWidget {
             data: message.content,
             selectable:
                 false, // Prevents Web selection crash, Handled by SelectionArea
+            builders: {
+              'latex': LatexElementBuilder(
+                textStyle: TextStyle(color: textColor, fontSize: 15),
+              ),
+            },
+            extensionSet: md.ExtensionSet(
+              [LatexBlockSyntax()],
+              [LatexInlineSyntax()],
+            ),
             styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
                 .copyWith(
                   p: TextStyle(color: textColor, fontSize: 15, height: 1.5),
@@ -172,6 +188,17 @@ class MessageBubble extends StatelessWidget {
               child: _MessageActionBar(message: message),
             ),
           ),
+          if (message.suggestedFollowups.isNotEmpty)
+            Consumer(
+              builder: (context, ref, child) {
+                return SuggestedFollowupsChips(
+                  followups: message.suggestedFollowups,
+                  onTapFollowup: (question) {
+                    ref.read(chatProvider.notifier).ask(question);
+                  },
+                );
+              },
+            ),
         ],
       ],
     );
@@ -696,26 +723,43 @@ class _SharePdfButtonState extends State<_SharePdfButton> {
         widget.message.content,
         widget.message.citations,
       );
-      final xFile = XFile.fromData(
-        pdfBytes,
-        mimeType: 'application/pdf',
-        name: 'resposta_gnosis.pdf',
-      );
+
+      final XFile xFile;
+      if (kIsWeb) {
+        xFile = XFile.fromData(
+          pdfBytes,
+          mimeType: 'application/pdf',
+          name: 'resposta_gnosis.pdf',
+        );
+      } else {
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/resposta_gnosis.pdf');
+        await file.writeAsBytes(pdfBytes);
+        xFile = XFile(
+          file.path,
+          mimeType: 'application/pdf',
+          name: 'resposta_gnosis.pdf',
+        );
+      }
+
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+
       await Share.shareXFiles([xFile]);
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _loading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro ao gerar PDF: $e'),
             backgroundColor: AppColors.error,
           ),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
       }
     }
   }

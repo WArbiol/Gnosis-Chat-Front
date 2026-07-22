@@ -891,6 +891,68 @@ pw.Widget _buildRichText(
   );
 }
 
+@visibleForTesting
+String sanitizeTextForPdf(String text) => _sanitizeTextForPdf(text);
+
+String _sanitizeTextForPdf(String text) {
+  var sanitized = text;
+
+  // 1. Convert typographic dashes, quotes & special punctuation to PDF-safe equivalents
+  sanitized = sanitized
+      .replaceAll(RegExp(r'\s*—\s*'), ' - ')
+      .replaceAll(RegExp(r'\s*–\s*'), ' - ')
+      .replaceAll('“', '"')
+      .replaceAll('”', '"')
+      .replaceAll('‘', "'")
+      .replaceAll('’', "'");
+
+  // 2. Remove / clean up LaTeX math delimiters ($$...$$, $...$, \[...\], \(...\))
+  sanitized = sanitized
+      .replaceAllMapped(RegExp(r'\$\$(.*?)\$\$', dotAll: true), (m) => ' ${m[1]} ')
+      .replaceAllMapped(RegExp(r'\$(.*?)\$'), (m) => m[1] ?? '')
+      .replaceAllMapped(RegExp(r'\\\[(.*?)\\\]', dotAll: true), (m) => ' ${m[1]} ')
+      .replaceAllMapped(RegExp(r'\\\((.*?)\\\)'), (m) => m[1] ?? '');
+
+  // 3. Convert common LaTeX math commands to readable text & math symbols
+  sanitized = sanitized
+      .replaceAllMapped(RegExp(r'\\frac\{([^}]+)\}\{([^}]+)\}'), (m) => '(${m[1]} / ${m[2]})')
+      .replaceAllMapped(RegExp(r'\\sqrt\{([^}]+)\}'), (m) => '√(${m[1]})')
+      .replaceAllMapped(RegExp(r'\\sqrt\s+(\w+)'), (m) => '√${m[1]}')
+      .replaceAll(RegExp(r'\\times\b'), '×')
+      .replaceAll(RegExp(r'\\cdot\b'), '·')
+      .replaceAll(RegExp(r'\\div\b'), '÷')
+      .replaceAll(RegExp(r'\\pm\b'), '±')
+      .replaceAll(RegExp(r'\\le(q)?\b'), '≤')
+      .replaceAll(RegExp(r'\\ge(q)?\b'), '≥')
+      .replaceAll(RegExp(r'\\neq\b'), '≠')
+      .replaceAll(RegExp(r'\\approx\b'), '≈')
+      .replaceAll(RegExp(r'\\infty\b'), '∞')
+      .replaceAll(RegExp(r'\\pi\b'), 'π')
+      .replaceAll(RegExp(r'\\alpha\b'), 'α')
+      .replaceAll(RegExp(r'\\beta\b'), 'β')
+      .replaceAll(RegExp(r'\\theta\b'), 'θ')
+      .replaceAll(RegExp(r'\\lambda\b'), 'λ')
+      .replaceAll(RegExp(r'\\delta\b'), 'δ')
+      .replaceAll(RegExp(r'\\sum\b'), 'Σ')
+      .replaceAll(RegExp(r'\\int\b'), '∫')
+      .replaceAll(RegExp(r'\\in\b'), '∈')
+      .replaceAll(RegExp(r'\\to\b'), '→')
+      .replaceAll(RegExp(r'\\Rightarrow\b'), '⇒')
+      .replaceAllMapped(RegExp(r'\\(text|mathrm|mathbf|mathit)\{([^}]+)\}'), (m) => m[2] ?? '');
+
+  // 4. Superscripts & Subscripts
+  sanitized = sanitized
+      .replaceAll('^2', '²')
+      .replaceAll('^3', '³')
+      .replaceAll('^1', '¹')
+      .replaceAll('^0', '⁰')
+      .replaceAll('_1', '₁')
+      .replaceAll('_2', '₂')
+      .replaceAll('_3', '₃');
+
+  return sanitized;
+}
+
 Future<Uint8List> _generatePdf(
   String markdown,
   List<CitationEntity> citations,
@@ -914,7 +976,8 @@ Future<Uint8List> _generatePdf(
   const accentColor = PdfColor.fromInt(0xFFCB9E28); // Gold
   const quoteBarColor = PdfColor.fromInt(0xFFE8B730);
 
-  final lines = markdown.split('\n');
+  final sanitizedMarkdown = _sanitizeTextForPdf(markdown);
+  final lines = sanitizedMarkdown.split('\n');
   final widgets = <pw.Widget>[];
 
   // Cabeçalho

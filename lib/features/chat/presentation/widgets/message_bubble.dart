@@ -105,8 +105,8 @@ class MessageBubble extends StatelessWidget {
               ),
             },
             extensionSet: md.ExtensionSet(
-              [LatexBlockSyntax()],
-              [LatexInlineSyntax()],
+              [LatexBlockSyntax(), ...md.ExtensionSet.gitHubFlavored.blockSyntaxes],
+              [LatexInlineSyntax(), ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes],
             ),
             styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
                 .copyWith(

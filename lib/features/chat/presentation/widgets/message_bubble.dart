@@ -1020,13 +1020,19 @@ Future<Uint8List> _generatePdf(
     fontCourier = pw.Font.courier();
   }
 
+  pw.MemoryImage? logoImage;
+  try {
+    final logoData = await rootBundle.load('assets/images/logo.png');
+    logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+  } catch (_) {}
+
   const pageFormat = PdfPageFormat(
     320, // Estreito estilo celular
     568, // Altura finita (estilo iPhone SE) para suportar MultiPage
     marginLeft: 16,
     marginRight: 16,
     marginTop: 20,
-    marginBottom: 24,
+    marginBottom: 20,
   );
 
   const textColor = PdfColor.fromInt(0xFF2C2C2C);
@@ -1038,29 +1044,32 @@ Future<Uint8List> _generatePdf(
   final lines = sanitizedMarkdown.split('\n');
   final widgets = <pw.Widget>[];
 
-  // Cabeçalho com Emblema e Branding Gnosis
+  // Cabeçalho com Logo oficial da Gnosis
   widgets.add(
     pw.Center(
       child: pw.Column(
         children: [
-          pw.Container(
-            width: 28,
-            height: 28,
-            decoration: const pw.BoxDecoration(
-              color: accentColor,
-              shape: pw.BoxShape.circle,
-            ),
-            child: pw.Center(
-              child: pw.Text(
-                'G',
-                style: pw.TextStyle(
-                  font: fontBold,
-                  fontSize: 16,
-                  color: PdfColors.white,
+          if (logoImage != null)
+            pw.Image(logoImage, width: 44, height: 44)
+          else
+            pw.Container(
+              width: 28,
+              height: 28,
+              decoration: const pw.BoxDecoration(
+                color: accentColor,
+                shape: pw.BoxShape.circle,
+              ),
+              child: pw.Center(
+                child: pw.Text(
+                  'G',
+                  style: pw.TextStyle(
+                    font: fontBold,
+                    fontSize: 16,
+                    color: PdfColors.white,
+                  ),
                 ),
               ),
             ),
-          ),
           pw.SizedBox(height: 6),
           pw.Text(
             'Pergunte à Gnosis',
@@ -1288,10 +1297,6 @@ Future<Uint8List> _generatePdf(
     }
   }
 
-  final now = DateTime.now();
-  final dateStr =
-      '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
-
   pdf.addPage(
     pw.MultiPage(
       pageFormat: pageFormat,
@@ -1300,38 +1305,6 @@ Future<Uint8List> _generatePdf(
         bold: fontBold,
         italic: fontOblique,
       ),
-      footer: (pw.Context context) {
-        return pw.Container(
-          margin: const pw.EdgeInsets.only(top: 8),
-          padding: const pw.EdgeInsets.only(top: 6),
-          decoration: const pw.BoxDecoration(
-            border: pw.Border(
-              top: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
-            ),
-          ),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                'Gnosis Chat • $dateStr',
-                style: pw.TextStyle(
-                  font: fontOblique,
-                  fontSize: 8.5,
-                  color: PdfColors.grey600,
-                ),
-              ),
-              pw.Text(
-                'Página ${context.pageNumber} de ${context.pagesCount}',
-                style: pw.TextStyle(
-                  font: fontOblique,
-                  fontSize: 8.5,
-                  color: PdfColors.grey600,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
       build: (pw.Context context) => widgets,
     ),
   );

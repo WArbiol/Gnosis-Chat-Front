@@ -105,9 +105,6 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
 
       await _cache.saveSingle(conv);
 
-      // We clear history only if we were NOT in the middle of sending a message
-      // But usually, JIT ask() calls this BEFORE adding the optimistic message.
-      _ref.read(chatProvider.notifier).clearHistory();
       debugPrint('CONV: State updated with activeId: ${conv.id}');
     } catch (e, stack) {
       debugPrint('CONV: ERROR creating conversation: $e');

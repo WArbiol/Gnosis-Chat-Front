@@ -287,5 +287,20 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 50));
       expect(mockRemote.conversations.first.title, equals('Primeira pergunta longa sobre psicologia…'));
     });
+
+    test('ask in draft conversation (activeId == null) maintains optimistic user message during creation', () async {
+      expect(container.read(conversationProvider).activeId, isNull);
+      expect(container.read(chatProvider).value, isEmpty);
+
+      mockRemote.shouldFailSendMessage = false;
+      await container.read(chatProvider.notifier).ask('Pergunta em nova conversa');
+
+      expect(container.read(conversationProvider).activeId, isNotNull);
+      final messages = container.read(chatProvider).value!;
+      expect(messages.length, equals(2));
+      expect(messages[0].content, equals('Pergunta em nova conversa'));
+      expect(messages[0].role, equals(MessageRole.user));
+      expect(messages[1].content, equals('Resposta do Gnosis'));
+    });
   });
 }

@@ -71,20 +71,7 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
   }
 
   Future<void> ask(String query) async {
-    // Determine active conversation or create one if none exists
-    final convNotifier = _ref.read(conversationProvider.notifier);
-    var activeId = _ref.read(conversationProvider).activeId;
-
-    debugPrint('CHAT: Starting query: $query');
-    if (activeId == null) {
-      debugPrint('CHAT: Creating new conversation...');
-      await convNotifier.createConversation();
-      activeId = _ref.read(conversationProvider).activeId;
-      debugPrint('CHAT: Active ID: $activeId');
-      if (activeId == null) return; // creation failed
-    }
-
-    // 1. Optimistic UI update for user message
+    // 1. Optimistic UI update for user message IMMEDIATELY
     final userMsg = MessageEntity(
       id: _uuid.v4(),
       content: query,
@@ -94,11 +81,31 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
 
     final currentMessages = state.valueOrNull ?? [];
     state = AsyncValue.data([...currentMessages, userMsg]);
-    convNotifier.syncMessages([...currentMessages, userMsg]);
 
-    _loadingIdCtrl?.state = activeId;
+    final convNotifier = _ref.read(conversationProvider.notifier);
+    var activeId = _ref.read(conversationProvider).activeId;
+
+    if (activeId != null) {
+      convNotifier.syncMessages([...currentMessages, userMsg]);
+      _loadingIdCtrl?.state = activeId;
+    } else {
+      _loadingIdCtrl?.state = 'NEW_CONV'; // Show loading while creating
+    }
 
     try {
+      if (activeId == null) {
+        debugPrint('CHAT: Creating new conversation...');
+        await convNotifier.createConversation();
+        activeId = _ref.read(conversationProvider).activeId;
+        debugPrint('CHAT: Active ID: $activeId');
+        if (activeId == null) {
+          state = AsyncValue.data(currentMessages);
+          _loadingIdCtrl?.state = null;
+          return; // creation failed
+        }
+        convNotifier.syncMessages([...currentMessages, userMsg]);
+        _loadingIdCtrl?.state = activeId;
+      }
       // 2. Network call to /ask (persists both user and AI message)
       debugPrint('CHAT: Sending message...');
       final activeFilters = _ref.read(activeFiltersProvider);
@@ -124,11 +131,13 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
       if (currentActiveId == activeId) {
         state = AsyncValue.data(currentMessages);
       }
-      convNotifier.syncMessagesForId(activeId, currentMessages);
+      if (activeId != null) {
+        convNotifier.syncMessagesForId(activeId, currentMessages);
+      }
       rethrow;
     } finally {
       // Clear typing indicator for this conversation
-      if (_loadingIdCtrl?.state == activeId) {
+      if (_loadingIdCtrl?.state == activeId || _loadingIdCtrl?.state == 'NEW_CONV') {
         _loadingIdCtrl?.state = null;
       }
     }

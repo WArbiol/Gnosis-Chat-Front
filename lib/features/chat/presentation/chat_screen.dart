@@ -34,8 +34,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   late final Animation<double> _glowAnim;
 
   final _knownMessageIds = <String>{};
-  bool _isPositionedForConversation = false;
-  String? _lastPositionedConvId;
+  String? _lastLoadedActiveId;
 
   @override
   void initState() {
@@ -153,9 +152,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   void _jumpToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (_scrollCtrl.hasClients && _scrollCtrl.position.hasContentDimensions) {
+      if (_scrollCtrl.hasClients) {
         try {
-          _scrollCtrl.jumpTo(_scrollCtrl.position.maxScrollExtent);
+          _scrollCtrl.jumpTo(0.0);
         } catch (_) {}
       }
     });
@@ -164,10 +163,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (_scrollCtrl.hasClients && _scrollCtrl.position.hasContentDimensions) {
+      if (_scrollCtrl.hasClients) {
         try {
           _scrollCtrl.animateTo(
-            _scrollCtrl.position.maxScrollExtent,
+            0.0,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -182,16 +181,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     final user = ref.watch(authProvider).whenOrNull(authenticated: (u) => u);
     final activeId = ref.watch(conversationProvider).activeId;
 
-    if (activeId != _lastPositionedConvId) {
-      _lastPositionedConvId = activeId;
-      _isPositionedForConversation = false;
-    }
-
-    // Reset known messages and jump to bottom instantly when switching conversations
+    // Reset scroll when switching conversations
     ref.listen(conversationProvider.select((s) => s.activeId), (prev, next) {
       if (prev != next) {
-        _knownMessageIds.clear();
-        _isPositionedForConversation = false;
         _jumpToBottom();
       }
     });
@@ -202,7 +194,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
       final nextList = next.valueOrNull ?? [];
 
       if (prevList.isEmpty && nextList.isNotEmpty) {
-        // Initial load of history: jump to bottom instantly without animation jump
+        // Initial load of history: jump to bottom
         _jumpToBottom();
       } else if (nextList.length > prevList.length && prevList.isNotEmpty) {
         // New incoming message in active conversation: animate scroll down
@@ -239,9 +231,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                           stops: [
                             0.05,
                             0.12,
-                            0.85,
                             0.95,
-                          ], // Push top fade zone higher up
+                            1.0,
+                          ], // Push bottom fade zone much lower to avoid hiding the typing indicator
                         ).createShader(bounds);
                       },
                       blendMode: BlendMode.dstIn,
@@ -268,62 +260,56 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
                               final loadingId =
                                   ref.watch(loadingConversationIdProvider);
-                              final isLoading =
-                                  loadingId != null && loadingId == activeId;
+                              final isLoading = loadingId != null &&
+                                  (loadingId == activeId ||
+                                      (activeId == null &&
+                                          loadingId == 'NEW_CONV'));
                               final itemCount =
                                   messages.length + (isLoading ? 1 : 0);
 
-                              if (!_isPositionedForConversation) {
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (!mounted) return;
-                                  if (_scrollCtrl.hasClients &&
-                                      _scrollCtrl.position.hasContentDimensions) {
-                                    try {
-                                      _scrollCtrl.jumpTo(
-                                        _scrollCtrl.position.maxScrollExtent,
-                                      );
-                                    } catch (_) {}
-                                    setState(() {
-                                      _isPositionedForConversation = true;
-                                    });
-                                  }
-                                });
+                              // If this is a newly loaded conversation history,
+                              // clear the old IDs to prevent memory leak and add the new ones
+                              if (_lastLoadedActiveId != activeId) {
+                                _knownMessageIds.clear();
+                                if (messages.isNotEmpty) {
+                                  _knownMessageIds.addAll(messages.map((m) => m.id));
+                                }
+                                _lastLoadedActiveId = activeId;
                               }
 
-                              return AnimatedOpacity(
-                                duration: const Duration(milliseconds: 150),
-                                opacity: _isPositionedForConversation ? 1.0 : 0.0,
-                                child: ListView.builder(
-                                  controller: _scrollCtrl,
-                                  padding: const EdgeInsets.only(
-                                    left: 16,
-                                    right: 16,
-                                    top: 100,
-                                    bottom: 120,
-                                  ),
-                                  itemCount: itemCount,
-                                  itemBuilder: (context, index) {
-                                    // Typing indicator
-                                    if (isLoading && index == messages.length) {
-                                      return const Padding(
-                                        padding: EdgeInsets.only(top: 4),
-                                        child: TypingIndicator(),
-                                      );
-                                    }
-
-                                    final msg = messages[index];
-                                    final isNew = !_knownMessageIds.contains(
-                                      msg.id,
-                                    );
-                                    if (isNew) _knownMessageIds.add(msg.id);
-
-                                    return AnimatedMessage(
-                                      key: ValueKey(msg.id),
-                                      animate: isNew,
-                                      child: MessageBubble(message: msg),
-                                    );
-                                  },
+                              return ListView.builder(
+                                reverse: true,
+                                controller: _scrollCtrl,
+                                padding: const EdgeInsets.only(
+                                  left: 16,
+                                  right: 16,
+                                  top: 100,
+                                  bottom: 120,
                                 ),
+                                itemCount: itemCount,
+                                itemBuilder: (context, index) {
+                                  final actualIndex = itemCount - 1 - index;
+
+                                  // Typing indicator
+                                  if (isLoading && actualIndex == messages.length) {
+                                    return const Padding(
+                                      padding: EdgeInsets.only(top: 4, bottom: 8),
+                                      child: TypingIndicator(),
+                                    );
+                                  }
+
+                                  final msg = messages[actualIndex];
+                                  final isNew = !_knownMessageIds.contains(
+                                    msg.id,
+                                  );
+                                  if (isNew) _knownMessageIds.add(msg.id);
+
+                                  return AnimatedMessage(
+                                    key: ValueKey(msg.id),
+                                    animate: isNew,
+                                    child: MessageBubble(message: msg),
+                                  );
+                                },
                               );
                             },
                             loading: () => const Center(

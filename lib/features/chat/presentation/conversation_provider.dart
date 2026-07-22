@@ -55,18 +55,31 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
     if (_cache.hasData) {
       final cachedList = _cache.loadConversations();
       state = state.copyWith(conversations: cachedList);
-      // NOTE: We no longer auto-select the first conversation on startup (Option A: Always New Chat)
     }
 
     // 2. Fetch fresh data from backend
     try {
       final list = await _repo.listConversations();
-      state = state.copyWith(conversations: list);
 
-      // Save full list to cache
-      await _cache.saveConversations(list);
+      // Merge remote list with currently loaded in-memory messages to avoid wiping out active chat
+      final merged = list.map((remoteConv) {
+        final existing = state.conversations
+            .where((c) => c.id == remoteConv.id)
+            .firstOrNull;
+        if (existing != null && existing.messages.isNotEmpty) {
+          return remoteConv.copyWith(
+            messages: existing.messages,
+            messageCount: existing.messages.length,
+            lastMessagePreview: existing.messages.last.content,
+          );
+        }
+        return remoteConv;
+      }).toList();
 
-      // NOTE: We no longer auto-select the first conversation on startup (Option A: Always New Chat)
+      state = state.copyWith(conversations: merged);
+
+      // Save merged list to cache
+      await _cache.saveConversations(merged);
     } catch (e) {
       // Handle error cleanly, rely on cached state
     }
@@ -104,15 +117,15 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
 
   /// Selects an existing conversation and loads its messages from the backend.
   Future<void> selectConversation(String id) async {
+    // Set activeId immediately so UI leaves "Draft" state right away
+    state = state.copyWith(activeId: () => id);
+
     final existingConv = state.conversations
         .where((c) => c.id == id)
         .firstOrNull;
-    if (existingConv == null) return;
 
-    state = state.copyWith(activeId: () => id);
-
-    // 1. Instant optimistic load from memory/cache (0ms delay, no blank screen flicker!)
-    if (existingConv.messages.isNotEmpty) {
+    // 1. Instant optimistic load from memory/cache if available
+    if (existingConv != null && existingConv.messages.isNotEmpty) {
       _ref.read(chatProvider.notifier).loadMessages(existingConv.messages);
     } else {
       _ref.read(chatProvider.notifier).clearHistory();
@@ -131,6 +144,10 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
       syncMessagesForId(id, fullConv.messages);
     } catch (e) {
       debugPrint('CONV: Error fetching conversation details: $e');
+      if (e.toString().contains('404')) {
+        debugPrint('CONV: Conversation 404 not found on server, removing locally...');
+        deleteConversation(id);
+      }
     }
   }
 
@@ -165,32 +182,48 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
 
   /// Updates a specific conversation by ID with messages locally.
   void syncMessagesForId(String targetId, List<MessageEntity> messages) {
-    final updated = state.conversations.map((c) {
-      if (c.id != targetId) return c;
+    final exists = state.conversations.any((c) => c.id == targetId);
 
-      final title = messages.isNotEmpty
-          ? _truncate(messages.first.content, 40)
-          : 'Nova conversa';
+    List<ConversationEntity> updated;
+    if (exists) {
+      updated = state.conversations.map((c) {
+        if (c.id != targetId) return c;
 
-      // Self-healing: if the backend title is still "Nova conversa" but we have content,
-      // push the calculated title to the server to fix it permanently.
-      if (title != 'Nova conversa' && c.title == 'Nova conversa') {
-        _repo.updateConversation(c.id, title).catchError((e) {
-          debugPrint('CONV: Failed to push self-healing title: $e');
-          return c; // Return current as fallback to satisfy type
-        });
-      }
+        final title = messages.isNotEmpty
+            ? _truncate(messages.first.content, 40)
+            : c.title;
 
-      final lastPreview = messages.isNotEmpty ? messages.last.content : null;
+        // Self-healing: if the backend title is still "Nova conversa" but we have content,
+        // push the calculated title to the server to fix it permanently.
+        if (title != 'Nova conversa' && c.title == 'Nova conversa') {
+          _repo.updateConversation(c.id, title).catchError((e) {
+            debugPrint('CONV: Failed to push self-healing title: $e');
+            return c; // Return current as fallback to satisfy type
+          });
+        }
 
-      return c.copyWith(
+        final lastPreview = messages.isNotEmpty ? messages.last.content : null;
+
+        return c.copyWith(
+          messages: messages,
+          messageCount: messages.length,
+          lastMessagePreview: lastPreview,
+          title: title,
+          updatedAt: DateTime.now(),
+        );
+      }).toList();
+    } else {
+      final newConv = ConversationEntity(
+        id: targetId,
+        title: messages.isNotEmpty ? _truncate(messages.first.content, 40) : 'Conversa',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
         messages: messages,
         messageCount: messages.length,
-        lastMessagePreview: lastPreview,
-        title: title,
-        updatedAt: DateTime.now(),
+        lastMessagePreview: messages.isNotEmpty ? messages.last.content : null,
       );
-    }).toList();
+      updated = [newConv, ...state.conversations];
+    }
 
     state = state.copyWith(conversations: updated);
 

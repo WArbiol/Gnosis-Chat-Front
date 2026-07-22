@@ -277,15 +277,16 @@ class _ConversationTile extends StatelessWidget {
   }
 
   static String _formatDate(DateTime date) {
+    final localDate = date.toLocal();
     final now = DateTime.now();
-    final diff = now.difference(date);
+    final diff = now.difference(localDate);
 
-    if (diff.inMinutes < 1) return 'Agora';
+    if (diff.isNegative || diff.inMinutes < 1) return 'Agora';
     if (diff.inMinutes < 60) return '${diff.inMinutes} min atrás';
     if (diff.inHours < 24) return '${diff.inHours}h atrás';
     if (diff.inDays < 7) return '${diff.inDays}d atrás';
 
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
+    return '${localDate.day.toString().padLeft(2, '0')}/${localDate.month.toString().padLeft(2, '0')}';
   }
 }
 

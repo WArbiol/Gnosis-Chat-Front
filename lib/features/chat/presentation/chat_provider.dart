@@ -52,8 +52,8 @@ final chatProvider =
       return ChatNotifier(repo, ref);
     });
 
-/// Tracks whether the AI is currently generating a response.
-final isLoadingProvider = StateProvider<bool>((ref) => false);
+/// Tracks which conversation ID is currently generating an AI response (null if none).
+final loadingConversationIdProvider = StateProvider<String?>((ref) => null);
 
 const _uuid = Uuid();
 
@@ -63,11 +63,11 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
   final ConversationRemoteSource _repo;
   final Ref _ref;
 
-  /// Reference to the provider ref, set externally.
-  StateController<bool>? _loadingCtrl;
+  /// Reference to the loading conversation ID provider ref.
+  StateController<String?>? _loadingIdCtrl;
 
-  void setLoadingController(StateController<bool> ctrl) {
-    _loadingCtrl = ctrl;
+  void setLoadingIdController(StateController<String?> ctrl) {
+    _loadingIdCtrl = ctrl;
   }
 
   Future<void> ask(String query) async {
@@ -96,7 +96,7 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
     state = AsyncValue.data([...currentMessages, userMsg]);
     convNotifier.syncMessages([...currentMessages, userMsg]);
 
-    _loadingCtrl?.state = true;
+    _loadingIdCtrl?.state = activeId;
 
     try {
       // 2. Network call to /ask (persists both user and AI message)
@@ -127,8 +127,10 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
       convNotifier.syncMessagesForId(activeId, currentMessages);
       rethrow;
     } finally {
-      // Hide typing indicator
-      _loadingCtrl?.state = false;
+      // Clear typing indicator for this conversation
+      if (_loadingIdCtrl?.state == activeId) {
+        _loadingIdCtrl?.state = null;
+      }
     }
   }
 

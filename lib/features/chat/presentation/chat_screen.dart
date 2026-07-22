@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
+import 'package:gnosis_chat/features/chat/presentation/conversation_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/message_bubble.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/typing_indicator.dart';
 import 'package:gnosis_chat/shared/widgets/animated_background.dart';
@@ -64,8 +65,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     HapticFeedback.lightImpact();
 
     // Wire loading controller
-    final loadingCtrl = ref.read(isLoadingProvider.notifier);
-    ref.read(chatProvider.notifier).setLoadingController(loadingCtrl);
+    final loadingCtrl = ref.read(loadingConversationIdProvider.notifier);
+    ref.read(chatProvider.notifier).setLoadingIdController(loadingCtrl);
 
     try {
       await ref.read(chatProvider.notifier).ask(query);
@@ -212,9 +213,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 return EmptyState(glowAnim: _glowAnim);
                               }
 
-                              final isLoading = ref.watch(isLoadingProvider);
-                              final itemCount =
-                                  messages.length + (isLoading ? 1 : 0);
+                               final activeId =
+                                   ref.watch(conversationProvider).activeId;
+                               final loadingId =
+                                   ref.watch(loadingConversationIdProvider);
+                               final isLoading =
+                                   loadingId != null && loadingId == activeId;
+                               final itemCount =
+                                   messages.length + (isLoading ? 1 : 0);
 
                               return ListView.builder(
                                 controller: _scrollCtrl,

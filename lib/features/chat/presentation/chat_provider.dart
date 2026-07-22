@@ -63,13 +63,6 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
   final ConversationRemoteSource _repo;
   final Ref _ref;
 
-  /// Reference to the loading conversation ID provider ref.
-  StateController<String?>? _loadingIdCtrl;
-
-  void setLoadingIdController(StateController<String?> ctrl) {
-    _loadingIdCtrl = ctrl;
-  }
-
   Future<void> ask(String query) async {
     // 1. Optimistic UI update for user message IMMEDIATELY
     final userMsg = MessageEntity(
@@ -87,9 +80,9 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
 
     if (activeId != null) {
       convNotifier.syncMessages([...currentMessages, userMsg]);
-      _loadingIdCtrl?.state = activeId;
+      _ref.read(loadingConversationIdProvider.notifier).state = activeId;
     } else {
-      _loadingIdCtrl?.state = 'NEW_CONV'; // Show loading while creating
+      _ref.read(loadingConversationIdProvider.notifier).state = 'NEW_CONV'; // Show loading while creating
     }
 
     try {
@@ -100,11 +93,11 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
         debugPrint('CHAT: Active ID: $activeId');
         if (activeId == null) {
           state = AsyncValue.data(currentMessages);
-          _loadingIdCtrl?.state = null;
+          _ref.read(loadingConversationIdProvider.notifier).state = null;
           return; // creation failed
         }
         convNotifier.syncMessages([...currentMessages, userMsg]);
-        _loadingIdCtrl?.state = activeId;
+        _ref.read(loadingConversationIdProvider.notifier).state = activeId;
       }
       // 2. Network call to /ask (persists both user and AI message)
       debugPrint('CHAT: Sending message...');
@@ -137,8 +130,9 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
       rethrow;
     } finally {
       // Clear typing indicator for this conversation
-      if (_loadingIdCtrl?.state == activeId || _loadingIdCtrl?.state == 'NEW_CONV') {
-        _loadingIdCtrl?.state = null;
+      final currentLoadingState = _ref.read(loadingConversationIdProvider);
+      if (currentLoadingState == activeId || currentLoadingState == 'NEW_CONV') {
+        _ref.read(loadingConversationIdProvider.notifier).state = null;
       }
     }
   }

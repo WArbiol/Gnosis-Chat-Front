@@ -34,7 +34,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   late final Animation<double> _glowAnim;
 
   final _knownMessageIds = <String>{};
-  String? _lastLoadedActiveId;
 
   @override
   void initState() {
@@ -63,10 +62,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     if (query.isEmpty) return;
     _queryCtrl.clear();
     HapticFeedback.lightImpact();
-
-    // Wire loading controller
-    final loadingCtrl = ref.read(loadingConversationIdProvider.notifier);
-    ref.read(chatProvider.notifier).setLoadingIdController(loadingCtrl);
 
     try {
       await ref.read(chatProvider.notifier).ask(query);
@@ -181,9 +176,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     final user = ref.watch(authProvider).whenOrNull(authenticated: (u) => u);
     final activeId = ref.watch(conversationProvider).activeId;
 
-    // Reset scroll when switching conversations
+    // Reset scroll & sync known message IDs declaratively when switching conversations
     ref.listen(conversationProvider.select((s) => s.activeId), (prev, next) {
       if (prev != next) {
+        _knownMessageIds.clear();
+        final currentMsgs = ref.read(chatProvider).valueOrNull ?? [];
+        if (currentMsgs.isNotEmpty) {
+          _knownMessageIds.addAll(currentMsgs.map((m) => m.id));
+        }
         _jumpToBottom();
       }
     });
@@ -195,6 +195,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
       if (prevList.isEmpty && nextList.isNotEmpty) {
         // Initial load of history: jump to bottom
+        _knownMessageIds.clear();
+        _knownMessageIds.addAll(nextList.map((m) => m.id));
         _jumpToBottom();
       } else if (nextList.length > prevList.length && prevList.isNotEmpty) {
         // New incoming message in active conversation: animate scroll down
@@ -266,16 +268,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                           loadingId == 'NEW_CONV'));
                               final itemCount =
                                   messages.length + (isLoading ? 1 : 0);
-
-                              // If this is a newly loaded conversation history,
-                              // clear the old IDs to prevent memory leak and add the new ones
-                              if (_lastLoadedActiveId != activeId) {
-                                _knownMessageIds.clear();
-                                if (messages.isNotEmpty) {
-                                  _knownMessageIds.addAll(messages.map((m) => m.id));
-                                }
-                                _lastLoadedActiveId = activeId;
-                              }
 
                               return ListView.builder(
                                 reverse: true,

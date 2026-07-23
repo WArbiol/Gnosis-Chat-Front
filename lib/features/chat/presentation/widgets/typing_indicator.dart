@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
+import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 
-class TypingIndicator extends StatefulWidget {
+class TypingIndicator extends ConsumerStatefulWidget {
   const TypingIndicator({super.key});
 
   @override
-  State<TypingIndicator> createState() => _TypingIndicatorState();
+  ConsumerState<TypingIndicator> createState() => _TypingIndicatorState();
 }
 
-class _TypingIndicatorState extends State<TypingIndicator>
+class _TypingIndicatorState extends ConsumerState<TypingIndicator>
     with TickerProviderStateMixin {
   late final List<AnimationController> _dotCtrls;
   late final List<Animation<double>> _dotAnims;
@@ -48,13 +50,15 @@ class _TypingIndicatorState extends State<TypingIndicator>
 
   @override
   Widget build(BuildContext context) {
+    final statusMsg = ref.watch(agentStatusProvider) ?? 'Compreendendo o propósito e o escopo...';
+
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(18),
             topRight: Radius.circular(18),
@@ -62,43 +66,92 @@ class _TypingIndicatorState extends State<TypingIndicator>
             bottomRight: Radius.circular(18),
           ),
           border: Border.all(
-            color: AppColors.accent.withValues(alpha: 0.12),
-            width: 0.5,
+            color: AppColors.accent.withValues(alpha: 0.15),
+            width: 0.8,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          children: List.generate(3, (i) {
-            return AnimatedBuilder(
-              animation: _dotAnims[i],
-              builder: (context, _) {
-                final value = _dotAnims[i].value;
-                return Container(
-                  margin: EdgeInsets.only(right: i < 2 ? 6 : 0),
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.accent.withValues(alpha: 0.4 + value * 0.6),
-                        AppColors.accentLight.withValues(
-                          alpha: 0.3 + value * 0.5,
+          children: [
+            // 3 glowing dots
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(3, (i) {
+                return AnimatedBuilder(
+                  animation: _dotAnims[i],
+                  builder: (context, _) {
+                    final value = _dotAnims[i].value;
+                    return Container(
+                      margin: EdgeInsets.only(right: i < 2 ? 5 : 0),
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.accent.withValues(alpha: 0.4 + value * 0.6),
+                            AppColors.accentLight.withValues(
+                              alpha: 0.3 + value * 0.5,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.accent.withValues(alpha: value * 0.4),
-                        blurRadius: 6 * value,
-                        spreadRadius: 1 * value,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accent.withValues(alpha: value * 0.4),
+                            blurRadius: 5 * value,
+                            spreadRadius: 1 * value,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 );
-              },
-            );
-          }),
+              }),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 1,
+              height: 12,
+              color: AppColors.accent.withValues(alpha: 0.2),
+            ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 350),
+                transitionBuilder: (child, anim) {
+                  return FadeTransition(
+                    opacity: anim,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.25),
+                        end: Offset.zero,
+                      ).animate(anim),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Text(
+                  statusMsg,
+                  key: ValueKey(statusMsg),
+                  style: const TextStyle(
+                    color: AppColors.onSurfaceVariant,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 0.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -55,6 +55,9 @@ final chatProvider =
 /// Tracks which conversation ID is currently generating an AI response (null if none).
 final loadingConversationIdProvider = StateProvider<String?>((ref) => null);
 
+/// Tracks the current agent status message displayed during loading.
+final agentStatusProvider = StateProvider<String?>((ref) => null);
+
 const _uuid = Uuid();
 
 class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
@@ -85,6 +88,8 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
       _ref.read(loadingConversationIdProvider.notifier).state = 'NEW_CONV'; // Show loading while creating
     }
 
+    _ref.read(agentStatusProvider.notifier).state = 'Compreendendo o propósito e o escopo...';
+
     try {
       if (activeId == null) {
         debugPrint('CHAT: Creating new conversation...');
@@ -94,6 +99,7 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
         if (activeId == null) {
           state = AsyncValue.data(currentMessages);
           _ref.read(loadingConversationIdProvider.notifier).state = null;
+          _ref.read(agentStatusProvider.notifier).state = null;
           return; // creation failed
         }
         convNotifier.syncMessages([...currentMessages, userMsg]);
@@ -103,10 +109,30 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
       debugPrint('CHAT: Sending message...');
       final activeFilters = _ref.read(activeFiltersProvider);
       final uiFilters = activeFilters.isEmpty ? null : activeFilters.toJson();
+      
+      String streamingContent = '';
+      final streamingMsgId = _uuid.v4();
+
       final aiMessage = await _repo.sendMessage(
         activeId,
         query,
         uiFilters: uiFilters,
+        onStatusUpdate: (agent, msg) {
+          _ref.read(agentStatusProvider.notifier).state = msg;
+        },
+        onToken: (tokenText) {
+          streamingContent += tokenText;
+          final currentActiveId = _ref.read(conversationProvider).activeId;
+          if (currentActiveId == activeId) {
+            final streamingMsg = MessageEntity(
+              id: streamingMsgId,
+              content: streamingContent,
+              role: MessageRole.assistant,
+              timestamp: DateTime.now(),
+            );
+            state = AsyncValue.data([...currentMessages, userMsg, streamingMsg]);
+          }
+        },
       );
       debugPrint('CHAT: SUCCESS.');
 
@@ -129,10 +155,11 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
       }
       rethrow;
     } finally {
-      // Clear typing indicator for this conversation
+      // Clear typing indicator & status for this conversation
       final currentLoadingState = _ref.read(loadingConversationIdProvider);
       if (currentLoadingState == activeId || currentLoadingState == 'NEW_CONV') {
         _ref.read(loadingConversationIdProvider.notifier).state = null;
+        _ref.read(agentStatusProvider.notifier).state = null;
       }
     }
   }

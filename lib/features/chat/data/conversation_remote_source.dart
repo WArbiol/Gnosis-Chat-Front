@@ -48,8 +48,10 @@ class ConversationRemoteSource {
     String conversationId,
     String query, {
     Map<String, dynamic>? uiFilters,
+    void Function(String agent, String message)? onStatusUpdate,
+    void Function(String token)? onToken,
   }) async {
-    final response = await _dio.post(
+    final response = await _dio.post<ResponseBody>(
       'chat/ask',
       data: {
         'conversation_id': conversationId,
@@ -57,45 +59,69 @@ class ConversationRemoteSource {
         'ui_filters': uiFilters,
       },
       options: Options(
-        responseType: ResponseType.plain,
+        responseType: ResponseType.stream,
         receiveTimeout: const Duration(minutes: 5),
         sendTimeout: const Duration(minutes: 5),
       ),
     );
 
-    final responseText = response.data as String;
-    
-    // Parse SSE to find the "final" event or "error" event
-    final blocks = responseText.split('\n\n');
+    final stream = response.data?.stream;
+    if (stream == null) {
+      throw DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+        message: 'Falha ao se conectar com o servidor.',
+      );
+    }
+
+    String buffer = '';
     Map<String, dynamic>? finalData;
-    
-    for (final block in blocks) {
-      if (block.trim().isEmpty) continue;
-      final lines = block.split('\n');
-      String? eventType;
-      String? dataContent;
-      
-      for (final line in lines) {
-        if (line.startsWith('event:')) {
-          eventType = line.substring(6).trim();
-        } else if (line.startsWith('data:')) {
-          dataContent = line.substring(5).trim();
+
+    await for (final chunk in stream) {
+      buffer += utf8.decode(chunk);
+      while (buffer.contains('\n\n')) {
+        final index = buffer.indexOf('\n\n');
+        final block = buffer.substring(0, index);
+        buffer = buffer.substring(index + 2);
+
+        if (block.trim().isEmpty) continue;
+        final lines = block.split('\n');
+        String? eventType;
+        String? dataContent;
+
+        for (final line in lines) {
+          if (line.startsWith('event:')) {
+            eventType = line.substring(6).trim();
+          } else if (line.startsWith('data:')) {
+            dataContent = line.substring(5).trim();
+          }
         }
-      }
-      
-      if (eventType == 'final' && dataContent != null) {
-        finalData = jsonDecode(dataContent) as Map<String, dynamic>;
-        break;
-      }
-      
-      // If we got an error event
-      if (eventType == 'error' && dataContent != null) {
-        final errJson = jsonDecode(dataContent) as Map<String, dynamic>;
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: errJson['message'] ?? 'Erro no processamento do agente',
-        );
+
+        if (eventType == 'status' && dataContent != null) {
+          try {
+            final statusJson = jsonDecode(dataContent) as Map<String, dynamic>;
+            final agent = statusJson['agent'] as String? ?? 'orchestrator';
+            final msg = statusJson['message'] as String? ?? 'Processando...';
+            onStatusUpdate?.call(agent, msg);
+          } catch (_) {}
+        } else if (eventType == 'token' && dataContent != null) {
+          try {
+            final tokenJson = jsonDecode(dataContent) as Map<String, dynamic>;
+            final tokenText = tokenJson['text'] as String? ?? '';
+            if (tokenText.isNotEmpty) {
+              onToken?.call(tokenText);
+            }
+          } catch (_) {}
+        } else if (eventType == 'final' && dataContent != null) {
+          finalData = jsonDecode(dataContent) as Map<String, dynamic>;
+        } else if (eventType == 'error' && dataContent != null) {
+          final errJson = jsonDecode(dataContent) as Map<String, dynamic>;
+          throw DioException(
+            requestOptions: response.requestOptions,
+            response: response,
+            message: errJson['message'] ?? 'Erro no processamento do agente',
+          );
+        }
       }
     }
 

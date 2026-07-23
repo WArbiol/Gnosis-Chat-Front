@@ -119,6 +119,9 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
         uiFilters: uiFilters,
         onStatusUpdate: (agent, msg) {
           _ref.read(agentStatusProvider.notifier).state = msg;
+          if (agent == 'writer') {
+            streamingContent = ''; // clear buffer if rewrites happen
+          }
         },
         onToken: (tokenText) {
           streamingContent += tokenText;

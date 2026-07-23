@@ -4,7 +4,9 @@ import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 import 'package:gnosis_chat/features/chat/domain/conversation_entity.dart';
 import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:gnosis_chat/services/api/streaming_client.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 class ConversationRemoteSource {
   ConversationRemoteSource(this._dio);
 
@@ -52,33 +54,39 @@ class ConversationRemoteSource {
     void Function(String agent, String message)? onStatusUpdate,
     void Function(String token)? onToken,
   }) async {
-    final response = await _dio.post<ResponseBody>(
-      'chat/ask',
-      data: {
-        'conversation_id': conversationId,
-        'query': query,
-        'ui_filters': uiFilters,
-      },
-      options: Options(
-        responseType: ResponseType.stream,
-        receiveTimeout: const Duration(minutes: 5),
-        sendTimeout: const Duration(minutes: 5),
-      ),
-    );
+    final baseUrl = _dio.options.baseUrl;
+    final url = Uri.parse('${baseUrl}chat/ask');
+    
+    final session = Supabase.instance.client.auth.currentSession;
+    final token = session?.accessToken;
+    
+    final request = http.Request('POST', url);
+    request.headers['Accept'] = 'text/event-stream';
+    request.headers['Content-Type'] = 'application/json';
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+    
+    request.body = jsonEncode({
+      'conversation_id': conversationId,
+      'query': query,
+      if (uiFilters != null) 'ui_filters': uiFilters,
+    });
 
-    final stream = response.data?.stream;
-    if (stream == null) {
+    final client = getStreamingHttpClient();
+    final response = await client.send(request);
+
+    if (response.statusCode != 200) {
       throw DioException(
-        requestOptions: response.requestOptions,
-        response: response,
-        message: 'Falha ao se conectar com o servidor.',
+        requestOptions: RequestOptions(path: url.toString()),
+        message: 'Falha ao se conectar com o servidor (Status: ${response.statusCode}).',
       );
     }
 
     String buffer = '';
     Map<String, dynamic>? finalData;
 
-    final stringStream = stream.cast<List<int>>().transform(utf8.decoder);
+    final stringStream = response.stream.transform(utf8.decoder);
 
     await for (final chunk in stringStream) {
       buffer += chunk;
@@ -125,8 +133,7 @@ class ConversationRemoteSource {
         } else if (eventType == 'error' && dataContent != null) {
           final errJson = jsonDecode(dataContent) as Map<String, dynamic>;
           throw DioException(
-            requestOptions: response.requestOptions,
-            response: response,
+            requestOptions: RequestOptions(path: 'chat/ask'),
             message: errJson['message'] ?? 'Erro no processamento do agente',
           );
         }
@@ -135,8 +142,7 @@ class ConversationRemoteSource {
 
     if (finalData == null) {
       throw DioException(
-        requestOptions: response.requestOptions,
-        response: response,
+        requestOptions: RequestOptions(path: 'chat/ask'),
         message: 'Resposta final do agente não encontrada no stream.',
       );
     }

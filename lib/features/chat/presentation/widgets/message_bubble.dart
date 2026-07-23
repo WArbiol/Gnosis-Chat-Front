@@ -695,16 +695,16 @@ class _CopyButtonState extends State<_CopyButton> {
 
 // _ShareButton removed
 
-class _SharePdfButton extends StatefulWidget {
+class _SharePdfButton extends ConsumerStatefulWidget {
   const _SharePdfButton({required this.message});
 
   final MessageEntity message;
 
   @override
-  State<_SharePdfButton> createState() => _SharePdfButtonState();
+  ConsumerState<_SharePdfButton> createState() => _SharePdfButtonState();
 }
 
-class _SharePdfButtonState extends State<_SharePdfButton> {
+class _SharePdfButtonState extends ConsumerState<_SharePdfButton> {
   bool _loading = false;
 
   Future<void> _sharePdf() async {
@@ -716,9 +716,22 @@ class _SharePdfButtonState extends State<_SharePdfButton> {
     HapticFeedback.lightImpact();
 
     try {
+      String? userQuestion;
+      final messages = ref.read(chatProvider).valueOrNull ?? [];
+      final msgIndex = messages.indexWhere((m) => m.id == widget.message.id);
+      if (msgIndex > 0) {
+        for (int i = msgIndex - 1; i >= 0; i--) {
+          if (messages[i].role == MessageRole.user) {
+            userQuestion = messages[i].content;
+            break;
+          }
+        }
+      }
+
       final pdfBytes = await _generatePdf(
         widget.message.content,
         widget.message.citations,
+        userQuestion: userQuestion,
       );
 
       final XFile xFile;
@@ -998,8 +1011,9 @@ String _sanitizeTextForPdf(String text) {
 
 Future<Uint8List> _generatePdf(
   String markdown,
-  List<CitationEntity> citations,
-) async {
+  List<CitationEntity> citations, {
+  String? userQuestion,
+}) async {
   final pdf = pw.Document();
 
   final fontRegular = pw.Font.helvetica();
@@ -1059,6 +1073,47 @@ Future<Uint8List> _generatePdf(
       ),
     ),
   );
+
+  // Card de Destaque da Pergunta do Usuário
+  if (userQuestion != null && userQuestion.trim().isNotEmpty) {
+    final sanitizedQuestion = _sanitizeTextForPdf(userQuestion.trim());
+    widgets.add(
+      pw.Container(
+        width: double.infinity,
+        padding: const pw.EdgeInsets.all(10),
+        margin: const pw.EdgeInsets.only(bottom: 14),
+        decoration: const pw.BoxDecoration(
+          color: PdfColor.fromInt(0xFFF0F4FA),
+          border: pw.Border(
+            left: pw.BorderSide(color: primaryColor, width: 3),
+          ),
+        ),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              'PERGUNTA:',
+              style: pw.TextStyle(
+                font: fontBold,
+                fontSize: 9.5,
+                color: primaryColor,
+                letterSpacing: 0.8,
+              ),
+            ),
+            pw.SizedBox(height: 4),
+            pw.Text(
+              sanitizedQuestion,
+              style: pw.TextStyle(
+                font: fontOblique,
+                fontSize: 11.5,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   bool inCodeBlock = false;
   final codeBuffer = StringBuffer();

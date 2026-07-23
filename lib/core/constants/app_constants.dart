@@ -16,7 +16,7 @@ class AppConstants {
     return 'http://192.168.68.110:8000/api/v1/';
   }
 
-  static const Duration apiTimeout = Duration(seconds: 30);
+  static const Duration apiTimeout = Duration(minutes: 5);
 
   static const int maxQueryLength = 2000;
 

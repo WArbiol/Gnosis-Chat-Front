@@ -244,7 +244,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                           constraints: const BoxConstraints(maxWidth: 850),
                           child: chatState.when(
                             data: (messages) {
+                              final loadingId =
+                                  ref.watch(loadingConversationIdProvider);
+                              final isLoading = loadingId != null &&
+                                  (loadingId == activeId ||
+                                      (activeId == null &&
+                                          loadingId == 'NEW_CONV'));
+
                               if (messages.isEmpty) {
+                                if (isLoading) {
+                                  return const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 24),
+                                      child: TypingIndicator(),
+                                    ),
+                                  );
+                                }
                                 if (activeId == null) {
                                   return EmptyState(glowAnim: _glowAnim);
                                 }
@@ -260,12 +275,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 );
                               }
 
-                              final loadingId =
-                                  ref.watch(loadingConversationIdProvider);
-                              final isLoading = loadingId != null &&
-                                  (loadingId == activeId ||
-                                      (activeId == null &&
-                                          loadingId == 'NEW_CONV'));
                               final itemCount =
                                   messages.length + (isLoading ? 1 : 0);
 

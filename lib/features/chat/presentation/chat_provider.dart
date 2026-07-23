@@ -172,6 +172,10 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
       state = AsyncValue.error(error, stackTrace);
 
   void loadMessages(List<MessageEntity> messages) {
+    final isLoading = _ref.read(loadingConversationIdProvider) != null;
+    if (isLoading) {
+      return; // Do not overwrite optimistic loading state while generating response
+    }
     final current = state.valueOrNull;
     if (current != null && _areMessageListsEqual(current, messages)) {
       return; // Skip duplicate state updates to prevent UI flicker

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 import 'package:gnosis_chat/features/chat/domain/conversation_entity.dart';
@@ -77,8 +78,10 @@ class ConversationRemoteSource {
     String buffer = '';
     Map<String, dynamic>? finalData;
 
-    await for (final chunk in stream) {
-      buffer += utf8.decode(chunk);
+    final stringStream = stream.cast<List<int>>().transform(utf8.decoder);
+
+    await for (final chunk in stringStream) {
+      buffer += chunk;
       while (buffer.contains('\n\n')) {
         final index = buffer.indexOf('\n\n');
         final block = buffer.substring(0, index);
@@ -102,8 +105,11 @@ class ConversationRemoteSource {
             final statusJson = jsonDecode(dataContent) as Map<String, dynamic>;
             final agent = statusJson['agent'] as String? ?? 'orchestrator';
             final msg = statusJson['message'] as String? ?? 'Processando...';
+            debugPrint('SSE STATUS RECEIVED: $agent => $msg');
             onStatusUpdate?.call(agent, msg);
-          } catch (_) {}
+          } catch (e) {
+            debugPrint('SSE STATUS ERROR: $e');
+          }
         } else if (eventType == 'token' && dataContent != null) {
           try {
             final tokenJson = jsonDecode(dataContent) as Map<String, dynamic>;
@@ -111,7 +117,9 @@ class ConversationRemoteSource {
             if (tokenText.isNotEmpty) {
               onToken?.call(tokenText);
             }
-          } catch (_) {}
+          } catch (e) {
+            debugPrint('SSE TOKEN ERROR: $e');
+          }
         } else if (eventType == 'final' && dataContent != null) {
           finalData = jsonDecode(dataContent) as Map<String, dynamic>;
         } else if (eventType == 'error' && dataContent != null) {

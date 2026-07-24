@@ -6,6 +6,7 @@ import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/conversation_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/message_bubble.dart';
+import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/typing_indicator.dart';
 import 'package:gnosis_chat/shared/widgets/animated_background.dart';
 import 'package:gnosis_chat/shared/widgets/error_view.dart';
@@ -250,6 +251,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                   (loadingId == activeId ||
                                       (activeId == null &&
                                           loadingId == 'NEW_CONV'));
+                              final isLastUserMessage = messages.isNotEmpty &&
+                                  messages.last.role == MessageRole.user;
+                              final showTyping = isLoading || isLastUserMessage;
 
                               if (messages.isEmpty) {
                                 if (isLoading) {
@@ -276,7 +280,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                               }
 
                               final itemCount =
-                                  messages.length + (isLoading ? 1 : 0);
+                                  messages.length + (showTyping ? 1 : 0);
 
                               return ListView.builder(
                                 reverse: true,
@@ -292,7 +296,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                   final actualIndex = itemCount - 1 - index;
 
                                   // Typing indicator
-                                  if (isLoading && actualIndex == messages.length) {
+                                  if (showTyping && actualIndex == messages.length) {
                                     return const Padding(
                                       padding: EdgeInsets.only(top: 4, bottom: 8),
                                       child: TypingIndicator(),

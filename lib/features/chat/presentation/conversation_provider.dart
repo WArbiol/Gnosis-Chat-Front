@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/features/chat/data/conversation_cache.dart';
@@ -85,8 +86,45 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
     }
   }
 
+  Timer? _pollingTimer;
+
+  void _stopPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
+  }
+
+  void _startPollingFor(String id) {
+    _stopPolling();
+    debugPrint('CONV: Starting background polling for incomplete conversation: $id');
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      if (state.activeId != id) {
+        _stopPolling();
+        return;
+      }
+
+      try {
+        final fullConv = await _repo.getConversation(id);
+        if (state.activeId != id) {
+          _stopPolling();
+          return;
+        }
+
+        // Check if assistant has replied
+        if (fullConv.messages.isNotEmpty && fullConv.messages.last.role == MessageRole.assistant) {
+          debugPrint('CONV: Polling received assistant response for $id!');
+          _stopPolling();
+          _ref.read(chatProvider.notifier).loadMessages(fullConv.messages);
+          syncMessagesForId(id, fullConv.messages);
+        }
+      } catch (e) {
+        debugPrint('CONV: Error during polling for $id: $e');
+      }
+    });
+  }
+
   /// Resets the active conversation to null (Draft state) without calling the backend.
   void resetActiveId() {
+    _stopPolling();
     _ref.read(chatProvider.notifier).cancelActiveStream();
     state = state.copyWith(activeId: () => null);
     _ref.read(chatProvider.notifier).clearHistory();
@@ -95,6 +133,7 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
 
   /// Creates a new empty conversation and activates it.
   Future<void> createConversation() async {
+    _stopPolling();
     debugPrint('CONV: Starting createConversation...');
     try {
       final conv = await _repo.createConversation('Nova conversa');
@@ -115,6 +154,7 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
 
   /// Selects an existing conversation and loads its messages from the backend.
   Future<void> selectConversation(String id) async {
+    _stopPolling();
     _ref.read(chatProvider.notifier).cancelActiveStream();
     // Set activeId immediately so UI leaves "Draft" state right away
     state = state.copyWith(activeId: () => id);
@@ -126,6 +166,9 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
     // 1. Instant optimistic load from memory/cache if available
     if (existingConv != null && existingConv.messages.isNotEmpty) {
       _ref.read(chatProvider.notifier).loadMessages(existingConv.messages);
+      if (existingConv.messages.last.role == MessageRole.user) {
+        _startPollingFor(id);
+      }
     } else {
       _ref.read(chatProvider.notifier).setLoadingState();
     }
@@ -137,6 +180,11 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
       // Only update chatProvider UI if this conversation is still the active one!
       if (state.activeId == id) {
         _ref.read(chatProvider.notifier).loadMessages(fullConv.messages);
+        if (fullConv.messages.isNotEmpty && fullConv.messages.last.role == MessageRole.user) {
+          _startPollingFor(id);
+        } else {
+          _stopPolling();
+        }
       }
 
       // Update local state with the loaded messages

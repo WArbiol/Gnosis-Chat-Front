@@ -90,12 +90,35 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
+  String _sanitizeMarkdown(String text) {
+    var cleaned = text;
+    // 1. Remove artificial line breaks before punctuation/commas
+    cleaned = cleaned.replaceAll(RegExp(r'\s*\n\s*([,\.\;\:\)])'), r'$1');
+
+    // 2. Clean dollar signs around simple math expressions like ($1 + 4 + 4 = 9$) -> (1 + 4 + 4 = 9)
+    cleaned = cleaned.replaceAllMapped(
+      RegExp(r'(\()?\$([0-9\s\+\-\*\/\=\.\,]+)\$(\))?'),
+      (match) {
+        final hasOpenParen = match.group(1) != null;
+        final inner = match.group(2) ?? '';
+        final hasCloseParen = match.group(3) != null;
+        if (RegExp(r'^[0-9\s\+\-\*\/\=\.\,]+$').hasMatch(inner)) {
+          final prefix = hasOpenParen ? '(' : '';
+          final suffix = hasCloseParen ? ')' : '';
+          return '$prefix$inner$suffix';
+        }
+        return match.group(0)!;
+      },
+    );
+    return cleaned;
+  }
+
   Widget _content(BuildContext context, Color textColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         MarkdownBody(
-          data: message.content,
+          data: _sanitizeMarkdown(message.content),
           selectable: false,
             builders: {
               'latex': LatexElementBuilder(

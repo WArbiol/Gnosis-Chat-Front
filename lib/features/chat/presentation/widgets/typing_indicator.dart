@@ -50,7 +50,7 @@ class _TypingIndicatorState extends ConsumerState<TypingIndicator>
 
   @override
   Widget build(BuildContext context) {
-    final statusMsg = ref.watch(agentStatusProvider) ?? 'Compreendendo o propósito e o escopo...';
+    final statusMsg = ref.watch(agentStatusProvider);
 
     return Align(
       alignment: Alignment.centerLeft,
@@ -115,42 +115,44 @@ class _TypingIndicatorState extends ConsumerState<TypingIndicator>
                 );
               }),
             ),
-            const SizedBox(width: 12),
-            Container(
-              width: 1,
-              height: 12,
-              color: AppColors.accent.withValues(alpha: 0.2),
-            ),
-            const SizedBox(width: 10),
-            Flexible(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 350),
-                transitionBuilder: (child, anim) {
-                  return FadeTransition(
-                    opacity: anim,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.25),
-                        end: Offset.zero,
-                      ).animate(anim),
-                      child: child,
+            if (statusMsg != null && statusMsg.isNotEmpty) ...[
+              const SizedBox(width: 12),
+              Container(
+                width: 1,
+                height: 12,
+                color: AppColors.accent.withValues(alpha: 0.2),
+              ),
+              const SizedBox(width: 10),
+              Flexible(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 350),
+                  transitionBuilder: (child, anim) {
+                    return FadeTransition(
+                      opacity: anim,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.25),
+                          end: Offset.zero,
+                        ).animate(anim),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Text(
+                    statusMsg,
+                    key: ValueKey(statusMsg),
+                    style: const TextStyle(
+                      color: AppColors.onSurfaceVariant,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.2,
                     ),
-                  );
-                },
-                child: Text(
-                  statusMsg,
-                  key: ValueKey(statusMsg),
-                  style: const TextStyle(
-                    color: AppColors.onSurfaceVariant,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0.2,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
+            ],
           ],
         ),
       ),

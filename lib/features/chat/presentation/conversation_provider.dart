@@ -87,6 +87,7 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
 
   /// Resets the active conversation to null (Draft state) without calling the backend.
   void resetActiveId() {
+    _ref.read(chatProvider.notifier).cancelActiveStream();
     state = state.copyWith(activeId: () => null);
     _ref.read(chatProvider.notifier).clearHistory();
     debugPrint('CONV: Active state reset to Draft');
@@ -114,6 +115,7 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
 
   /// Selects an existing conversation and loads its messages from the backend.
   Future<void> selectConversation(String id) async {
+    _ref.read(chatProvider.notifier).cancelActiveStream();
     // Set activeId immediately so UI leaves "Draft" state right away
     state = state.copyWith(activeId: () => id);
 

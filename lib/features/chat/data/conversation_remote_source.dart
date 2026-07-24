@@ -11,6 +11,12 @@ class ConversationRemoteSource {
   ConversationRemoteSource(this._dio);
 
   final Dio _dio;
+  http.Client? _activeStreamingClient;
+
+  void cancelActiveStream() {
+    _activeStreamingClient?.close();
+    _activeStreamingClient = null;
+  }
 
   Future<List<ConversationEntity>> listConversations({
     int limit = 20,
@@ -73,10 +79,14 @@ class ConversationRemoteSource {
       if (uiFilters != null) 'ui_filters': uiFilters,
     });
 
+    cancelActiveStream();
     final client = getStreamingHttpClient();
-    final response = await client.send(request);
+    _activeStreamingClient = client;
 
-    if (response.statusCode != 200) {
+    try {
+      final response = await client.send(request);
+
+      if (response.statusCode != 200) {
       throw DioException(
         requestOptions: RequestOptions(path: url.toString()),
         message: 'Falha ao se conectar com o servidor (Status: ${response.statusCode}).',
@@ -180,6 +190,12 @@ class ConversationRemoteSource {
       suggestedFollowups: suggestedFollowups,
       route: finalData['route'] ?? (isHil ? 'ASK_USER' : 'RAG'),
     );
+    } finally {
+      if (_activeStreamingClient == client) {
+        _activeStreamingClient = null;
+      }
+      client.close();
+    }
   }
 
   Future<List<Map<String, dynamic>>> getPdfCatalog() async {

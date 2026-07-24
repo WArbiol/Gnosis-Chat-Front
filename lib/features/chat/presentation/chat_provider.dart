@@ -66,6 +66,10 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
   final ConversationRemoteSource _repo;
   final Ref _ref;
 
+  void cancelActiveStream() {
+    _repo.cancelActiveStream();
+  }
+
   Future<void> ask(String query) async {
     // 1. Optimistic UI update for user message IMMEDIATELY
     final userMsg = MessageEntity(

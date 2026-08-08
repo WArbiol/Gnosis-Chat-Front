@@ -43,5 +43,12 @@ void main() {
 
       expect(result, equals('Orientação Conjugal'));
     });
+
+    test('converts bullet points into safe ASCII hyphens', () {
+      const input = '• Item 1\n• Item 2';
+      final result = sanitizeTextForPdf(input);
+
+      expect(result, equals('- Item 1\n- Item 2'));
+    });
   });
 }

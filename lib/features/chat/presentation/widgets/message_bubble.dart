@@ -972,6 +972,7 @@ String _sanitizeTextForPdf(String text) {
 
   // 2. Convert ALL Unicode dash/hyphen variants & quotes to PDF-safe equivalents
   sanitized = sanitized
+      .replaceAll('•', '-')
       .replaceAll('\u2014', '-') // em-dash (—)
       .replaceAll('\u2013', '-') // en-dash (–)
       .replaceAll('\u2015', '-') // horizontal bar (―)
@@ -1244,7 +1245,7 @@ Future<Uint8List> _generatePdf(
       final listContent = trimmed.replaceFirst(RegExp(r'^[\*\-•]\s+'), '');
       widgets.add(
         _buildRichText(
-          '•  $listContent',
+          '-  $listContent',
           fontRegular,
           fontBold,
           13.5,

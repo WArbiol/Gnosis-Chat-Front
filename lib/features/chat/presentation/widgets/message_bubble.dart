@@ -1238,18 +1238,34 @@ Future<Uint8List> _generatePdf(
       widgets.add(pw.Container(height: 0.5, color: PdfColors.grey300));
       widgets.add(pw.SizedBox(height: 8));
     }
-    // 4. List items (Bullet points - usando pw.RichText direto para permitir quebra de linha/página)
+    // 4. List items (Bullet points com marcador de bolinha circular em vetor)
     else if (trimmed.startsWith('*') ||
         trimmed.startsWith('-') ||
         trimmed.startsWith('•')) {
       final listContent = trimmed.replaceFirst(RegExp(r'^[\*\-•]\s+'), '');
       widgets.add(
-        _buildRichText(
-          '-  $listContent',
-          fontRegular,
-          fontBold,
-          13.5,
-          textColor,
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Container(
+              width: 4,
+              height: 4,
+              margin: const pw.EdgeInsets.only(top: 5.5, right: 6, left: 2),
+              decoration: const pw.BoxDecoration(
+                color: primaryColor,
+                shape: pw.BoxShape.circle,
+              ),
+            ),
+            pw.Expanded(
+              child: _buildRichText(
+                listContent,
+                fontRegular,
+                fontBold,
+                13.5,
+                textColor,
+              ),
+            ),
+          ],
         ),
       );
       widgets.add(pw.SizedBox(height: 4));

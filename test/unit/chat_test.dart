@@ -59,6 +59,9 @@ class FakeConversationRemoteSource implements ConversationRemoteSource {
   Map<String, dynamic>? lastSendMessageUiFilters;
 
   @override
+  void cancelActiveStream() {}
+
+  @override
   dynamic noSuchMethod(Invocation invocation) {
     if (invocation.memberName == #listConversations) {
       return Future.value(conversations);

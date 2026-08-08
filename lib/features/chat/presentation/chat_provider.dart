@@ -151,7 +151,9 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
       }
       convNotifier.syncMessagesForId(activeId, nextMessages);
     } catch (e, stack) {
-      if (e.toString().contains('Request canceled: Client closed') || e.toString().contains('SocketException: Connection closed')) {
+      if (e.toString().contains('Request canceled: Client closed') ||
+          e.toString().contains('SocketException: Connection closed') ||
+          e.toString().contains('ClientException: Connection closed')) {
         debugPrint('CHAT: Stream was cancelled by the user switching conversations.');
         return; // Suppress the error and do not rethrow
       }

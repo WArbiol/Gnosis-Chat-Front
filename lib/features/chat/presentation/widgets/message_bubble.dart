@@ -1046,7 +1046,7 @@ Future<Uint8List> _generatePdf(
 
   const pageFormat = PdfPageFormat(
     320, // Estreito estilo celular
-    568, // Altura finita (estilo iPhone SE) para suportar MultiPage
+    1200, // Altura maior para permitir visualização contínua e evitar estouro de página
     marginLeft: 16,
     marginRight: 16,
     marginTop: 20,
@@ -1195,19 +1195,18 @@ Future<Uint8List> _generatePdf(
           ? 17
           : 14.5;
 
+      widgets.add(pw.SizedBox(height: 8));
       widgets.add(
-        pw.Padding(
-          padding: const pw.EdgeInsets.only(top: 8, bottom: 4),
-          child: pw.Text(
-            headingText,
-            style: pw.TextStyle(
-              font: fontBold,
-              fontSize: fontSize,
-              color: primaryColor,
-            ),
+        pw.Text(
+          headingText,
+          style: pw.TextStyle(
+            font: fontBold,
+            fontSize: fontSize,
+            color: primaryColor,
           ),
         ),
       );
+      widgets.add(pw.SizedBox(height: 4));
     }
     // 2. Blockquotes (Card arredondado de destaque)
     else if (trimmed.startsWith('>')) {
@@ -1234,55 +1233,30 @@ Future<Uint8List> _generatePdf(
     }
     // 3. Divisórias (Horizontal Rule)
     else if (trimmed.startsWith('---') || trimmed.startsWith('***')) {
-      widgets.add(
-        pw.Padding(
-          padding: const pw.EdgeInsets.symmetric(vertical: 8),
-          child: pw.Container(height: 0.5, color: PdfColors.grey300),
-        ),
-      );
+      widgets.add(pw.SizedBox(height: 4));
+      widgets.add(pw.Container(height: 0.5, color: PdfColors.grey300));
+      widgets.add(pw.SizedBox(height: 8));
     }
-    // 4. List items (Bullet points)
+    // 4. List items (Bullet points - usando pw.RichText direto para permitir quebra de linha/página)
     else if (trimmed.startsWith('*') ||
         trimmed.startsWith('-') ||
         trimmed.startsWith('•')) {
       final listContent = trimmed.replaceFirst(RegExp(r'^[\*\-•]\s+'), '');
       widgets.add(
-        pw.Padding(
-          padding: const pw.EdgeInsets.only(left: 4, bottom: 4),
-          child: pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Container(
-                width: 3.5,
-                height: 3.5,
-                margin: const pw.EdgeInsets.only(top: 4.5, right: 6),
-                decoration: const pw.BoxDecoration(
-                  color: primaryColor,
-                  shape: pw.BoxShape.circle,
-                ),
-              ),
-              pw.Expanded(
-                child: _buildRichText(
-                  listContent,
-                  fontRegular,
-                  fontBold,
-                  13.5,
-                  textColor,
-                ),
-              ),
-            ],
-          ),
+        _buildRichText(
+          '•  $listContent',
+          fontRegular,
+          fontBold,
+          13.5,
+          textColor,
         ),
       );
+      widgets.add(pw.SizedBox(height: 4));
     }
-    // 5. Parágrafos comuns
+    // 5. Parágrafos comuns (direto como RichText para permitir paginação livre)
     else {
-      widgets.add(
-        pw.Padding(
-          padding: const pw.EdgeInsets.only(bottom: 6),
-          child: _buildRichText(trimmed, fontRegular, fontBold, 13.5, textColor),
-        ),
-      );
+      widgets.add(_buildRichText(trimmed, fontRegular, fontBold, 13.5, textColor));
+      widgets.add(pw.SizedBox(height: 6));
     }
   }
 

@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
@@ -24,12 +26,30 @@ class GlassInputBar extends ConsumerStatefulWidget {
 }
 
 class _GlassInputBarState extends ConsumerState<GlassInputBar> {
-  final _focusNode = FocusNode();
+  late final FocusNode _focusNode;
   bool _hasFocus = false;
 
   @override
   void initState() {
     super.initState();
+    _focusNode = FocusNode(
+      onKeyEvent: (node, event) {
+        if (kIsWeb && event is KeyDownEvent) {
+          if (event.logicalKey == LogicalKeyboardKey.enter ||
+              event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+            if (HardwareKeyboard.instance.isShiftPressed) {
+              return KeyEventResult.ignored;
+            } else {
+              if (widget.hasText) {
+                widget.onSend();
+              }
+              return KeyEventResult.handled;
+            }
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+    );
     _focusNode.addListener(() {
       setState(() => _hasFocus = _focusNode.hasFocus);
     });

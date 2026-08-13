@@ -28,7 +28,7 @@ class AuthRemoteSource implements AuthRepository {
     // This launches the browser/web-view for OAuth login
     final success = await _supabase.auth.signInWithOAuth(
       oAuthProvider,
-      redirectTo: kIsWeb ? null : 'gnosis://login-callback',
+      redirectTo: kIsWeb ? Uri.base.origin : 'gnosis://login-callback',
     );
 
     if (!success) {

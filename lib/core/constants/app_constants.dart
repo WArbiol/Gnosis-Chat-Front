@@ -6,6 +6,10 @@ class AppConstants {
   static const String appName = 'Pergunte à Gnosis';
 
   static String get apiBaseUrl {
+    const envUrl = String.fromEnvironment('API_URL');
+    if (envUrl.isNotEmpty) {
+      return envUrl.endsWith('/') ? envUrl : '$envUrl/';
+    }
     if (kIsWeb) {
       return 'http://localhost:8000/api/v1/';
     }

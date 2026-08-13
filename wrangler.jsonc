@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gnosis-chat-front",
+  "compatibility_date": "2026-08-13",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "build/web",
+    "not_found_handling": "single-page-application"
+  }
+}

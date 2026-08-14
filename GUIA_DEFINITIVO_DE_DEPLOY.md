@@ -89,14 +89,15 @@ O Flutter Web gera arquivos estáticos (`HTML`, `JS`, `WebAssembly`). O deploy n
 ## 6. Faturamento: Stripe (Web) e RevenueCat (Mobile)
 
 ### 6.1. Configuração Web (Stripe Billing)
-1. **Modelos:**
-   - **Plano Básico:** R$ 9,99/mês (100 perguntas/mês).
-   - **Plano Premium:** R$ 29,99/mês (1.000 perguntas/mês).
-2. **Ciclo de Cancelamento & Reativação:**
-   - **Cancelamento:** `cancel_at_period_end=True` no Stripe. O acesso permanece 100% liberado até o `current_period_end`.
-   - **Status:** Atualizado no Supabase como `subscription_status = 'canceled'` mantendo a data final.
-   - **Reativação em 1 Clique:** Endpoint `POST /payments/reactivate` (`cancel_at_period_end=False`), permitindo ao usuário reativar instantaneamente a renovação automática sem novo checkout.
-3. **Webhooks:** Stripe Webhook configurado no backend para processamento assíncrono.
+- [x] **Modelos de Preço & Cotas:**
+  - **Plano Básico:** R$ 9,99/mês (100 perguntas/mês).
+  - **Plano Premium:** R$ 29,99/mês (1.000 perguntas/mês).
+- [x] **Integração Checkout & Redirecionamentos:** Stripe Checkout configurado com suporte a cartões nacionais e carteiras digitais (Apple Pay, Google Pay).
+- [x] **Ciclo de Cancelamento & Reativação:**
+  - **Cancelamento:** `cancel_at_period_end=True` no Stripe. O acesso permanece 100% liberado até o `current_period_end`.
+  - **Status:** Atualizado no Supabase como `subscription_status = 'canceled'` mantendo a data de expiração.
+  - **Reativação em 1 Clique:** Endpoint `POST /payments/reactivate` (`cancel_at_period_end=False`), permitindo reativar instantaneamente a renovação automática sem novo checkout.
+- [x] **Webhooks Assíncronos:** Stripe Webhook configurado no backend em produção (`POST /payments/webhook`) para sincronização automática com o Supabase.
 
 ### 6.2. Configuração Mobile (RevenueCat)
 1. Integração via `RevenueCat` com produtos e entitlements `premium_access`.

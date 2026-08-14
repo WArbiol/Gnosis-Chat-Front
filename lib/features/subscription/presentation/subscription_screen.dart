@@ -228,8 +228,6 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen>
                               ? 'Plano Premium'
                               : 'Plano Básico',
                           currentPeriodEnd: currentUser?.currentPeriodEnd,
-                          onReactivate: _reactivateSubscription,
-                          isLoading: _loadingPlan != null,
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -729,14 +727,10 @@ class _CanceledBanner extends StatelessWidget {
   const _CanceledBanner({
     required this.planName,
     required this.currentPeriodEnd,
-    required this.onReactivate,
-    required this.isLoading,
   });
 
   final String planName;
   final String? currentPeriodEnd;
-  final VoidCallback onReactivate;
-  final bool isLoading;
 
   String _formatDate(String? rawDate) {
     if (rawDate == null || rawDate.isEmpty) return 'o final do período';
@@ -826,39 +820,6 @@ class _CanceledBanner extends StatelessWidget {
                   color: AppColors.onSurfaceVariant.withValues(alpha: 0.9),
                   fontSize: 13,
                   height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: ElevatedButton.icon(
-                  onPressed: isLoading ? null : onReactivate,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.background,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  icon: isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.background,
-                          ),
-                        )
-                      : const Icon(Icons.bolt_rounded, size: 18),
-                  label: const Text(
-                    'Reativar Assinatura',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
                 ),
               ),
             ],

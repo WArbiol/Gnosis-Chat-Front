@@ -253,8 +253,10 @@ class SubscriptionCancelDialog extends StatelessWidget {
                           },
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
+                            backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                             side: BorderSide(
-                              color: AppColors.onSurface.withValues(alpha: 0.18),
+                              color: AppColors.primary.withValues(alpha: 0.35),
+                              width: 1.2,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -263,9 +265,10 @@ class SubscriptionCancelDialog extends StatelessWidget {
                           child: const Text(
                             'Confirmar',
                             style: TextStyle(
-                              color: AppColors.onSurface,
-                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryLight,
+                              fontWeight: FontWeight.bold,
                               fontSize: 14,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ),

@@ -516,7 +516,7 @@ class _PlanCard extends StatelessWidget {
                                     color: badgeColor.withValues(alpha: 0.15),
                                   ),
                                   child: Text(
-                                    isCanceled ? 'Cancelando' : 'Atual',
+                                    isCanceled ? 'Cancelada' : 'Atual',
                                     style: TextStyle(
                                       color: badgeColor,
                                       fontSize: 11,
@@ -792,7 +792,7 @@ class _CanceledBanner extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Cancelamento Agendado',
+                          'Assinatura Cancelada',
                           style: TextStyle(
                             color: AppColors.onSurface,
                             fontSize: 15,

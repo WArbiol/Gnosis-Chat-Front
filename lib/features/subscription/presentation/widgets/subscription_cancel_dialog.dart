@@ -246,29 +246,30 @@ class SubscriptionCancelDialog extends StatelessWidget {
                     children: [
                       // Secondary Option: Confirm Cancel
                       Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            Navigator.of(context).pop(true);
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-                            side: BorderSide(
-                              color: AppColors.primary.withValues(alpha: 0.35),
-                              width: 1.2,
+                        child: SizedBox(
+                          height: 46,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              Navigator.of(context).pop(true);
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.onSurfaceVariant,
+                              side: BorderSide(
+                                color: AppColors.onSurface.withValues(alpha: 0.2),
+                                width: 1,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: const Text(
-                            'Confirmar',
-                            style: TextStyle(
-                              color: AppColors.primaryLight,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              letterSpacing: 0.3,
+                            child: const Text(
+                              'Confirmar',
+                              style: TextStyle(
+                                color: AppColors.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ),
@@ -278,45 +279,26 @@ class SubscriptionCancelDialog extends StatelessWidget {
 
                       // Primary Option: Keep Plan
                       Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14),
-                            gradient: const LinearGradient(
-                              colors: [
-                                AppColors.primary,
-                                AppColors.primaryLight,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.25),
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
+                        child: SizedBox(
+                          height: 46,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              Navigator.of(context).pop(false);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.background,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
                               ),
-                            ],
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                Navigator.of(context).pop(false);
-                              },
-                              borderRadius: BorderRadius.circular(14),
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 14),
-                                child: Text(
-                                  'Manter Plano',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: AppColors.background,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
+                            ),
+                            child: const Text(
+                              'Manter Plano',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
                               ),
                             ),
                           ),

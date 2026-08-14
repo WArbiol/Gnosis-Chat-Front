@@ -21,8 +21,10 @@ class SubscriptionNotifier extends StateNotifier<AsyncValue<PlanType>> {
   /// Map PlanType → Stripe Price ID from .env
   String? _priceIdFor(PlanType plan) => switch (plan) {
     PlanType.free => null,
-    PlanType.basic => dotenv.env['STRIPE_PRICE_BASIC'],
-    PlanType.premium => dotenv.env['STRIPE_PRICE_PREMIUM'],
+    PlanType.basic =>
+      dotenv.env['STRIPE_PRICE_BASIC'] ?? 'price_1U4MJPPe2nJIREqqHWwJNL4A',
+    PlanType.premium =>
+      dotenv.env['STRIPE_PRICE_PREMIUM'] ?? 'price_1U4MJOPe2nJIREqq7ZIhgxlC',
   };
 
   /// Create a Stripe Checkout Session and open it in the browser, or modify an existing subscription.

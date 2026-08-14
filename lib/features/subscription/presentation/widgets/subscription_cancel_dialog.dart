@@ -148,20 +148,7 @@ class SubscriptionCancelDialog extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 8),
-
-                  // Subtitle Tag
-                  const Text(
-                    'MANUTENÇÃO DE ACESSO',
-                    style: TextStyle(
-                      color: accentColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
                   // Highlighted Box with Expiration Notice
                   Container(
@@ -259,21 +246,24 @@ class SubscriptionCancelDialog extends StatelessWidget {
                     children: [
                       // Secondary Option: Confirm Cancel
                       Expanded(
-                        child: TextButton(
+                        child: OutlinedButton(
                           onPressed: () {
                             HapticFeedback.lightImpact();
                             Navigator.of(context).pop(true);
                           },
-                          style: TextButton.styleFrom(
+                          style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: BorderSide(
+                              color: AppColors.onSurface.withValues(alpha: 0.18),
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
-                          child: Text(
+                          child: const Text(
                             'Confirmar',
                             style: TextStyle(
-                              color: AppColors.onSurfaceVariant.withValues(alpha: 0.8),
+                              color: AppColors.onSurface,
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
                             ),

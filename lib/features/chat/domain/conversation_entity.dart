@@ -11,7 +11,7 @@ class ConversationEntity with _$ConversationEntity {
     required String title,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
-    @Default([]) List<MessageEntity> messages,
+    @JsonKey(includeToJson: false) @Default([]) List<MessageEntity> messages,
     @Default(0) int messageCount,
     String? lastMessagePreview,
   }) = _ConversationEntity;

@@ -27,6 +27,7 @@ mixin _$ConversationEntity {
   DateTime get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'updated_at')
   DateTime get updatedAt => throw _privateConstructorUsedError;
+  @JsonKey(includeToJson: false)
   List<MessageEntity> get messages => throw _privateConstructorUsedError;
   int get messageCount => throw _privateConstructorUsedError;
   String? get lastMessagePreview => throw _privateConstructorUsedError;
@@ -53,7 +54,7 @@ abstract class $ConversationEntityCopyWith<$Res> {
     String title,
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt,
-    List<MessageEntity> messages,
+    @JsonKey(includeToJson: false) List<MessageEntity> messages,
     int messageCount,
     String? lastMessagePreview,
   });
@@ -132,7 +133,7 @@ abstract class _$$ConversationEntityImplCopyWith<$Res>
     String title,
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt,
-    List<MessageEntity> messages,
+    @JsonKey(includeToJson: false) List<MessageEntity> messages,
     int messageCount,
     String? lastMessagePreview,
   });
@@ -203,6 +204,7 @@ class _$ConversationEntityImpl implements _ConversationEntity {
     required this.title,
     @JsonKey(name: 'created_at') required this.createdAt,
     @JsonKey(name: 'updated_at') required this.updatedAt,
+    @JsonKey(includeToJson: false)
     final List<MessageEntity> messages = const [],
     this.messageCount = 0,
     this.lastMessagePreview,
@@ -223,7 +225,7 @@ class _$ConversationEntityImpl implements _ConversationEntity {
   final DateTime updatedAt;
   final List<MessageEntity> _messages;
   @override
-  @JsonKey()
+  @JsonKey(includeToJson: false)
   List<MessageEntity> get messages {
     if (_messages is EqualUnmodifiableListView) return _messages;
     // ignore: implicit_dynamic_type
@@ -295,7 +297,7 @@ abstract class _ConversationEntity implements ConversationEntity {
     required final String title,
     @JsonKey(name: 'created_at') required final DateTime createdAt,
     @JsonKey(name: 'updated_at') required final DateTime updatedAt,
-    final List<MessageEntity> messages,
+    @JsonKey(includeToJson: false) final List<MessageEntity> messages,
     final int messageCount,
     final String? lastMessagePreview,
   }) = _$ConversationEntityImpl;
@@ -314,6 +316,7 @@ abstract class _ConversationEntity implements ConversationEntity {
   @JsonKey(name: 'updated_at')
   DateTime get updatedAt;
   @override
+  @JsonKey(includeToJson: false)
   List<MessageEntity> get messages;
   @override
   int get messageCount;

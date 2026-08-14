@@ -15,10 +15,6 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-MessageEntity _$MessageEntityFromJson(Map<String, dynamic> json) {
-  return _MessageEntity.fromJson(json);
-}
-
 /// @nodoc
 mixin _$MessageEntity {
   String get id => throw _privateConstructorUsedError;
@@ -30,9 +26,6 @@ mixin _$MessageEntity {
   @JsonKey(name: 'suggested_followups')
   List<String> get suggestedFollowups => throw _privateConstructorUsedError;
   String get route => throw _privateConstructorUsedError;
-
-  /// Serializes this MessageEntity to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of MessageEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -196,7 +189,7 @@ class __$$MessageEntityImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$MessageEntityImpl implements _MessageEntity {
   const _$MessageEntityImpl({
     required this.id,
@@ -209,9 +202,6 @@ class _$MessageEntityImpl implements _MessageEntity {
     this.route = '',
   }) : _citations = citations,
        _suggestedFollowups = suggestedFollowups;
-
-  factory _$MessageEntityImpl.fromJson(Map<String, dynamic> json) =>
-      _$$MessageEntityImplFromJson(json);
 
   @override
   final String id;
@@ -271,7 +261,6 @@ class _$MessageEntityImpl implements _MessageEntity {
             (identical(other.route, route) || other.route == route));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
@@ -291,11 +280,6 @@ class _$MessageEntityImpl implements _MessageEntity {
   @pragma('vm:prefer-inline')
   _$$MessageEntityImplCopyWith<_$MessageEntityImpl> get copyWith =>
       __$$MessageEntityImplCopyWithImpl<_$MessageEntityImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$MessageEntityImplToJson(this);
-  }
 }
 
 abstract class _MessageEntity implements MessageEntity {
@@ -308,9 +292,6 @@ abstract class _MessageEntity implements MessageEntity {
     @JsonKey(name: 'suggested_followups') final List<String> suggestedFollowups,
     final String route,
   }) = _$MessageEntityImpl;
-
-  factory _MessageEntity.fromJson(Map<String, dynamic> json) =
-      _$MessageEntityImpl.fromJson;
 
   @override
   String get id;

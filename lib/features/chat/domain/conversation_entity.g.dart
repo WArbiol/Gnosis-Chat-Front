@@ -29,7 +29,6 @@ Map<String, dynamic> _$$ConversationEntityImplToJson(
   'title': instance.title,
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
-  'messages': instance.messages,
   'messageCount': instance.messageCount,
   'lastMessagePreview': instance.lastMessagePreview,
 };

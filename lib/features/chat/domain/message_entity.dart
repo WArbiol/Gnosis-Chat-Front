@@ -42,10 +42,23 @@ class MessageEntity with _$MessageEntity {
         : extractedFollowups;
 
     final modifiedJson = Map<String, dynamic>.from(json);
-    modifiedJson['content'] = rawContent;
-    modifiedJson['suggested_followups'] = followups;
-
-    return _$MessageEntityFromJson(modifiedJson);
+    return _MessageEntity(
+      id: modifiedJson['id'] as String,
+      content: rawContent,
+      role: modifiedJson['role'] is MessageRole
+          ? modifiedJson['role'] as MessageRole
+          : MessageRole.values.byName(modifiedJson['role'] as String),
+      timestamp: modifiedJson['created_at'] is DateTime
+          ? modifiedJson['created_at'] as DateTime
+          : DateTime.parse(modifiedJson['created_at'].toString()),
+      citations: (modifiedJson['citations'] as List? ?? [])
+          .map((e) => e is CitationEntity
+              ? e
+              : CitationEntity.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      suggestedFollowups: followups,
+      route: modifiedJson['route'] as String? ?? '',
+    );
   }
 }
 

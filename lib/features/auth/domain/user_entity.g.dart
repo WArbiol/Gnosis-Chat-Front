@@ -16,6 +16,7 @@ _$UserEntityImpl _$$UserEntityImplFromJson(Map<String, dynamic> json) =>
       questionCount: (json['question_count'] as num?)?.toInt() ?? 0,
       subscriptionStatus: json['subscription_status'] as String? ?? 'free',
       subscriptionProvider: json['subscription_provider'] as String?,
+      currentPeriodEnd: json['current_period_end'] as String?,
     );
 
 Map<String, dynamic> _$$UserEntityImplToJson(_$UserEntityImpl instance) =>
@@ -28,4 +29,5 @@ Map<String, dynamic> _$$UserEntityImplToJson(_$UserEntityImpl instance) =>
       'question_count': instance.questionCount,
       'subscription_status': instance.subscriptionStatus,
       'subscription_provider': instance.subscriptionProvider,
+      'current_period_end': instance.currentPeriodEnd,
     };

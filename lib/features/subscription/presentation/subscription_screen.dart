@@ -9,6 +9,7 @@ import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/subscription/domain/plan_entity.dart';
 import 'package:gnosis_chat/features/subscription/presentation/subscription_provider.dart';
+import 'package:gnosis_chat/features/subscription/presentation/widgets/subscription_cancel_dialog.dart';
 import 'package:gnosis_chat/features/subscription/presentation/widgets/subscription_success_dialog.dart';
 import 'package:gnosis_chat/shared/providers/user_provider.dart';
 
@@ -201,51 +202,13 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen>
                                     return;
                                   }
                                   if (type == PlanType.free) {
-                                    final confirm = await showDialog<bool>(
-                                      context: context,
-                                      builder: (ctx) => AlertDialog(
-                                        backgroundColor: AppColors.surface,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                        ),
-                                        title: const Text(
-                                          'Cancelar Assinatura?',
-                                          style: TextStyle(
-                                            color: AppColors.onSurface,
-                                          ),
-                                        ),
-                                        content: const Text(
-                                          'Você perderá os recursos do seu plano atual imediatamente e voltará ao plano Gratuito.',
-                                          style: TextStyle(
-                                            color: AppColors.onSurfaceVariant,
-                                          ),
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(ctx).pop(false),
-                                            child: const Text(
-                                              'Voltar',
-                                              style: TextStyle(
-                                                color:
-                                                    AppColors.onSurfaceVariant,
-                                              ),
-                                            ),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(ctx).pop(true),
-                                            child: const Text(
-                                              'Confirmar',
-                                              style: TextStyle(
-                                                color: AppColors.flame,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                    final planTitle = currentPlan == 'premium'
+                                        ? 'Plano Premium'
+                                        : 'Plano Básico';
+                                    final confirm = await SubscriptionCancelDialog.show(
+                                      context,
+                                      planName: planTitle,
+                                      currentPeriodEnd: currentUser?.currentPeriodEnd,
                                     );
                                     if (confirm != true) return;
 

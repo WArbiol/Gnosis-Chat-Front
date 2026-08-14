@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:gnosis_chat/core/utils/message_crypto.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'message_entity.freezed.dart';
 part 'message_entity.g.dart';
@@ -20,6 +22,12 @@ class MessageEntity with _$MessageEntity {
 
   factory MessageEntity.fromJson(Map<String, dynamic> json) {
     var rawContent = json['content'] as String? ?? '';
+    if (rawContent.startsWith('enc:v1:')) {
+      try {
+        final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+        rawContent = MessageCrypto.decryptContent(rawContent, currentUserId);
+      } catch (_) {}
+    }
     List<String> extractedFollowups = [];
 
     // Backwards compatibility for legacy HTML comment tags if present

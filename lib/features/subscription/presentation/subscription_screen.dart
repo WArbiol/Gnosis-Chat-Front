@@ -44,11 +44,46 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen>
     }
   }
 
+  Future<void> _reactivateSubscription() async {
+    setState(() {
+      _loadingPlan = PlanType.basic;
+    });
+    try {
+      await ref.read(subscriptionProvider.notifier).reactivateSubscription();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Assinatura reativada com sucesso! 🚀'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao reativar: $e'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.flame,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingPlan = null;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final planState = ref.watch(subscriptionProvider);
     final currentUser = ref.watch(userProvider);
     final currentPlan = currentUser?.plan ?? 'free';
+    final isCanceled = currentUser?.subscriptionStatus == 'canceled';
     final subscriptionProviderName = currentUser?.subscriptionProvider;
 
     // Show snackbar on error
@@ -187,6 +222,17 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen>
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
                     children: [
+                      if (isCanceled && currentPlan != 'free') ...[
+                        _CanceledBanner(
+                          planName: currentPlan == 'premium'
+                              ? 'Plano Premium'
+                              : 'Plano Básico',
+                          currentPeriodEnd: currentUser?.currentPeriodEnd,
+                          onReactivate: _reactivateSubscription,
+                          isLoading: _loadingPlan != null,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       ...PlanType.values.map((type) {
                         final isCurrentPlan = type.name == currentPlan;
                         return _PlanCard(
@@ -195,6 +241,8 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen>
                           isLoading:
                               planState.isLoading && _loadingPlan == type,
                           isCurrentPlan: isCurrentPlan,
+                          isCanceled: isCurrentPlan && isCanceled,
+                          onReactivate: _reactivateSubscription,
                           onSelect: isCurrentPlan || planState.isLoading
                               ? null
                               : () async {
@@ -402,6 +450,8 @@ class _PlanCard extends StatelessWidget {
     required this.isLoading,
     required this.onSelect,
     this.isCurrentPlan = false,
+    this.isCanceled = false,
+    this.onReactivate,
   });
 
   final PlanEntity plan;
@@ -409,9 +459,13 @@ class _PlanCard extends StatelessWidget {
   final bool isLoading;
   final VoidCallback? onSelect;
   final bool isCurrentPlan;
+  final bool isCanceled;
+  final VoidCallback? onReactivate;
 
   @override
   Widget build(BuildContext context) {
+    final badgeColor = isCanceled ? AppColors.flame : tint;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: ClipRRect(
@@ -424,7 +478,7 @@ class _PlanCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               color: tint.withValues(alpha: isCurrentPlan ? 0.08 : 0.04),
               border: Border.all(
-                color: tint.withValues(alpha: isCurrentPlan ? 0.3 : 0.12),
+                color: (isCanceled ? AppColors.flame : tint).withValues(alpha: isCurrentPlan ? 0.35 : 0.12),
                 width: isCurrentPlan ? 1.5 : 1,
               ),
             ),
@@ -461,12 +515,12 @@ class _PlanCard extends StatelessWidget {
                                   ),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
-                                    color: tint.withValues(alpha: 0.15),
+                                    color: badgeColor.withValues(alpha: 0.15),
                                   ),
                                   child: Text(
-                                    'Atual',
+                                    isCanceled ? 'Cancelando' : 'Atual',
                                     style: TextStyle(
-                                      color: tint,
+                                      color: badgeColor,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -532,26 +586,60 @@ class _PlanCard extends StatelessWidget {
                   width: double.infinity,
                   height: 48,
                   child: isCurrentPlan
-                      ? OutlinedButton(
-                          onPressed: null,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: tint.withValues(alpha: 0.4),
-                            side: BorderSide(
-                              color: tint.withValues(alpha: 0.12),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: Text(
-                            'Plano Atual',
-                            style: TextStyle(
-                              color: tint.withValues(alpha: 0.4),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                            ),
-                          ),
-                        )
+                      ? (isCanceled
+                          ? ElevatedButton.icon(
+                              onPressed: isLoading || onReactivate == null
+                                  ? null
+                                  : () {
+                                      HapticFeedback.lightImpact();
+                                      onReactivate!();
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: AppColors.background,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                elevation: 0,
+                              ),
+                              icon: isLoading
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.background,
+                                      ),
+                                    )
+                                  : const Icon(Icons.bolt_rounded, size: 18),
+                              label: const Text(
+                                'Reativar Assinatura',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            )
+                          : OutlinedButton(
+                              onPressed: null,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: tint.withValues(alpha: 0.4),
+                                side: BorderSide(
+                                  color: tint.withValues(alpha: 0.12),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: Text(
+                                'Plano Atual',
+                                style: TextStyle(
+                                  color: tint.withValues(alpha: 0.4),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ))
                       : OutlinedButton(
                           onPressed: isLoading || onSelect == null
                               ? null
@@ -633,3 +721,151 @@ class _FeatureItem extends StatelessWidget {
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Canceled Banner widget — shown when subscription cancellation is pending
+// ---------------------------------------------------------------------------
+class _CanceledBanner extends StatelessWidget {
+  const _CanceledBanner({
+    required this.planName,
+    required this.currentPeriodEnd,
+    required this.onReactivate,
+    required this.isLoading,
+  });
+
+  final String planName;
+  final String? currentPeriodEnd;
+  final VoidCallback onReactivate;
+  final bool isLoading;
+
+  String _formatDate(String? rawDate) {
+    if (rawDate == null || rawDate.isEmpty) return 'o final do período';
+    try {
+      final dt = DateTime.parse(rawDate).toLocal();
+      final day = dt.day.toString().padLeft(2, '0');
+      final month = dt.month.toString().padLeft(2, '0');
+      final year = dt.year.toString();
+      return '$day/$month/$year';
+    } catch (_) {
+      return 'o final do período';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dateStr = _formatDate(currentPeriodEnd);
+    const accent = AppColors.flame;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppColors.surface.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: accent.withValues(alpha: 0.35),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withValues(alpha: 0.1),
+                blurRadius: 20,
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.warning_amber_rounded,
+                      color: accent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Cancelamento Agendado',
+                          style: TextStyle(
+                            color: AppColors.onSurface,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Expira em $dateStr',
+                          style: const TextStyle(
+                            color: accent,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Seu acesso ao $planName continua 100% ativo. Você pode reativar a renovação automática a qualquer momento.',
+                style: TextStyle(
+                  color: AppColors.onSurfaceVariant.withValues(alpha: 0.9),
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton.icon(
+                  onPressed: isLoading ? null : onReactivate,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.background,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  icon: isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.background,
+                          ),
+                        )
+                      : const Icon(Icons.bolt_rounded, size: 18),
+                  label: const Text(
+                    'Reativar Assinatura',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

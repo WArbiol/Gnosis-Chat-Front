@@ -76,7 +76,7 @@ class ConversationRemoteSource {
     request.body = jsonEncode({
       'conversation_id': conversationId,
       'query': query,
-      if (uiFilters != null) 'ui_filters': uiFilters,
+      'ui_filters': ?uiFilters,
     });
 
     cancelActiveStream();

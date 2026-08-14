@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:gnosis_chat/features/subscription/domain/plan_entity.dart';
 import 'package:gnosis_chat/services/api/api_client.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
+import 'package:gnosis_chat/shared/providers/user_provider.dart';
 
 final subscriptionProvider =
     StateNotifierProvider<SubscriptionNotifier, AsyncValue<PlanType>>(
@@ -127,6 +128,30 @@ class SubscriptionNotifier extends StateNotifier<AsyncValue<PlanType>> {
       rethrow;
     } catch (e, st) {
       debugPrint('CANCEL ERROR: $e');
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
+  /// Reactivate a canceled subscription before it expires.
+  Future<void> reactivateSubscription() async {
+    state = const AsyncValue.loading();
+    try {
+      final dio = _ref.read(apiClientProvider).dio;
+
+      await dio.post('payments/reactivate');
+      await _ref.read(authProvider.notifier).fetchUser();
+
+      final user = _ref.read(userProvider);
+      final activePlan = user?.plan == 'premium' ? PlanType.premium : PlanType.basic;
+      state = AsyncValue.data(activePlan);
+    } on DioException catch (e, st) {
+      final errorMsg = e.response?.data?['message'] ?? e.message ?? e.toString();
+      debugPrint('REACTIVATE ERROR: $errorMsg');
+      state = AsyncValue.error(Exception(errorMsg), st);
+      rethrow;
+    } catch (e, st) {
+      debugPrint('REACTIVATE ERROR: $e');
       state = AsyncValue.error(e, st);
       rethrow;
     }

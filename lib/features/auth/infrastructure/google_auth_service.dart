@@ -28,24 +28,68 @@ class GoogleAuthService {
   /// Retorna a `AuthResponse` do Supabase se autenticado com sucesso,
   /// ou `null` se o usuário cancelou a operação voluntariamente.
   static Future<AuthResponse?> signIn() async {
-    final rawNonce = _generateRawNonce();
+    if (kIsWeb) {
+      // No Web, tenta o fluxo ID Token se disponível; caso contrário,
+      // executa o signInWithOAuth com o branding de produção já configurado.
+      try {
+        final googleSignIn = GoogleSignIn(
+          clientId: webClientId.isNotEmpty ? webClientId : null,
+          scopes: const ['email', 'profile', 'openid'],
+        );
+        final googleUser = await googleSignIn.signIn();
+        if (googleUser == null) {
+          debugPrint('GOOGLE_AUTH: Usuário cancelou o login.');
+          return null;
+        }
 
-    final clientId = kIsWeb
-        ? (webClientId.isNotEmpty ? webClientId : null)
-        : (defaultTargetPlatform == TargetPlatform.iOS && iosClientId.isNotEmpty
-            ? iosClientId
-            : null);
+        final googleAuth = await googleUser.authentication;
+        final idToken = googleAuth.idToken;
+        final accessToken = googleAuth.accessToken;
+
+        if (idToken != null && idToken.isNotEmpty) {
+          final rawNonce = _generateRawNonce();
+          debugPrint('GOOGLE_AUTH: ID Token obtido. Autenticando com Supabase...');
+          return await Supabase.instance.client.auth.signInWithIdToken(
+            provider: OAuthProvider.google,
+            idToken: idToken,
+            accessToken: accessToken,
+            nonce: rawNonce,
+          );
+        }
+      } catch (e) {
+        if (e.toString().contains('popup_closed') || e.toString().contains('canceled')) {
+          debugPrint('GOOGLE_AUTH: Popup fechado pelo usuário.');
+          return null;
+        }
+        debugPrint('GOOGLE_AUTH: Web fallback para OAuth: $e');
+      }
+
+      // Fallback robusto para Web OAuth com branding oficial de produção
+      final success = await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: Uri.base.origin,
+      );
+      if (!success) {
+        throw Exception('Falha ao iniciar login com Google.');
+      }
+      throw Exception('Redirecionando...');
+    }
+
+    // Fluxo Mobile (Android / iOS) — 100% Nativo via ID Token (Play Services / Apple)
+    final rawNonce = _generateRawNonce();
+    final clientId = defaultTargetPlatform == TargetPlatform.iOS && iosClientId.isNotEmpty
+        ? iosClientId
+        : null;
 
     final googleSignIn = GoogleSignIn(
       clientId: clientId,
-      serverClientId: kIsWeb ? null : (webClientId.isNotEmpty ? webClientId : null),
+      serverClientId: webClientId.isNotEmpty ? webClientId : null,
       scopes: const ['email', 'profile', 'openid'],
     );
 
-    // Inicia o fluxo nativo (Bottom Sheet no Mobile / One-Tap ou Popup no Web)
     final googleUser = await googleSignIn.signIn();
     if (googleUser == null) {
-      debugPrint('GOOGLE_AUTH: Usuário cancelou o login.');
+      debugPrint('GOOGLE_AUTH: Usuário cancelou o login no mobile.');
       return null;
     }
 
@@ -59,16 +103,13 @@ class GoogleAuthService {
       );
     }
 
-    debugPrint('GOOGLE_AUTH: ID Token obtido. Autenticando com Supabase...');
-
-    final response = await Supabase.instance.client.auth.signInWithIdToken(
+    debugPrint('GOOGLE_AUTH: ID Token obtido no mobile. Autenticando com Supabase...');
+    return await Supabase.instance.client.auth.signInWithIdToken(
       provider: OAuthProvider.google,
       idToken: idToken,
       accessToken: accessToken,
       nonce: rawNonce,
     );
-
-    return response;
   }
 
   /// Desconecta a conta do Google SDK localmente

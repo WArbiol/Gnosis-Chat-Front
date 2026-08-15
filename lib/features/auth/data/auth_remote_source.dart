@@ -16,14 +16,18 @@ class AuthRemoteSource implements AuthRepository {
   Future<UserEntity> signInWithProvider(SocialProvider provider) async {
     if (provider == SocialProvider.google) {
       final response = await GoogleAuthService.signIn();
-      if (response == null || response.user == null) {
+      if (response == null) {
         throw Exception('CANCELLED');
       }
 
       final currentUser = await getCurrentUser();
       if (currentUser != null) return currentUser;
 
-      final sbUser = response.user!;
+      final sbUser = response.user;
+      if (sbUser == null) {
+        throw Exception('CANCELLED');
+      }
+
       return UserEntity(
         id: sbUser.id,
         email: sbUser.email ?? '',

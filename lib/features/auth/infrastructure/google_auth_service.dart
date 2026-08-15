@@ -60,17 +60,24 @@ class GoogleAuthService {
       });
 
       final idToken = await completer.future;
-      if (idToken == null || idToken.isEmpty) {
-        debugPrint('GOOGLE_AUTH: Usuário fechou o prompt One-Tap ou cancelou.');
-        return null;
+      if (idToken != null && idToken.isNotEmpty) {
+        debugPrint('GOOGLE_AUTH: ID Token (GIS) obtido no Web! Autenticando com Supabase...');
+        return await Supabase.instance.client.auth.signInWithIdToken(
+          provider: OAuthProvider.google,
+          idToken: idToken,
+          nonce: rawNonce,
+        );
       }
 
-      debugPrint('GOOGLE_AUTH: ID Token (GIS) obtido no Web! Autenticando com Supabase...');
-      return await Supabase.instance.client.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: idToken,
-        nonce: rawNonce,
+      debugPrint('GOOGLE_AUTH: One-Tap indisponível ou dispensado, iniciando OAuth Web...');
+      final success = await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: Uri.base.origin,
       );
+      if (!success) {
+        throw Exception('Falha ao iniciar login com Google.');
+      }
+      throw Exception('Redirecionando...');
     }
 
     // Fluxo Mobile (Android / iOS) — 100% Nativo via ID Token (Play Services / Apple Sheet)

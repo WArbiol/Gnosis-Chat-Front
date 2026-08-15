@@ -11,7 +11,7 @@ class AppConstants {
       return envUrl.endsWith('/') ? envUrl : '$envUrl/';
     }
     if (kReleaseMode) {
-      return 'https://gnosis-chat-api-971574732695.us-central1.run.app/api/v1/';
+      return 'https://gnosis-chat-api-971574732695.southamerica-east1.run.app/api/v1/';
     }
     if (kIsWeb) {
       return 'http://localhost:8000/api/v1/';
@@ -20,7 +20,7 @@ class AppConstants {
       return 'http://10.0.2.2:8000/api/v1/';
     }
     // Por padrão no iOS/iPhone, aponta para o backend remoto de produção no Cloud Run
-    return 'https://gnosis-chat-api-971574732695.us-central1.run.app/api/v1/';
+    return 'https://gnosis-chat-api-971574732695.southamerica-east1.run.app/api/v1/';
   }
 
   static const Duration apiTimeout = Duration(minutes: 5);

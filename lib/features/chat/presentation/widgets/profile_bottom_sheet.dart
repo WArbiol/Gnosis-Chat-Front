@@ -410,7 +410,7 @@ class _DeleteAccountLinkState extends State<_DeleteAccountLink> {
               decoration: _isHovered ? TextDecoration.underline : TextDecoration.none,
               decorationColor: AppColors.error.withValues(alpha: 0.8),
             ),
-            child: const Text('Excluir minha conta'),
+            child: const Text('Excluir conta'),
           ),
         ),
       ),

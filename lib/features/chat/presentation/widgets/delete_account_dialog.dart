@@ -228,7 +228,7 @@ class _DeleteAccountDialogState extends ConsumerState<DeleteAccountDialog> {
                       elevation: 0,
                     ),
                     child: const Text(
-                      'Manter Minha Conta',
+                      'Manter Conta',
                       style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                     ),
                   ),

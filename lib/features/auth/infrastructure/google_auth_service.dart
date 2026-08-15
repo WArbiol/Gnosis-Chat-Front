@@ -1,12 +1,12 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_identity_services_web/id.dart' as gis;
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'google_auth_stub.dart'
+    if (dart.library.js_interop) 'google_auth_web.dart'
+    if (dart.library.html) 'google_auth_web.dart';
 
 class GoogleAuthService {
   GoogleAuthService._();
@@ -31,7 +31,6 @@ class GoogleAuthService {
         .join();
   }
 
-  /// Gera o hash SHA-256 do raw nonce requerido pelo Google GIS e Supabase
   static String _hashNonce(String rawNonce) {
     final bytes = utf8.encode(rawNonce);
     final digest = sha256.convert(bytes);
@@ -45,103 +44,16 @@ class GoogleAuthService {
     final rawNonce = _generateRawNonce();
     final hashedNonce = _hashNonce(rawNonce);
 
-    if (kIsWeb) {
-      // No Web, utiliza Google Identity Services (One-Tap / Prompt nativo)
-      // O Google recebe o hashedNonce (SHA-256) e insere no JWT 'nonce' claim.
-      // O Supabase recebe o rawNonce e valida internamente sha256(rawNonce) == jwt.nonce.
-      final completer = Completer<String?>();
-
-      gis.id.initialize(gis.IdConfiguration(
-        client_id: webClientId,
-        auto_select: false,
-        nonce: hashedNonce,
-        callback: (gis.CredentialResponse response) {
-          if (!completer.isCompleted) {
-            completer.complete(response.credential);
-          }
-        },
-      ));
-
-      gis.id.prompt((gis.PromptMomentNotification notification) {
-        if (notification.isDismissedMoment() || notification.isSkippedMoment()) {
-          if (!completer.isCompleted) {
-            completer.complete(null);
-          }
-        }
-      });
-
-      final idToken = await completer.future;
-      if (idToken != null && idToken.isNotEmpty) {
-        debugPrint('GOOGLE_AUTH: ID Token (GIS) obtido no Web! Autenticando com Supabase...');
-        return await Supabase.instance.client.auth.signInWithIdToken(
-          provider: OAuthProvider.google,
-          idToken: idToken,
-          nonce: rawNonce,
-        );
-      }
-
-      debugPrint('GOOGLE_AUTH: One-Tap indisponível ou dispensado, iniciando OAuth Web...');
-      final success = await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: Uri.base.origin,
-      );
-      if (!success) {
-        throw Exception('Falha ao iniciar login com Google.');
-      }
-      throw Exception('Redirecionando...');
-    }
-
-    // Fluxo Mobile (Android / iOS) — 100% Nativo via ID Token (Play Services / Apple Sheet)
-    final clientId = defaultTargetPlatform == TargetPlatform.iOS && iosClientId.isNotEmpty
-        ? iosClientId
-        : null;
-
-    final googleSignIn = GoogleSignIn(
-      clientId: clientId,
-      serverClientId: webClientId.isNotEmpty ? webClientId : null,
-      scopes: const ['email', 'profile', 'openid'],
-    );
-
-    final googleUser = await googleSignIn.signIn();
-    if (googleUser == null) {
-      debugPrint('GOOGLE_AUTH: Usuário cancelou o login no mobile.');
-      return null;
-    }
-
-    final googleAuth = await googleUser.authentication;
-    final idToken = googleAuth.idToken;
-    final accessToken = googleAuth.accessToken;
-
-    if (idToken == null || idToken.isEmpty) {
-      throw Exception(
-        'Não foi possível obter o ID Token do Google no dispositivo móvel.',
-      );
-    }
-
-    debugPrint('GOOGLE_AUTH: ID Token obtido no mobile. Autenticando com Supabase...');
-    return await Supabase.instance.client.auth.signInWithIdToken(
-      provider: OAuthProvider.google,
-      idToken: idToken,
-      accessToken: accessToken,
-      nonce: rawNonce,
+    return await signInPlatform(
+      webClientId: webClientId,
+      iosClientId: iosClientId,
+      rawNonce: rawNonce,
+      hashedNonce: hashedNonce,
     );
   }
 
   /// Desconecta a conta do Google SDK localmente
   static Future<void> signOut() async {
-    try {
-      if (kIsWeb) {
-        gis.id.disableAutoSelect();
-      } else {
-        final googleSignIn = GoogleSignIn(
-          serverClientId: webClientId.isNotEmpty ? webClientId : null,
-        );
-        if (await googleSignIn.isSignedIn()) {
-          await googleSignIn.signOut();
-        }
-      }
-    } catch (e) {
-      debugPrint('GOOGLE_AUTH: Erro ao desconectar Google SignIn: $e');
-    }
+    await signOutPlatform(webClientId: webClientId);
   }
 }

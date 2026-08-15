@@ -49,16 +49,33 @@
   <script type="text/javascript">
     pdfjsLib.GlobalWorkerOptions.workerSrc = "//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js";
   </script>
-</head>
-<body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
+  <!-- Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <div id="g_id_signin_hidden" style="position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;z-index:-1;"></div>
+  <script>
+    window.renderAndClickGoogleButton = function() {
+      try {
+        var container = document.getElementById('g_id_signin_hidden');
+        if (container && window.google && window.google.accounts && window.google.accounts.id) {
+          container.innerHTML = '';
+          window.google.accounts.id.renderButton(container, {
+            theme: 'outline',
+            size: 'large',
+            type: 'standard'
+          });
+          setTimeout(function() {
+            var btn = container.querySelector('div[role=button]');
+            if (btn) {
+              btn.click();
+            }
+          }, 50);
+        }
+      } catch (err) {
+        console.error('Error triggering GIS button:', err);
+      }
+    };
+  </script>
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

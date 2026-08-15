@@ -94,8 +94,10 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
       debugPrint('AUTH: Social Login Succeeded.');
       state = app.AuthState.authenticated(user);
     } catch (e) {
-      if (e.toString().contains('CANCELLED')) {
-        debugPrint('AUTH: Login cancelado pelo usuário.');
+      if (e.toString().contains('CANCELLED') ||
+          e.toString().contains('popup_closed') ||
+          e.toString().contains('canceled')) {
+        debugPrint('AUTH: Login cancelado pelo usuário ou popup fechado.');
         state = const app.AuthState.unauthenticated();
         return;
       }

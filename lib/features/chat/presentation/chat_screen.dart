@@ -362,8 +362,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                   ),
 
                   // Custom premium AppBar (top layer)
-                  Align(
-                    alignment: Alignment.topCenter,
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
                     child: PremiumAppBar(
                       glowAnim: _glowAnim,
                       user: user,

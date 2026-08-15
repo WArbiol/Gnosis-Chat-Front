@@ -94,6 +94,11 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
       debugPrint('AUTH: Social Login Succeeded.');
       state = app.AuthState.authenticated(user);
     } catch (e) {
+      if (e.toString().contains('CANCELLED')) {
+        debugPrint('AUTH: Login cancelado pelo usuário.');
+        state = const app.AuthState.unauthenticated();
+        return;
+      }
       if (e.toString().contains('Redirecionando')) {
         debugPrint('AUTH: Redirecting to Provider...');
         final stillLoading = state.maybeMap(

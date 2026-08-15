@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:gnosis_chat/features/auth/data/auth_repository.dart';
 import 'package:gnosis_chat/features/auth/domain/social_provider.dart';
 import 'package:gnosis_chat/features/auth/domain/user_entity.dart';
+import 'package:gnosis_chat/features/auth/infrastructure/google_auth_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRemoteSource implements AuthRepository {
@@ -13,9 +14,24 @@ class AuthRemoteSource implements AuthRepository {
 
   @override
   Future<UserEntity> signInWithProvider(SocialProvider provider) async {
-    final oAuthProvider = provider == SocialProvider.google
-        ? OAuthProvider.google
-        : provider == SocialProvider.facebook
+    if (provider == SocialProvider.google) {
+      final response = await GoogleAuthService.signIn();
+      if (response == null || response.user == null) {
+        throw Exception('CANCELLED');
+      }
+
+      final currentUser = await getCurrentUser();
+      if (currentUser != null) return currentUser;
+
+      final sbUser = response.user!;
+      return UserEntity(
+        id: sbUser.id,
+        email: sbUser.email ?? '',
+        avatarUrl: sbUser.userMetadata?['avatar_url'] as String?,
+      );
+    }
+
+    final oAuthProvider = provider == SocialProvider.facebook
         ? OAuthProvider.facebook
         : OAuthProvider.apple;
 
@@ -35,10 +51,6 @@ class AuthRemoteSource implements AuthRepository {
       throw Exception('Falha ao iniciar login com ${provider.name}');
     }
 
-    // Note: Since this redirects out of the app, this method won't immediately
-    // return the user. The app will be relaunched via deep link and the
-    // auth state change listener (or splash screen) will pick up the session.
-    // For now we throw an expected exception to let the UI know it's a redirect flow.
     throw Exception('Redirecionando...');
   }
 
@@ -60,6 +72,7 @@ class AuthRemoteSource implements AuthRepository {
 
   @override
   Future<void> logout() async {
+    await GoogleAuthService.signOut();
     await _supabase.auth.signOut();
   }
 

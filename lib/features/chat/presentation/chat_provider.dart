@@ -84,6 +84,7 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
 
     final convNotifier = _ref.read(conversationProvider.notifier);
     var activeId = _ref.read(conversationProvider).activeId;
+    final isNewConversation = activeId == null;
 
     if (activeId != null) {
       convNotifier.syncMessages([...currentMessages, userMsg]);
@@ -164,7 +165,12 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
         state = AsyncValue.data(currentMessages);
       }
       if (activeId != null) {
-        convNotifier.syncMessagesForId(activeId, currentMessages);
+        if (isNewConversation) {
+          // If message failed on a newly created conversation, clean it up completely so no phantom empty chat is saved
+          await convNotifier.deleteConversation(activeId);
+        } else {
+          convNotifier.syncMessagesForId(activeId, currentMessages);
+        }
       }
       rethrow;
     } finally {

@@ -107,7 +107,7 @@ class TermsOfUseScreen extends StatelessWidget {
                   title: 'Legislação Aplicável e Contato',
                   content:
                       'Estes Termos são regidos pelas leis da República Federativa do Brasil. Para dúvidas, notificações ou suporte relacionado a estes Termos, entre em contato:\n\n'
-                      '📧 contato@gnosischat.com\n'
+                      '📧 suporte.gnosischat@gmail.com\n'
                       '🌐 https://gnosischat.com',
                 ),
                 const SizedBox(height: 32),

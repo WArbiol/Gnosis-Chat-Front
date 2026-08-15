@@ -108,7 +108,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   title: 'Canal de Contato e Encarregado (DPO)',
                   content:
                       'Caso tenha dúvidas sobre esta política, deseje exercer seus direitos de titular ou precise de suporte sobre a privacidade de seus dados, entre em contato com nosso Encarregado de Proteção de Dados pelo e-mail:\n\n'
-                      '📧 contato@gnosischat.com (ou walterarbiol@gmail.com)\n'
+                      '📧 suporte.gnosischat@gmail.com\n'
                       '🌐 https://gnosischat.com',
                 ),
                 const SizedBox(height: 32),

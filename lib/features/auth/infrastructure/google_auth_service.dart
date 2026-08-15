@@ -38,7 +38,7 @@ class GoogleAuthService {
 
     final googleSignIn = GoogleSignIn(
       clientId: clientId,
-      serverClientId: webClientId.isNotEmpty ? webClientId : null,
+      serverClientId: kIsWeb ? null : (webClientId.isNotEmpty ? webClientId : null),
       scopes: const ['email', 'profile', 'openid'],
     );
 
@@ -76,7 +76,7 @@ class GoogleAuthService {
     try {
       final googleSignIn = GoogleSignIn(
         clientId: kIsWeb ? (webClientId.isNotEmpty ? webClientId : null) : null,
-        serverClientId: webClientId.isNotEmpty ? webClientId : null,
+        serverClientId: kIsWeb ? null : (webClientId.isNotEmpty ? webClientId : null),
       );
       if (await googleSignIn.isSignedIn()) {
         await googleSignIn.signOut();

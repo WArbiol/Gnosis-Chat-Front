@@ -212,14 +212,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                         GestureDetector(
                           onTap: () => context.push('/terms'),
-                          child: const Text(
+                          child: Text(
                             'Termos de Uso',
                             style: TextStyle(
-                              color: AppColors.accentLight,
+                              color: AppColors.onSurface.withValues(alpha: 0.85),
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               decoration: TextDecoration.underline,
-                              decorationColor: AppColors.accentLight,
+                              decorationColor: AppColors.onSurfaceVariant.withValues(alpha: 0.5),
                             ),
                           ),
                         ),
@@ -232,14 +232,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                         GestureDetector(
                           onTap: () => context.push('/privacy'),
-                          child: const Text(
+                          child: Text(
                             'Política de Privacidade',
                             style: TextStyle(
-                              color: AppColors.accentLight,
+                              color: AppColors.onSurface.withValues(alpha: 0.85),
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               decoration: TextDecoration.underline,
-                              decorationColor: AppColors.accentLight,
+                              decorationColor: AppColors.onSurfaceVariant.withValues(alpha: 0.5),
                             ),
                           ),
                         ),

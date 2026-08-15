@@ -235,6 +235,7 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
                             minLines: 1,
                             maxLines: 5,
                             keyboardType: TextInputType.multiline,
+                            textCapitalization: TextCapitalization.sentences,
                             textInputAction: TextInputAction.newline,
                             style: const TextStyle(
                               color: AppColors.onSurface,

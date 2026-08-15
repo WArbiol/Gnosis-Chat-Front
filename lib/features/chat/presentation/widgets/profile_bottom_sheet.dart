@@ -7,6 +7,7 @@ import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/second_chamber_dialog.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/second_chamber_success_dialog.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/delete_account_dialog.dart';
 import 'package:gnosis_chat/shared/providers/user_provider.dart';
 import 'package:gnosis_chat/shared/widgets/user_avatar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -158,6 +159,39 @@ class ProfileBottomSheet extends ConsumerWidget {
                 label: 'Sair',
                 isDestructive: true,
                 onTap: () => _confirmLogout(context, ref),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Delete account link
+              Center(
+                child: TextButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => const DeleteAccountDialog(),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    size: 16,
+                    color: AppColors.error.withValues(alpha: 0.6),
+                  ),
+                  label: Text(
+                    'Excluir minha conta',
+                    style: TextStyle(
+                      color: AppColors.error.withValues(alpha: 0.6),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
               ),
             ],
           ),

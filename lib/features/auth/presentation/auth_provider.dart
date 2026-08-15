@@ -140,6 +140,23 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
     state = const app.AuthState.unauthenticated();
   }
 
+  Future<void> deleteAccount() async {
+    debugPrint('AUTH: Deleting user account...');
+    try {
+      await _repo.deleteAccount();
+    } catch (e) {
+      debugPrint('AUTH: Backend delete error: $e');
+    }
+
+    // Force complete local logout & cache clear
+    try {
+      await _repo.logout();
+    } catch (_) {}
+
+    _ref.read(conversationProvider.notifier).clearAll();
+    state = const app.AuthState.unauthenticated();
+  }
+
   Future<String?> unlockSecondChamber(String passcode) async {
     return state.maybeWhen(
       authenticated: (user) async {

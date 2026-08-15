@@ -129,4 +129,11 @@ class AuthRemoteSource implements AuthRepository {
     // Returns {"valid": true, "reason": "...", "user": ...}
     return Map<String, dynamic>.from(response.data);
   }
+
+  @override
+  Future<void> deleteAccount() async {
+    debugPrint('AUTH_REMOTE: POST auth/delete-account...');
+    await _dio.post('auth/delete-account');
+    debugPrint('AUTH_REMOTE: Account deleted successfully.');
+  }
 }

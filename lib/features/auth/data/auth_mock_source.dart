@@ -70,4 +70,9 @@ class AuthMockSource implements AuthRepository {
       'user': _currentUser!.toJson(),
     };
   }
+
+  @override
+  Future<void> deleteAccount() async {
+    _currentUser = null;
+  }
 }

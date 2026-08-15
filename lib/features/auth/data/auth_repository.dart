@@ -9,4 +9,5 @@ abstract class AuthRepository {
   Future<UserEntity?> getCurrentUser();
   Future<UserEntity> updateProfile({int? chamberLevel});
   Future<Map<String, dynamic>> verifySecondChamber(String passcode);
+  Future<void> deleteAccount();
 }

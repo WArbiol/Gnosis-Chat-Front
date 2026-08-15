@@ -6,6 +6,8 @@ import 'package:gnosis_chat/features/auth/presentation/splash_screen.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_shell.dart';
 import 'package:gnosis_chat/features/subscription/presentation/subscription_screen.dart';
 import 'package:gnosis_chat/features/chat/presentation/pdf_viewer_screen.dart';
+import 'package:gnosis_chat/features/legal/presentation/privacy_policy_screen.dart';
+import 'package:gnosis_chat/features/legal/presentation/terms_of_use_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/splash',
@@ -19,6 +21,16 @@ final GoRouter appRouter = GoRouter(
       path: '/login',
       name: 'login',
       builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/privacy',
+      name: 'privacy',
+      builder: (context, state) => const PrivacyPolicyScreen(),
+    ),
+    GoRoute(
+      path: '/terms',
+      name: 'terms',
+      builder: (context, state) => const TermsOfUseScreen(),
     ),
     GoRoute(
       path: '/chat',
@@ -47,16 +59,15 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
   redirect: (context, state) {
-    // In GoRouter 5.0+ we cannot directly use ref.read indiscriminately inside redirect
-    // without it being passed down, but assuming there is a global listener or
-    // we just use Supabase session state synchronously for the initial checks.
-
-    // Using Supabase directly for synchronous redirects avoids Provider scope issues in the router definition
     final session = Supabase.instance.client.auth.currentSession;
     final isLoggedIn = session != null;
 
     final isAuthRoute =
         state.matchedLocation == '/login' || state.matchedLocation == '/splash';
+    final isPublicRoute =
+        isAuthRoute ||
+        state.matchedLocation == '/privacy' ||
+        state.matchedLocation == '/terms';
 
     final uriStr = state.uri.toString();
     final isOAuthCallback =
@@ -75,8 +86,11 @@ final GoRouter appRouter = GoRouter(
     // We let splash screen be the entry point to resolve animations and slow auth fetches
     if (state.matchedLocation == '/splash') return null;
 
+    // Allow public pages (privacy, terms) without authentication
+    if (isPublicRoute) return null;
+
     // Let unauthenticated users go to login
-    if (!isLoggedIn && !isAuthRoute) return '/login';
+    if (!isLoggedIn) return '/login';
 
     // Prevent authenticated users from going back to login
     if (isLoggedIn && isAuthRoute) return '/chat';

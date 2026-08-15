@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Privacidade — Gnosis Chat</title>
+  <meta name="description" content="Política de Privacidade e Proteção de Dados do Gnosis Chat em conformidade com a LGPD e GDPR.">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07080C;
+      --card-bg: #0E1017;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --accent: #E8B730;
+      --accent-light: #F0CC5E;
+      --primary: #3A7BD5;
+      --primary-light: #5B9AE8;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.7;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: rgba(14, 16, 23, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 16px 24px;
+    }
+    .header-content {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+    .brand img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+    .btn-app {
+      background: rgba(232, 183, 48, 0.12);
+      color: var(--accent-light);
+      border: 1px solid rgba(232, 183, 48, 0.3);
+      padding: 8px 18px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-app:hover {
+      background: rgba(232, 183, 48, 0.2);
+      border-color: var(--accent);
+    }
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px 80px 24px;
+      flex: 1;
+      width: 100%;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      background: rgba(232, 183, 48, 0.15);
+      border: 1px solid rgba(232, 183, 48, 0.3);
+      color: var(--accent-light);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .updated {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 32px;
+    }
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .section-num {
+      width: 30px;
+      height: 30px;
+      background: rgba(58, 123, 213, 0.2);
+      color: var(--primary-light);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    p, ul {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      margin-bottom: 14px;
+    }
+    p:last-child, ul:last-child {
+      margin-bottom: 0;
+    }
+    ul {
+      padding-left: 24px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    strong {
+      color: var(--text);
+    }
+    a.contact-link {
+      color: var(--accent-light);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    a.contact-link:hover {
+      text-decoration: underline;
+    }
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 32px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="/" class="brand">
+        <img src="favicon.png" alt="Gnosis Logo">
+        <span>Gnosis Chat</span>
+      </a>
+      <a href="/" class="btn-app">Abrir App</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="badge">DOCUMENTO LEGAL</div>
+    <h1>Política de Privacidade</h1>
+    <div class="updated">Última atualização: 15 de Agosto de 2026</div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2>Compromisso com a Privacidade</h2>
+      </div>
+      <p>O <strong>Gnosis Chat</strong> ("nós", "nosso" ou "aplicativo") respeita a privacidade de seus usuários e tem o compromisso inegociável de proteger os dados pessoais coletados. Esta Política de Privacidade descreve como coletamos, usamos, armazenamos e protegemos suas informações em conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018)</strong>, o <strong>Regulamento Geral sobre a Proteção de Dados (GDPR)</strong> e as diretrizes de privacidade das plataformas Apple e Google.</p>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <h2>Informações que Coletamos</h2>
+      </div>
+      <p>Para proporcionar a experiência de pesquisa teológica e orquestração de Inteligência Artificial, coletamos as seguintes categorias de dados:</p>
+      <ul>
+        <li><strong>Dados de Cadastro e Autenticação:</strong> Endereço de e-mail, nome de exibição e foto de perfil fornecidos via login seguro do Google, Apple ou e-mail.</li>
+        <li><strong>Mensagens e Consultas:</strong> As perguntas enviadas ao chat e as respostas geradas pelo assistente.</li>
+        <li><strong>Dados de Assinatura:</strong> Status do plano (Gratuito, Básico ou Premium) e identificadores de transação do Stripe ou lojas de aplicativos (Apple IAP / Google Play Billing). <em>Nota: Nenhum dado de cartão de crédito é processado ou armazenado em nossos servidores.</em></li>
+        <li><strong>Registros Técnicos:</strong> Endereço IP, tipo de dispositivo e versão do app, coletados estritamente para segurança, mitigação de abusos e diagnóstico de estabilidade.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <h2>Criptografia e Proteção de Dados</h2>
+      </div>
+      <p>Adotamos os mais altos padrões de segurança para assegurar que suas conversas permaneçam confidenciais:</p>
+      <ul>
+        <li><strong>Criptografia em Repouso:</strong> Todas as mensagens salvas em banco de dados passam por criptografia AES-256 derivada da identidade única do usuário.</li>
+        <li><strong>Criptografia em Trânsito:</strong> Todo o tráfego entre seu navegador/app e nossos servidores é protegido por protocolo HTTPS com TLS 1.3 obrigatório.</li>
+        <li><strong>Isolamento por RLS:</strong> Políticas de segurança a nível de linha (Row Level Security) garantem que nenhum usuário tenha acesso ao histórico de outro.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <h2>Finalidade do Tratamento</h2>
+      </div>
+      <p>Seus dados são utilizados exclusivamente para:</p>
+      <ul>
+        <li>Permitir o login e sincronização de histórico entre múltiplos dispositivos.</li>
+        <li>Executar a busca semântica no acervo literário gnóstico para responder às suas consultas.</li>
+        <li>Gerenciar cotas de perguntas mensais e renovações de assinatura.</li>
+        <li>Prestar suporte técnico aos usuários.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <h2>Não Comercialização de Dados</h2>
+      </div>
+      <p>Nós <strong>NUNCA</strong> vendemos, alugamos ou comercializamos seus dados pessoais para empresas terceiras ou agências de publicidade. Suas mensagens não são utilizadas para treinamento de modelos de inteligência artificial públicos.</p>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <h2>Exclusão de Dados e Direitos do Titular</h2>
+      </div>
+      <p>Em conformidade com a LGPD e as diretrizes da Apple (Guideline 5.1.1(v)), você pode a qualquer momento:</p>
+      <ul>
+        <li>Solicitar o download e a portabilidade das suas conversas.</li>
+        <li>Excluir sua conta e todo o histórico permanentemente através do próprio aplicativo ou enviando um e-mail para nossa equipe.</li>
+        <li>Ao confirmar a exclusão, todos os seus dados são apagados de forma irreversível e definitiva.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <h2>Canal de Contato e Encarregado (DPO)</h2>
+      </div>
+      <p>Para exercer seus direitos de titular ou tirar qualquer dúvida sobre a privacidade de seus dados, fale conosco:</p>
+      <p>📧 E-mail: <a href="mailto:contato@gnosischat.com" class="contact-link">contato@gnosischat.com</a> (ou <a href="mailto:walterarbiol@gmail.com" class="contact-link">walterarbiol@gmail.com</a>)</p>
+      <p>🌐 Website Oficial: <a href="https://gnosischat.com" class="contact-link">https://gnosischat.com</a></p>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Gnosis Chat. Todos os direitos reservados. Conhecimento sagrado com privacidade e respeito.</p>
+  </footer>
+</body>
+</html>

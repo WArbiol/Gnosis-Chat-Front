@@ -199,15 +199,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                     const SizedBox(height: 36),
 
-                    Text(
-                      'Ao continuar, você concorda com os Termos de Uso\ne a Política de Privacidade.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.onSurfaceVariant.withValues(
-                          alpha: 0.6,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          'Ao continuar, você concorda com os ',
+                          style: TextStyle(
+                            color: AppColors.onSurfaceVariant.withValues(alpha: 0.6),
+                            fontSize: 12,
+                          ),
                         ),
-                        height: 1.5,
-                      ),
+                        GestureDetector(
+                          onTap: () => context.push('/terms'),
+                          child: const Text(
+                            'Termos de Uso',
+                            style: TextStyle(
+                              color: AppColors.accentLight,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                              decorationColor: AppColors.accentLight,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          ' e a ',
+                          style: TextStyle(
+                            color: AppColors.onSurfaceVariant.withValues(alpha: 0.6),
+                            fontSize: 12,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => context.push('/privacy'),
+                          child: const Text(
+                            'Política de Privacidade',
+                            style: TextStyle(
+                              color: AppColors.accentLight,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                              decorationColor: AppColors.accentLight,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '.',
+                          style: TextStyle(
+                            color: AppColors.onSurfaceVariant.withValues(alpha: 0.6),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
 
                     const SizedBox(height: 40),

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termos de Uso — Gnosis Chat</title>
+  <meta name="description" content="Termos e Condições de Uso do aplicativo e plataforma Gnosis Chat.">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07080C;
+      --card-bg: #0E1017;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --accent: #E8B730;
+      --accent-light: #F0CC5E;
+      --primary: #3A7BD5;
+      --primary-light: #5B9AE8;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.7;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: rgba(14, 16, 23, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 16px 24px;
+    }
+    .header-content {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+    .brand img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+    .btn-app {
+      background: rgba(58, 123, 213, 0.15);
+      color: var(--primary-light);
+      border: 1px solid rgba(58, 123, 213, 0.3);
+      padding: 8px 18px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-app:hover {
+      background: rgba(58, 123, 213, 0.25);
+      border-color: var(--primary);
+    }
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px 80px 24px;
+      flex: 1;
+      width: 100%;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      background: rgba(58, 123, 213, 0.15);
+      border: 1px solid rgba(58, 123, 213, 0.3);
+      color: var(--primary-light);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .updated {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 32px;
+    }
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .section-num {
+      width: 30px;
+      height: 30px;
+      background: rgba(232, 183, 48, 0.2);
+      color: var(--accent-light);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    p, ul {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      margin-bottom: 14px;
+    }
+    p:last-child, ul:last-child {
+      margin-bottom: 0;
+    }
+    ul {
+      padding-left: 24px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    strong {
+      color: var(--text);
+    }
+    a.contact-link {
+      color: var(--primary-light);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    a.contact-link:hover {
+      text-decoration: underline;
+    }
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 32px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="/" class="brand">
+        <img src="favicon.png" alt="Gnosis Logo">
+        <span>Gnosis Chat</span>
+      </a>
+      <a href="/" class="btn-app">Abrir App</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="badge">TERMOS E CONDIÇÕES</div>
+    <h1>Termos de Uso</h1>
+    <div class="updated">Última atualização: 15 de Agosto de 2026</div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2>Aceitação dos Termos</h2>
+      </div>
+      <p>Ao acessar, cadastrar-se ou utilizar o <strong>Gnosis Chat</strong> ("aplicativo" ou "serviço"), você declara que leu, compreendeu e concorda expressamente com estes Termos de Uso e com nossa Política de Privacidade. Caso discorde de qualquer cláusula aqui descrita, solicitamos que não utilize a plataforma.</p>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <h2>Descrição do Serviço e Natureza da IA</h2>
+      </div>
+      <p>O Gnosis Chat é uma ferramenta de busca semântica, orquestração de Inteligência Artificial e auxílio ao estudo teológico e filosófico sobre obras e tratados gnósticos.</p>
+      <ul>
+        <li><strong>Fins Educacionais:</strong> Todas as informações fornecidas têm propósito estritamente cultural, histórico e reflexivo.</li>
+        <li><strong>Isenção de Responsabilidade:</strong> As respostas são geradas por modelos de linguagem natural com base em documentos históricos. Não substituem aconselhamento médico, terapêutico, jurídico ou financeiro profissional.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <h2>Planos, Pagamentos e Renovação Automática</h2>
+      </div>
+      <p>O serviço oferece modalidades de acesso:</p>
+      <ul>
+        <li><strong>Plano Gratuito:</strong> Cota cortesia de 3 perguntas por mês.</li>
+        <li><strong>Plano Básico (R$ 9,99/mês):</strong> Cota mensal de 100 perguntas com citações precisas de livros e páginas.</li>
+        <li><strong>Plano Premium (R$ 29,99/mês):</strong> Cota mensal de 1.000 perguntas e recursos prioritários.</li>
+      </ul>
+      <p><strong>Renovação Automática:</strong> As assinaturas pagas renovam-se automaticamente ao término de cada período mensal, debitadas na forma de pagamento cadastrada (Stripe para Web, ou Apple In-App Purchase / Google Play Billing para dispositivos móveis).</p>
+      <p><strong>Cancelamento sem Burocracia:</strong> Você pode cancelar sua assinatura a qualquer momento através do aplicativo. Ao cancelar, seu plano e benefícios continuam ativos e disponíveis até a data final do ciclo vigente já pago.</p>
+      <p><strong>Reativação em 1 Clique:</strong> Antes que a assinatura expire, você pode optar por reativar a renovação com um único clique no painel de assinaturas.</p>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <h2>Conduta do Usuário</h2>
+      </div>
+      <p>Ao utilizar o aplicativo, você concorda em:</p>
+      <ul>
+        <li>Não tentar sobrecarregar, realizar ataques de negação de serviço (DDoS) ou explorar vulnerabilidades de segurança da plataforma.</li>
+        <li>Não utilizar mecanismos automatizados (bots, scrapers) para extração massiva não autorizada de dados.</li>
+        <li>Manter a confidencialidade e segurança do seu acesso.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <h2>Propriedade Intelectual</h2>
+      </div>
+      <p>A marca Gnosis Chat, elementos visuais, logotipos, código-fonte, arquitetura de orquestração e designs são de propriedade exclusiva de seus criadores e protegidos pelas leis de direitos autorais e propriedade intelectual.</p>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <h2>Encerramento de Conta</h2>
+      </div>
+      <p>Você pode solicitar a exclusão definitiva da sua conta a qualquer momento. Reservamo-nos o direito de suspender acessos em caso de violação grave destes termos ou tentativas de fraude.</p>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <h2>Legislação Aplicável e Contato</h2>
+      </div>
+      <p>Estes Termos são regidos pelas leis da República Federativa do Brasil. Em caso de dúvidas, entre em contato:</p>
+      <p>📧 E-mail: <a href="mailto:contato@gnosischat.com" class="contact-link">contato@gnosischat.com</a></p>
+      <p>🌐 Website: <a href="https://gnosischat.com" class="contact-link">https://gnosischat.com</a></p>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Gnosis Chat. Todos os direitos reservados. Conhecimento sagrado revelado.</p>
+  </footer>
+</body>
+</html>

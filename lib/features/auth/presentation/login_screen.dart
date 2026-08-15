@@ -211,17 +211,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             letterSpacing: 0.2,
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () => context.push('/terms'),
-                          child: Text(
-                            'Termos de Uso',
-                            style: TextStyle(
-                              color: AppColors.onSurface.withValues(alpha: 0.8),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.2,
-                              decoration: TextDecoration.underline,
-                              decorationColor: AppColors.onSurfaceVariant.withValues(alpha: 0.35),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () => context.push('/terms'),
+                            child: Text(
+                              'Termos de Uso',
+                              style: TextStyle(
+                                color: AppColors.onSurface.withValues(alpha: 0.8),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.2,
+                                decoration: TextDecoration.underline,
+                                decorationColor: AppColors.onSurfaceVariant.withValues(alpha: 0.35),
+                              ),
                             ),
                           ),
                         ),
@@ -233,17 +236,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             letterSpacing: 0.2,
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () => context.push('/privacy'),
-                          child: Text(
-                            'Política de Privacidade',
-                            style: TextStyle(
-                              color: AppColors.onSurface.withValues(alpha: 0.8),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.2,
-                              decoration: TextDecoration.underline,
-                              decorationColor: AppColors.onSurfaceVariant.withValues(alpha: 0.35),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () => context.push('/privacy'),
+                            child: Text(
+                              'Política de Privacidade',
+                              style: TextStyle(
+                                color: AppColors.onSurface.withValues(alpha: 0.8),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.2,
+                                decoration: TextDecoration.underline,
+                                decorationColor: AppColors.onSurfaceVariant.withValues(alpha: 0.35),
+                              ),
                             ),
                           ),
                         ),

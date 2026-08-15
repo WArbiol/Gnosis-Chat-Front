@@ -96,12 +96,12 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 ),
                 _buildSection(
                   number: '6',
-                  title: 'Exclusão de Dados e Direito do Usuário',
+                  title: 'Exclusão de Dados e Direito do Titular',
                   content:
-                      'Em conformidade com a LGPD e as Diretrizes da Apple (Guideline 5.1.1(v)), você tem o direito garantido de:\n\n'
-                      '• Acessar e exportar seus dados.\n'
-                      '• Solicitar a exclusão total da sua conta e do histórico de mensagens a qualquer momento através do aplicativo ou pelo canal de suporte.\n'
-                      '• Ao excluir a conta, todas as mensagens, conversas e referências vinculadas ao seu ID são permanentemente eliminadas do banco de dados em cascata.',
+                      'Em conformidade com a LGPD (Lei nº 13.709/2018), o GDPR e as Diretrizes da Apple (Guideline 5.1.1(v)), você pode excluir sua conta e todos os dados vinculados diretamente no aplicativo:\n\n'
+                      '• Exclusão Direta in-App: Disponível no menu de Perfil ("Excluir conta") com efeito imediato e confirmação segura.\n'
+                      '• Eliminação Irreversível em Cascata: Ao confirmar, todas as suas mensagens criptografadas, conversas, registros de perfil e credenciais de acesso no Supabase Auth são definitivamente expurgados de nossos bancos de dados.\n'
+                      '• Cancelamento Financeiro: Assinaturas Web ativas (Stripe) são canceladas automaticamente no ato da exclusão. Assinaturas realizadas via App Store ou Google Play devem ser gerenciadas nos Ajustes do dispositivo conforme exigência das plataformas.',
                 ),
                 _buildSection(
                   number: '7',

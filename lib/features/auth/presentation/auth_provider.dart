@@ -50,14 +50,25 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
         }
       }
 
+      if (event == sb.AuthChangeEvent.signedOut) {
+        state = const app.AuthState.unauthenticated();
+        return;
+      }
+
       if (session != null) {
-        // Only fetch if we are not already authenticated or if it's a significant change
-        final isAuth = state.maybeMap(
-          authenticated: (_) => true,
-          orElse: () => false,
-        );
-        if (!isAuth || event == sb.AuthChangeEvent.signedIn) {
+        if (event == sb.AuthChangeEvent.signedIn ||
+            event == sb.AuthChangeEvent.tokenRefreshed ||
+            event == sb.AuthChangeEvent.userUpdated ||
+            event == sb.AuthChangeEvent.initialSession) {
           fetchUser();
+        } else {
+          final isAuth = state.maybeMap(
+            authenticated: (_) => true,
+            orElse: () => false,
+          );
+          if (!isAuth) {
+            fetchUser();
+          }
         }
       }
     });

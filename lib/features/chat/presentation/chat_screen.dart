@@ -269,19 +269,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                     ),
                                   );
                                 }
-                                if (activeId == null) {
-                                  return EmptyState(glowAnim: _glowAnim);
-                                }
-                                return const Center(
-                                  child: SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.accent,
-                                      strokeWidth: 2.5,
-                                    ),
-                                  ),
-                                );
+                                return EmptyState(glowAnim: _glowAnim);
                               }
 
                               final itemCount =

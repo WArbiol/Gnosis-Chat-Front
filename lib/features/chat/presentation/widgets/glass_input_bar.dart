@@ -34,7 +34,12 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
     super.initState();
     _focusNode = FocusNode(
       onKeyEvent: (node, event) {
-        if (kIsWeb && event is KeyDownEvent) {
+        final isDesktop = kIsWeb &&
+            (defaultTargetPlatform == TargetPlatform.macOS ||
+                defaultTargetPlatform == TargetPlatform.windows ||
+                defaultTargetPlatform == TargetPlatform.linux);
+
+        if (isDesktop && event is KeyDownEvent) {
           if (event.logicalKey == LogicalKeyboardKey.enter ||
               event.logicalKey == LogicalKeyboardKey.numpadEnter) {
             if (HardwareKeyboard.instance.isShiftPressed) {
@@ -229,6 +234,7 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
                             focusNode: _focusNode,
                             minLines: 1,
                             maxLines: 5,
+                            keyboardType: TextInputType.multiline,
                             textInputAction: TextInputAction.newline,
                             style: const TextStyle(
                               color: AppColors.onSurface,

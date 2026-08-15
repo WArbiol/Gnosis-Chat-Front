@@ -242,9 +242,9 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
             ? _truncate(messages.first.content, 40)
             : c.title;
 
-        // Self-healing: if the backend title is still "Nova conversa" but we have content,
+        // Self-healing: if the backend title is still "Nova conversa" but we have full content (user + AI),
         // push the calculated title to the server to fix it permanently.
-        if (title != 'Nova conversa' && c.title == 'Nova conversa') {
+        if (title != 'Nova conversa' && c.title == 'Nova conversa' && messages.length >= 2) {
           _repo.updateConversation(c.id, title).catchError((e) {
             debugPrint('CONV: Failed to push self-healing title: $e');
             return c; // Return current as fallback to satisfy type

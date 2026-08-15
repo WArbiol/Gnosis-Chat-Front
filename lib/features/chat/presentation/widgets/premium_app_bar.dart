@@ -1,8 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/domain/user_entity.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:gnosis_chat/shared/widgets/user_avatar.dart';
 
 class PremiumAppBar extends StatelessWidget {
   const PremiumAppBar({
@@ -17,37 +16,6 @@ class PremiumAppBar extends StatelessWidget {
   final UserEntity? user;
   final VoidCallback? onMenuTap;
   final VoidCallback? onProfileTap;
-
-  Widget _buildFallbackAvatar(String? email, double size, double fontSize) {
-    final effectiveEmail = email ?? Supabase.instance.client.auth.currentUser?.email;
-    final initial = (effectiveEmail != null && effectiveEmail.isNotEmpty)
-        ? effectiveEmail[0].toUpperCase()
-        : 'G';
-    return Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [
-            AppColors.accent,
-            AppColors.accentLight,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        initial,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: fontSize,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,26 +40,31 @@ class PremiumAppBar extends StatelessWidget {
               iconSize: 22,
               style: IconButton.styleFrom(
                 foregroundColor: AppColors.onSurface,
-                fixedSize: const Size(44, 44),
+                padding: const EdgeInsets.all(8),
+                minimumSize: const Size(40, 40),
               ),
             ),
           ),
 
-          const Spacer(),
+          const SizedBox(width: 12),
 
-          // Gold gradient title
+          // Title with subtle gold gradient
           ShaderMask(
             shaderCallback: (bounds) => const LinearGradient(
-              colors: [AppColors.accent, AppColors.accentLight],
+              colors: [
+                AppColors.accent,
+                AppColors.accentLight,
+                AppColors.accent,
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ).createShader(bounds),
             child: Text(
               'Gnosis',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
                 color: Colors.white,
-                letterSpacing: 1.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
               ),
             ),
           ),
@@ -101,37 +74,12 @@ class PremiumAppBar extends StatelessWidget {
           // Profile avatar
           IconButton(
             onPressed: onProfileTap,
-            icon: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.accent.withValues(alpha: 0.4),
-                  width: 1.5,
-                ),
-                color: AppColors.surfaceVariant,
-              ),
-              child: ClipOval(
-                child: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
-                    ? Image.network(
-                        user!.avatarUrl!,
-                        headers: kIsWeb
-                            ? null
-                            : const {
-                                'User-Agent':
-                                    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                              },
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          debugPrint(
-                            'DEBUG IMAGE: Failed to load avatar: $error',
-                          );
-                          return _buildFallbackAvatar(user?.email, 32, 14);
-                        },
-                      )
-                    : _buildFallbackAvatar(user?.email, 32, 14),
-              ),
+            icon: UserAvatar(
+              avatarUrl: user?.avatarUrl,
+              email: user?.email,
+              size: 32,
+              fontSize: 14,
+              borderWidth: 1.5,
             ),
             tooltip: 'Perfil',
             style: IconButton.styleFrom(fixedSize: const Size(48, 48)),

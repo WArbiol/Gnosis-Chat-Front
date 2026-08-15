@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,38 +8,11 @@ import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/second_chamber_dialog.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/second_chamber_success_dialog.dart';
 import 'package:gnosis_chat/shared/providers/user_provider.dart';
+import 'package:gnosis_chat/shared/widgets/user_avatar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileBottomSheet extends ConsumerWidget {
   const ProfileBottomSheet({super.key});
-
-  Widget _buildFallbackAvatar(String? email, double size, double fontSize) {
-    final effectiveEmail = email ?? Supabase.instance.client.auth.currentUser?.email;
-    final initial = (effectiveEmail != null && effectiveEmail.isNotEmpty)
-        ? effectiveEmail[0].toUpperCase()
-        : 'G';
-    return Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [AppColors.accent, AppColors.accentLight],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        initial,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: fontSize,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -79,34 +51,12 @@ class ProfileBottomSheet extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Avatar
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.accent.withValues(alpha: 0.4),
-                    width: 2,
-                  ),
-                  color: AppColors.surfaceVariant,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: user?.avatarUrl == null || user!.avatarUrl!.isEmpty
-                    ? _buildFallbackAvatar(user?.email, 72, 28)
-                    : Image.network(
-                        user.avatarUrl!,
-                        headers: kIsWeb
-                            ? null
-                            : const {
-                                'User-Agent':
-                                    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                              },
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          debugPrint('Avatar Load Error: $error');
-                          return _buildFallbackAvatar(user.email, 72, 28);
-                        },
-                      ),
+              UserAvatar(
+                avatarUrl: user?.avatarUrl,
+                email: user?.email,
+                size: 72,
+                fontSize: 28,
+                borderWidth: 2,
               ),
 
               const SizedBox(height: 16),

@@ -206,8 +206,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         Text(
                           'Ao continuar, você concorda com os ',
                           style: TextStyle(
-                            color: AppColors.onSurfaceVariant.withValues(alpha: 0.6),
+                            color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
                             fontSize: 12,
+                            letterSpacing: 0.2,
                           ),
                         ),
                         GestureDetector(
@@ -215,19 +216,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           child: Text(
                             'Termos de Uso',
                             style: TextStyle(
-                              color: AppColors.onSurface.withValues(alpha: 0.85),
+                              color: AppColors.onSurface.withValues(alpha: 0.8),
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.2,
                               decoration: TextDecoration.underline,
-                              decorationColor: AppColors.onSurfaceVariant.withValues(alpha: 0.5),
+                              decorationColor: AppColors.onSurfaceVariant.withValues(alpha: 0.35),
                             ),
                           ),
                         ),
                         Text(
                           ' e a ',
                           style: TextStyle(
-                            color: AppColors.onSurfaceVariant.withValues(alpha: 0.6),
+                            color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
                             fontSize: 12,
+                            letterSpacing: 0.2,
                           ),
                         ),
                         GestureDetector(
@@ -235,18 +238,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           child: Text(
                             'Política de Privacidade',
                             style: TextStyle(
-                              color: AppColors.onSurface.withValues(alpha: 0.85),
+                              color: AppColors.onSurface.withValues(alpha: 0.8),
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.2,
                               decoration: TextDecoration.underline,
-                              decorationColor: AppColors.onSurfaceVariant.withValues(alpha: 0.5),
+                              decorationColor: AppColors.onSurfaceVariant.withValues(alpha: 0.35),
                             ),
                           ),
                         ),
                         Text(
                           '.',
                           style: TextStyle(
-                            color: AppColors.onSurfaceVariant.withValues(alpha: 0.6),
+                            color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
                             fontSize: 12,
                           ),
                         ),

@@ -245,13 +245,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                           constraints: const BoxConstraints(maxWidth: 850),
                           child: chatState.when(
                             data: (messages) {
-                              final loadingId =
-                                  ref.watch(loadingConversationIdProvider);
-                              final isLoading = loadingId != null &&
+                              final loadingId = ref.watch(
+                                loadingConversationIdProvider,
+                              );
+                              final isLoading =
+                                  loadingId != null &&
                                   (loadingId == activeId ||
                                       (activeId == null &&
                                           loadingId == 'NEW_CONV'));
-                              final isLastUserMessage = messages.isNotEmpty &&
+                              final isLastUserMessage =
+                                  messages.isNotEmpty &&
                                   messages.last.role == MessageRole.user;
                               final showTyping = isLoading || isLastUserMessage;
 
@@ -259,7 +262,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 if (isLoading) {
                                   return const Center(
                                     child: Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 24),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                      ),
                                       child: TypingIndicator(),
                                     ),
                                   );
@@ -288,17 +293,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 padding: const EdgeInsets.only(
                                   left: 16,
                                   right: 16,
-                                  top: 110,
-                                  bottom: 130,
+                                  top: 100,
+                                  bottom: 120,
                                 ),
                                 itemCount: itemCount,
                                 itemBuilder: (context, index) {
                                   final actualIndex = itemCount - 1 - index;
 
                                   // Typing indicator
-                                  if (showTyping && actualIndex == messages.length) {
+                                  if (showTyping &&
+                                      actualIndex == messages.length) {
                                     return const Padding(
-                                      padding: EdgeInsets.only(top: 4, bottom: 8),
+                                      padding: EdgeInsets.only(
+                                        top: 4,
+                                        bottom: 8,
+                                      ),
                                       child: TypingIndicator(),
                                     );
                                   }
@@ -328,12 +337,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                               ),
                             ),
                             error: (e, _) => ErrorView(
-                              message: e.toString().contains('connection') || e.toString().contains('XMLHttpRequest')
+                              message:
+                                  e.toString().contains('connection') ||
+                                      e.toString().contains('XMLHttpRequest')
                                   ? 'Falha de conexão com o servidor. Verifique se a API está online.'
-                                  : e.toString().replaceAll('DioException:', '').trim(),
+                                  : e
+                                        .toString()
+                                        .replaceAll('DioException:', '')
+                                        .trim(),
                               onRetry: () {
                                 if (activeId != null) {
-                                  ref.read(conversationProvider.notifier).selectConversation(activeId);
+                                  ref
+                                      .read(conversationProvider.notifier)
+                                      .selectConversation(activeId);
                                 } else {
                                   ref.invalidate(chatProvider);
                                 }

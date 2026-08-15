@@ -27,11 +27,11 @@ Future<AuthResponse?> signInPlatform({
   ));
 
   gis.id.prompt((gis.PromptMomentNotification notification) {
-    if (notification.isNotDisplayed() ||
-        notification.isSkippedMoment() ||
-        notification.isDismissedMoment()) {
+    if (completer.isCompleted) return;
+
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
       debugPrint(
-        'GOOGLE_AUTH: One-Tap indisponível ou fechado (${notification.getNotDisplayedReason() ?? "dismissed"}). Acionando popup nativo do Google...',
+        'GOOGLE_AUTH: One-Tap indisponível (${notification.getNotDisplayedReason() ?? "skipped"}). Acionando popup nativo do Google...',
       );
       try {
         _renderAndClickGoogleButton();
@@ -40,6 +40,11 @@ Future<AuthResponse?> signInPlatform({
         if (!completer.isCompleted) {
           completer.complete(null);
         }
+      }
+    } else if (notification.isDismissedMoment()) {
+      debugPrint('GOOGLE_AUTH: One-Tap descartado pelo usuário.');
+      if (!completer.isCompleted) {
+        completer.complete(null);
       }
     }
   });

@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_identity_services_web/id.dart' as gis;
@@ -29,20 +31,30 @@ class GoogleAuthService {
         .join();
   }
 
+  /// Gera o hash SHA-256 do raw nonce requerido pelo Google GIS e Supabase
+  static String _hashNonce(String rawNonce) {
+    final bytes = utf8.encode(rawNonce);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
   /// Realiza o login com Google via ID Token nativo (OpenID Connect).
   /// Retorna a `AuthResponse` do Supabase se autenticado com sucesso,
   /// ou `null` se o usuário cancelou a operação voluntariamente.
   static Future<AuthResponse?> signIn() async {
     final rawNonce = _generateRawNonce();
+    final hashedNonce = _hashNonce(rawNonce);
 
     if (kIsWeb) {
       // No Web, utiliza Google Identity Services (One-Tap / Prompt nativo)
-      // para obter diretamente o ID Token na origem gnosischat.com (ZERO redirect para supabase.co)
+      // O Google recebe o hashedNonce (SHA-256) e insere no JWT 'nonce' claim.
+      // O Supabase recebe o rawNonce e valida internamente sha256(rawNonce) == jwt.nonce.
       final completer = Completer<String?>();
 
       gis.id.initialize(gis.IdConfiguration(
         client_id: webClientId,
         auto_select: false,
+        nonce: hashedNonce,
         callback: (gis.CredentialResponse response) {
           if (!completer.isCompleted) {
             completer.complete(response.credential);
@@ -64,6 +76,7 @@ class GoogleAuthService {
         return await Supabase.instance.client.auth.signInWithIdToken(
           provider: OAuthProvider.google,
           idToken: idToken,
+          nonce: rawNonce,
         );
       }
 

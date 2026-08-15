@@ -103,6 +103,48 @@ O Flutter Web gera arquivos estáticos (`HTML`, `JS`, `WebAssembly`). O deploy n
 1. Integração via `RevenueCat` com produtos e entitlements `premium_access`.
 2. Webhooks de sincro no backend: `POST /payments/revenuecat-webhook`.
 
+### 6.3. Ciclo de Vida da Conta & Exclusão de Perfil (Account Deletion & UI/UX)
+
+> ⚠️ **Requisito Obrigatório das Lojas (App Store & Google Play):**  
+> De acordo com a **Apple App Store Guideline 5.1.1 (v)** e as diretrizes da Google Play Store (além da LGPD/GDPR), qualquer aplicativo com suporte a login **deve obrigatoriamente fornecer uma opção de exclusão de conta dentro do próprio app**. A ausência dessa funcionalidade no mobile resulta em **rejeição sumária na revisão da Apple**.
+
+#### 1. Arquitetura do Cancelamento de Assinaturas na Exclusão
+- **Stripe (Web):**
+  - O backend cancela imediatamente a assinatura ativa no Stripe via API (`stripe.Subscription.delete`). O usuário não precisa realizar nenhuma ação manual externa.
+- **Apple App Store (iOS) & Google Play Store (Android):**
+  - **Regra de Segurança da Apple/Google:** Aplicativos de terceiros **não têm permissão para cancelar cobranças de In-App Purchases diretamente no cartão do usuário via API**.
+  - **Diretriz de Conformidade UX da Apple:** O modal de exclusão de conta deve **detectar se o usuário possui assinatura ativa via loja** e alertá-lo explicitamente com link/botão para gerenciar e cancelar a assinatura na central do dispositivo (`apps.apple.com/account/subscriptions` ou `play.google.com/store/account/subscriptions`) antes de finalizar a exclusão.
+
+#### 2. Especificação de UI/UX (Padrão Figma / Linear / Notion)
+
+- **Ponto de Entrada (`ProfileBottomSheet`):**
+  - Posicionado no rodapé da folha de perfil, logo abaixo do botão "Sair", de forma discreta para evitar toques acidentais, porém perfeitamente visível.
+  - Estilo: Texto e ícone sutis (`Icons.delete_outline_rounded`) em tom de alerta suave (`AppColors.error.withValues(alpha: 0.7)`).
+
+- **Modal de Confirmação Destrutivo (`Destructive Confirmation Dialog`):**
+  - **Card de Impacto Visual:** Fundo obsidiana com borda em vermelho carmesim translúcido e ícone de lixeira em destaque.
+  - **Título Claro:** *"Excluir conta permanentemente?"*
+  - **Mensagem de Impacto:** *"Esta ação é irreversível. Todas as suas conversas criptografadas, histórico de perguntas e preferências serão apagados dos nossos servidores."*
+  - **Alerta Contextual de Assinatura (Context-Aware Banner):**
+    - *Usuário Gratuito:* Nenhum aviso financeiro adicional.
+    - *Assinante Stripe (Web):* *"Sua assinatura ativa do Plano Ilimitado será cancelada automaticamente e nenhuma nova cobrança será realizada."*
+    - *Assinante Apple / Google:* Card âmbar/amarelo de aviso:  
+      > ⚠️ *Você possui uma assinatura ativa via App Store / Google Play. Para evitar cobranças futuras, lembre-se de cancelar a renovação nos Ajustes do seu celular.*  
+      > [Botão Secundário: **Gerenciar na App Store** ↗]
+  - **Ações de Decisão:**
+    - Botão Primário (Segurança): **"Manter Minha Conta"** (Estilo sólido padrão — previne erros de toque).
+    - Botão Destrutivo: **"Sim, Excluir Definitivamente"** (Estilo outline vermelho suave).
+
+#### 3. Orquestração no Backend (`POST /api/v1/auth/delete-account`):
+1. **Verificação de Identidade:** Valida o JWT do usuário autenticado no header.
+2. **Cancelamento do Provedor de Pagamento:** Se `user.subscription_provider == 'stripe'`, dispara `stripe.Subscription.delete()`. Se `revenuecat`, marca entitlement como revogado.
+3. **Expurgo de Dados Criptografados:**
+   - Remove mensagens vinculadas (`DELETE FROM messages WHERE user_id = ...`).
+   - Remove conversas vinculadas (`DELETE FROM conversations WHERE user_id = ...`).
+   - Remove perfil (`DELETE FROM user_profiles WHERE id = ...`).
+4. **Exclusão no Supabase Auth:** Executa `supabase.auth.admin.delete_user(user_id)` utilizando a Service Role Key, eliminando credenciais e acessos.
+5. **Encerramento no Frontend:** Limpa o cache local do Hive, executa logout no Supabase e redireciona para a tela de Login com feedback suave.
+
 ---
 
 ## 7. Deploy Mobile: iOS (App Store)

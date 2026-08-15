@@ -288,8 +288,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 padding: const EdgeInsets.only(
                                   left: 16,
                                   right: 16,
-                                  top: 100,
-                                  bottom: 120,
+                                  top: 110,
+                                  bottom: 130,
                                 ),
                                 itemCount: itemCount,
                                 itemBuilder: (context, index) {

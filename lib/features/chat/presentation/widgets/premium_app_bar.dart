@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/domain/user_entity.dart';
@@ -19,9 +20,24 @@ class PremiumAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.background.withValues(alpha: 0.75),
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.white.withValues(alpha: 0.06),
+                width: 0.8,
+              ),
+            ),
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
         children: [
           // Sidebar / conversations icon
           Container(
@@ -86,6 +102,10 @@ class PremiumAppBar extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),
+  ),
+),
+),
+);
   }
 }

@@ -43,7 +43,6 @@ class GoogleAuthService {
       gis.id.initialize(gis.IdConfiguration(
         client_id: webClientId,
         auto_select: false,
-        nonce: rawNonce,
         callback: (gis.CredentialResponse response) {
           if (!completer.isCompleted) {
             completer.complete(response.credential);
@@ -65,7 +64,6 @@ class GoogleAuthService {
         return await Supabase.instance.client.auth.signInWithIdToken(
           provider: OAuthProvider.google,
           idToken: idToken,
-          nonce: rawNonce,
         );
       }
 

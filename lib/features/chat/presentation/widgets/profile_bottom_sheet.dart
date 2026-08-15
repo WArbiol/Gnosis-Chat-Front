@@ -9,14 +9,16 @@ import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/second_chamber_dialog.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/second_chamber_success_dialog.dart';
 import 'package:gnosis_chat/shared/providers/user_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileBottomSheet extends ConsumerWidget {
   const ProfileBottomSheet({super.key});
 
   Widget _buildFallbackAvatar(String? email, double size, double fontSize) {
-    final initial = (email != null && email.isNotEmpty)
-        ? email[0].toUpperCase()
-        : '?';
+    final effectiveEmail = email ?? Supabase.instance.client.auth.currentUser?.email;
+    final initial = (effectiveEmail != null && effectiveEmail.isNotEmpty)
+        ? effectiveEmail[0].toUpperCase()
+        : 'G';
     return Container(
       width: size,
       height: size,
@@ -111,7 +113,9 @@ class ProfileBottomSheet extends ConsumerWidget {
 
               // Name
               Text(
-                user?.email ?? 'Usuário',
+                user?.email ??
+                    Supabase.instance.client.auth.currentUser?.email ??
+                    'Usuário',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: AppColors.onSurface,
                   fontWeight: FontWeight.w600,

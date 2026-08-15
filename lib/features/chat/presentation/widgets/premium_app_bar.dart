@@ -24,65 +24,76 @@ class PremiumAppBar extends StatelessWidget {
       child: Row(
         children: [
           // Sidebar / conversations icon
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: AppColors.onSurfaceVariant.withValues(alpha: 0.1),
-                width: 1,
-              ),
-            ),
-            child: IconButton(
-              onPressed: onMenuTap,
-              icon: const Icon(Icons.menu_rounded),
-              tooltip: 'Conversas',
-              iconSize: 22,
-              style: IconButton.styleFrom(
-                foregroundColor: AppColors.onSurface,
-                padding: const EdgeInsets.all(8),
-                minimumSize: const Size(40, 40),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // Title with subtle gold gradient
-          ShaderMask(
-            shaderCallback: (bounds) => const LinearGradient(
-              colors: [
-                AppColors.accent,
-                AppColors.accentLight,
-                AppColors.accent,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ).createShader(bounds),
-            child: Text(
-              'Gnosis',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: AppColors.onSurfaceVariant.withValues(alpha: 0.1),
+                    width: 1,
+                  ),
+                ),
+                child: IconButton(
+                  onPressed: onMenuTap,
+                  icon: const Icon(Icons.menu_rounded),
+                  tooltip: 'Conversas',
+                  iconSize: 22,
+                  style: IconButton.styleFrom(
+                    foregroundColor: AppColors.onSurface,
+                    padding: const EdgeInsets.all(8),
+                    minimumSize: const Size(40, 40),
+                  ),
+                ),
               ),
             ),
           ),
 
-          const Spacer(),
+          // Title with subtle gold gradient centered horizontally
+          Expanded(
+            child: Center(
+              child: ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    AppColors.accent,
+                    AppColors.accentLight,
+                    AppColors.accent,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ).createShader(bounds),
+                child: Text(
+                  'Gnosis',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+          ),
 
           // Profile avatar
-          IconButton(
-            onPressed: onProfileTap,
-            icon: UserAvatar(
-              avatarUrl: user?.avatarUrl,
-              email: user?.email,
-              size: 32,
-              fontSize: 14,
-              borderWidth: 1.5,
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: IconButton(
+              onPressed: onProfileTap,
+              icon: UserAvatar(
+                avatarUrl: user?.avatarUrl,
+                email: user?.email,
+                size: 32,
+                fontSize: 14,
+                borderWidth: 1.5,
+              ),
+              tooltip: 'Perfil',
+              style: IconButton.styleFrom(fixedSize: const Size(48, 48)),
             ),
-            tooltip: 'Perfil',
-            style: IconButton.styleFrom(fixedSize: const Size(48, 48)),
           ),
         ],
       ),

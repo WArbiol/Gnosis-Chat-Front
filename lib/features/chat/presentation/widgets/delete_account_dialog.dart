@@ -235,30 +235,10 @@ class _DeleteAccountDialogState extends ConsumerState<DeleteAccountDialog> {
 
                   const SizedBox(height: 10),
 
-                  // Destructive Button: Confirm Deletion
-                  TextButton(
-                    onPressed: _isDeleting ? null : _handleDelete,
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.error,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: _isDeleting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.error),
-                            ),
-                          )
-                        : const Text(
-                            'Sim, Excluir Definitivamente',
-                            style: TextStyle(
-                              color: AppColors.error,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
+                  // Destructive Button: Confirm Deletion (Clean UX, no Material stadium overlay)
+                  _DestructiveActionLink(
+                    isDeleting: _isDeleting,
+                    onTap: _handleDelete,
                   ),
                 ],
               ),
@@ -269,3 +249,68 @@ class _DeleteAccountDialogState extends ConsumerState<DeleteAccountDialog> {
     );
   }
 }
+
+class _DestructiveActionLink extends StatefulWidget {
+  const _DestructiveActionLink({
+    required this.isDeleting,
+    required this.onTap,
+  });
+
+  final bool isDeleting;
+  final VoidCallback onTap;
+
+  @override
+  State<_DestructiveActionLink> createState() => _DestructiveActionLinkState();
+}
+
+class _DestructiveActionLinkState extends State<_DestructiveActionLink> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.isDeleting) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.error),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Center(
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 150),
+              style: TextStyle(
+                color: _isHovered
+                    ? AppColors.error
+                    : AppColors.error.withValues(alpha: 0.75),
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                decoration: _isHovered ? TextDecoration.underline : TextDecoration.none,
+                decorationColor: AppColors.error.withValues(alpha: 0.8),
+              ),
+              child: const Text('Sim, Excluir Definitivamente'),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

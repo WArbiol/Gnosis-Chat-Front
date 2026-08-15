@@ -163,34 +163,16 @@ class ProfileBottomSheet extends ConsumerWidget {
 
               const SizedBox(height: 12),
 
-              // Delete account link
+              // Delete account link (clean UX, no Material pill hover overlay)
               Center(
-                child: TextButton.icon(
-                  onPressed: () {
+                child: _DeleteAccountLink(
+                  onTap: () {
                     Navigator.of(context).pop();
                     showDialog(
                       context: context,
                       builder: (ctx) => const DeleteAccountDialog(),
                     );
                   },
-                  icon: Icon(
-                    Icons.delete_outline_rounded,
-                    size: 16,
-                    color: AppColors.error.withValues(alpha: 0.6),
-                  ),
-                  label: Text(
-                    'Excluir minha conta',
-                    style: TextStyle(
-                      color: AppColors.error.withValues(alpha: 0.6),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
                 ),
               ),
             ],
@@ -394,3 +376,60 @@ class _ActionTile extends StatelessWidget {
     );
   }
 }
+
+class _DeleteAccountLink extends StatefulWidget {
+  const _DeleteAccountLink({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  State<_DeleteAccountLink> createState() => _DeleteAccountLinkState();
+}
+
+class _DeleteAccountLinkState extends State<_DeleteAccountLink> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 150),
+            style: TextStyle(
+              color: _isHovered
+                  ? AppColors.error
+                  : AppColors.error.withValues(alpha: 0.6),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              decoration: _isHovered ? TextDecoration.underline : TextDecoration.none,
+              decorationColor: AppColors.error.withValues(alpha: 0.8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 150),
+                  opacity: _isHovered ? 1.0 : 0.6,
+                  child: const Icon(
+                    Icons.delete_outline_rounded,
+                    size: 15,
+                    color: AppColors.error,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Text('Excluir minha conta'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

@@ -269,22 +269,28 @@ void main() {
       await notifier.selectConversation('conv-123');
       expect(container.read(conversationProvider).activeId, equals('conv-123'));
 
-      // Sync user message to active conversation
+      // Sync full message exchange (user + assistant) to active conversation
       final userMessage = MessageEntity(
         id: 'msg-user-1',
         content: 'Primeira pergunta longa sobre psicologia gnóstica.',
         role: MessageRole.user,
         timestamp: DateTime.now(),
       );
+      final aiMessage = MessageEntity(
+        id: 'msg-ai-1',
+        content: 'A psicologia gnóstica estuda a consciência...',
+        role: MessageRole.assistant,
+        timestamp: DateTime.now(),
+      );
       
-      notifier.syncMessages([userMessage]);
+      notifier.syncMessages([userMessage, aiMessage]);
 
       // Verify that the title updated from "Nova conversa" to the message snippet,
       // and last message preview was synced.
       final active = container.read(conversationProvider).active!;
       expect(active.title, equals('Primeira pergunta longa sobre psicologia…'));
-      expect(active.lastMessagePreview, equals('Primeira pergunta longa sobre psicologia gnóstica.'));
-      expect(active.messageCount, equals(1));
+      expect(active.lastMessagePreview, equals('A psicologia gnóstica estuda a consciência...'));
+      expect(active.messageCount, equals(2));
 
       // Wait briefly for the self-healing async callback to finish updating the remote repository
       await Future<void>.delayed(const Duration(milliseconds: 50));

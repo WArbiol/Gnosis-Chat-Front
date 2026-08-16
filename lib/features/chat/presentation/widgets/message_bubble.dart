@@ -17,6 +17,7 @@ import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/suggested_followups_chips.dart';
 import 'package:gnosis_chat/services/api/api_client.dart';
+import 'package:gnosis_chat/services/audio/tts_service.dart';
 
 class MessageBubble extends StatelessWidget {
   const MessageBubble({super.key, required this.message});
@@ -85,8 +86,20 @@ class MessageBubble extends StatelessWidget {
 
   Widget _aiBubble(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-      child: _content(context, AppColors.onSurface),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _TtsButton(messageId: message.id, content: message.content),
+            ],
+          ),
+          const SizedBox(height: 2),
+          _content(context, AppColors.onSurface),
+        ],
+      ),
     );
   }
 
@@ -616,8 +629,83 @@ class _ContextAction extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Message Actions Bar
+// TTS & Message Actions Bar
 // ---------------------------------------------------------------------------
+class _TtsButton extends ConsumerWidget {
+  const _TtsButton({required this.messageId, required this.content});
+
+  final String messageId;
+  final String content;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ttsState = ref.watch(ttsProvider);
+    final isSpeaking = ttsState.isSpeaking(messageId);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          ref.read(ttsProvider.notifier).toggleSpeak(messageId, content);
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: isSpeaking
+                ? AppColors.accent.withValues(alpha: 0.18)
+                : Colors.white.withValues(alpha: 0.04),
+            border: Border.all(
+              color: isSpeaking
+                  ? AppColors.accent.withValues(alpha: 0.6)
+                  : Colors.white.withValues(alpha: 0.08),
+              width: 0.8,
+            ),
+            boxShadow: [
+              if (isSpeaking)
+                BoxShadow(
+                  color: AppColors.accent.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  isSpeaking ? Icons.stop_rounded : Icons.volume_up_rounded,
+                  key: ValueKey(isSpeaking),
+                  size: 14,
+                  color: isSpeaking
+                      ? AppColors.accentLight
+                      : AppColors.onSurface.withValues(alpha: 0.65),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                isSpeaking ? 'Parar' : 'Ouvir',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSpeaking ? FontWeight.w600 : FontWeight.w500,
+                  color: isSpeaking
+                      ? AppColors.accentLight
+                      : AppColors.onSurface.withValues(alpha: 0.65),
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _MessageActionBar extends StatelessWidget {
   const _MessageActionBar({required this.message});
 

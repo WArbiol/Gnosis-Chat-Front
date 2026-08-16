@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-enum TtsPlaybackStatus { stopped, playing, paused }
+enum TtsPlaybackStatus { stopped, playing }
 
 class TtsState {
   const TtsState({
@@ -20,9 +20,6 @@ class TtsState {
 
   bool isSpeaking(String messageId) =>
       activeMessageId == messageId && status == TtsPlaybackStatus.playing;
-
-  bool isPaused(String messageId) =>
-      activeMessageId == messageId && status == TtsPlaybackStatus.paused;
 
   TtsState copyWith({
     String? activeMessageId,
@@ -82,14 +79,6 @@ class TtsNotifier extends StateNotifier<TtsState> {
           status: TtsPlaybackStatus.stopped,
           clearActiveId: true,
         );
-      });
-
-      _flutterTts.setPauseHandler(() {
-        state = state.copyWith(status: TtsPlaybackStatus.paused);
-      });
-
-      _flutterTts.setContinueHandler(() {
-        state = state.copyWith(status: TtsPlaybackStatus.playing);
       });
 
       _flutterTts.setErrorHandler((msg) {
@@ -237,46 +226,24 @@ class TtsNotifier extends StateNotifier<TtsState> {
     return text.trim();
   }
 
-  /// Toggles playback: Speaks, Pauses, or Resumes natively.
+  /// Toggles playback: Speaks from start or Stops completely.
   Future<void> toggleSpeak(String messageId, String rawContent) async {
     await _initTts();
 
-    // 1. If currently playing this message -> call PAUSE
+    // 1. If currently playing this message -> STOP completely
     if (state.isSpeaking(messageId)) {
-      try {
-        await _flutterTts.pause();
-      } catch (e) {
-        debugPrint('TTS pause error: $e');
-      }
-      state = state.copyWith(
-        status: TtsPlaybackStatus.paused,
-      );
+      await stop();
       return;
     }
 
-    // 2. If speaking or paused on another message -> stop previous completely
-    if (state.activeMessageId != null &&
-        state.activeMessageId != messageId) {
+    // 2. If speaking another message -> stop previous first
+    if (state.status == TtsPlaybackStatus.playing) {
       await stop();
     }
 
     final speechText = sanitizeTextForSpeech(rawContent);
     if (speechText.isEmpty) return;
 
-    // 3. If resuming from paused state on the same message
-    if (state.isPaused(messageId)) {
-      state = state.copyWith(
-        status: TtsPlaybackStatus.playing,
-      );
-      try {
-        await _flutterTts.speak(speechText);
-      } catch (e) {
-        debugPrint('TTS resume error: $e');
-      }
-      return;
-    }
-
-    // 4. Starting fresh playback
     await _configureVoice();
     state = state.copyWith(
       activeMessageId: messageId,

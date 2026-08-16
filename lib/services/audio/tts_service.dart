@@ -10,15 +10,13 @@ class TtsState {
     this.activeMessageId,
     this.status = TtsPlaybackStatus.stopped,
     this.speechRate = kIsWeb ? 1.0 : 0.52,
-    this.pitch = 0.90, // Deeper, masculine and sage-like pitch
-    this.spokenOffset = 0,
+    this.pitch = 0.88, // Deeper masculine and calm tone
   });
 
   final String? activeMessageId;
   final TtsPlaybackStatus status;
   final double speechRate;
   final double pitch;
-  final int spokenOffset;
 
   bool isSpeaking(String messageId) =>
       activeMessageId == messageId && status == TtsPlaybackStatus.playing;
@@ -31,7 +29,6 @@ class TtsState {
     TtsPlaybackStatus? status,
     double? speechRate,
     double? pitch,
-    int? spokenOffset,
     bool clearActiveId = false,
   }) {
     return TtsState(
@@ -40,7 +37,6 @@ class TtsState {
       status: status ?? this.status,
       speechRate: speechRate ?? this.speechRate,
       pitch: pitch ?? this.pitch,
-      spokenOffset: spokenOffset ?? this.spokenOffset,
     );
   }
 }
@@ -52,8 +48,6 @@ class TtsNotifier extends StateNotifier<TtsState> {
 
   final FlutterTts _flutterTts = FlutterTts();
   bool _isInitialized = false;
-  int _currentProgressStart = 0;
-  int _accumulatedOffset = 0;
 
   Future<void> _initTts() async {
     if (_isInitialized) return;
@@ -76,19 +70,10 @@ class TtsNotifier extends StateNotifier<TtsState> {
         state = state.copyWith(status: TtsPlaybackStatus.playing);
       });
 
-      _flutterTts.setProgressHandler(
-        (String text, int start, int end, String word) {
-          _currentProgressStart = start;
-        },
-      );
-
       _flutterTts.setCompletionHandler(() {
-        _accumulatedOffset = 0;
-        _currentProgressStart = 0;
         state = state.copyWith(
           status: TtsPlaybackStatus.stopped,
           clearActiveId: true,
-          spokenOffset: 0,
         );
       });
 
@@ -96,7 +81,6 @@ class TtsNotifier extends StateNotifier<TtsState> {
         state = state.copyWith(
           status: TtsPlaybackStatus.stopped,
           clearActiveId: true,
-          spokenOffset: 0,
         );
       });
 
@@ -110,7 +94,6 @@ class TtsNotifier extends StateNotifier<TtsState> {
 
       _flutterTts.setErrorHandler((msg) {
         final errStr = msg.toString().toLowerCase();
-        // Ignore expected interruption events caused by user pausing or stopping
         if (errStr.contains('interrupted') ||
             errStr.contains('canceled') ||
             errStr.contains('cancelled')) {
@@ -120,7 +103,6 @@ class TtsNotifier extends StateNotifier<TtsState> {
         state = state.copyWith(
           status: TtsPlaybackStatus.stopped,
           clearActiveId: true,
-          spokenOffset: 0,
         );
       });
 
@@ -136,10 +118,9 @@ class TtsNotifier extends StateNotifier<TtsState> {
       await _flutterTts.setSpeechRate(state.speechRate);
       await _flutterTts.setPitch(state.pitch);
 
-      // Search available voices specifically prioritizing Brazilian Male voices
       final dynamic voices = await _flutterTts.getVoices;
       if (voices is List && voices.isNotEmpty) {
-        Map<dynamic, dynamic>? maleVoice;
+        Map<dynamic, dynamic>? bestMaleVoice;
         Map<dynamic, dynamic>? fallbackPtVoice;
 
         for (final v in voices) {
@@ -173,28 +154,17 @@ class TtsNotifier extends StateNotifier<TtsState> {
                   name.contains('wavenet-c') ||
                   name.contains('wavenet-d');
 
-              final isExplicitFemale =
-                  gender.contains('female') ||
-                  gender.contains('mulher') ||
-                  name.contains('luciana') ||
-                  name.contains('francisca') ||
-                  name.contains('thalita') ||
-                  name.contains('maria') ||
-                  name.contains('helena') ||
-                  name.contains('wavenet-a') ||
-                  name.contains('standard-a');
-
               if (isExplicitMale) {
-                maleVoice = v;
+                bestMaleVoice = v;
                 break;
-              } else if (!isExplicitFemale && fallbackPtVoice == null) {
-                fallbackPtVoice = v;
+              } else {
+                fallbackPtVoice ??= v;
               }
             }
           }
         }
 
-        final selectedVoice = maleVoice ?? fallbackPtVoice;
+        final selectedVoice = bestMaleVoice ?? fallbackPtVoice;
         if (selectedVoice != null) {
           final voiceName = selectedVoice['name']?.toString() ?? '';
           final voiceLocale = selectedVoice['locale']?.toString() ?? 'pt-BR';
@@ -267,24 +237,24 @@ class TtsNotifier extends StateNotifier<TtsState> {
     return text.trim();
   }
 
-  /// Toggles playback: Speaks, Pauses, or Resumes from the exact word where paused.
+  /// Toggles playback: Speaks, Pauses, or Resumes natively.
   Future<void> toggleSpeak(String messageId, String rawContent) async {
     await _initTts();
-    await _configureVoice();
 
-    // 1. If currently playing this message -> PAUSE it and save progress
+    // 1. If currently playing this message -> call PAUSE
     if (state.isSpeaking(messageId)) {
-      _accumulatedOffset += _currentProgressStart;
-      _currentProgressStart = 0;
-      await _flutterTts.stop();
+      try {
+        await _flutterTts.pause();
+      } catch (e) {
+        debugPrint('TTS pause error: $e');
+      }
       state = state.copyWith(
         status: TtsPlaybackStatus.paused,
-        spokenOffset: _accumulatedOffset,
       );
       return;
     }
 
-    // 2. If speaking another message -> stop previous completely
+    // 2. If speaking or paused on another message -> stop previous completely
     if (state.activeMessageId != null &&
         state.activeMessageId != messageId) {
       await stop();
@@ -294,37 +264,37 @@ class TtsNotifier extends StateNotifier<TtsState> {
     if (speechText.isEmpty) return;
 
     // 3. If resuming from paused state on the same message
-    String textToSpeak = speechText;
-    if (state.isPaused(messageId) &&
-        _accumulatedOffset > 0 &&
-        _accumulatedOffset < speechText.length) {
-      textToSpeak = speechText.substring(_accumulatedOffset);
-    } else {
-      _accumulatedOffset = 0;
-      _currentProgressStart = 0;
+    if (state.isPaused(messageId)) {
+      state = state.copyWith(
+        status: TtsPlaybackStatus.playing,
+      );
+      try {
+        await _flutterTts.speak(speechText);
+      } catch (e) {
+        debugPrint('TTS resume error: $e');
+      }
+      return;
     }
 
+    // 4. Starting fresh playback
+    await _configureVoice();
     state = state.copyWith(
       activeMessageId: messageId,
       status: TtsPlaybackStatus.playing,
-      spokenOffset: _accumulatedOffset,
     );
 
     try {
-      await _flutterTts.speak(textToSpeak);
+      await _flutterTts.speak(speechText);
     } catch (e) {
       debugPrint('TTS speak error: $e');
       state = state.copyWith(
         status: TtsPlaybackStatus.stopped,
         clearActiveId: true,
-        spokenOffset: 0,
       );
     }
   }
 
   Future<void> stop() async {
-    _accumulatedOffset = 0;
-    _currentProgressStart = 0;
     try {
       await _flutterTts.stop();
     } catch (e) {
@@ -333,7 +303,6 @@ class TtsNotifier extends StateNotifier<TtsState> {
     state = state.copyWith(
       status: TtsPlaybackStatus.stopped,
       clearActiveId: true,
-      spokenOffset: 0,
     );
   }
 

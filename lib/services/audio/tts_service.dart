@@ -9,7 +9,7 @@ class TtsState {
   const TtsState({
     this.activeMessageId,
     this.status = TtsPlaybackStatus.stopped,
-    this.speechRate = 0.5, // 0.5 is natural reading speed for pt-BR in flutter_tts
+    this.speechRate = kIsWeb ? 1.0 : 0.52,
     this.pitch = 1.0,
   });
 
@@ -49,9 +49,7 @@ class TtsNotifier extends StateNotifier<TtsState> {
     if (_isInitialized) return;
 
     try {
-      await _flutterTts.setLanguage('pt-BR');
-      await _flutterTts.setSpeechRate(state.speechRate);
-      await _flutterTts.setPitch(state.pitch);
+      await _configureVoice();
 
       if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
         await _flutterTts.setIosAudioCategory(
@@ -101,6 +99,52 @@ class TtsNotifier extends StateNotifier<TtsState> {
       _isInitialized = true;
     } catch (e) {
       debugPrint('TTS initialization error: $e');
+    }
+  }
+
+  Future<void> _configureVoice() async {
+    try {
+      await _flutterTts.setLanguage('pt-BR');
+      await _flutterTts.setSpeechRate(state.speechRate);
+      await _flutterTts.setPitch(state.pitch);
+
+      // Search available voices for Brazilian Portuguese
+      final dynamic voices = await _flutterTts.getVoices;
+      if (voices is List && voices.isNotEmpty) {
+        Map<dynamic, dynamic>? bestVoice;
+        for (final v in voices) {
+          if (v is Map) {
+            final locale = (v['locale'] ?? '').toString().toLowerCase();
+            final name = (v['name'] ?? '').toString().toLowerCase();
+
+            // Priority 1: Brazilian Portuguese
+            if (locale.contains('pt-br') ||
+                locale.contains('pt_br') ||
+                name.contains('brasil') ||
+                name.contains('brazil') ||
+                name.contains('português (brasil)') ||
+                name.contains('portuguese (brazil)')) {
+              bestVoice = v;
+              break;
+            }
+            // Priority 2: Generic Portuguese
+            if (locale.startsWith('pt') || name.contains('portug')) {
+              bestVoice ??= v;
+            }
+          }
+        }
+
+        if (bestVoice != null) {
+          final voiceName = bestVoice['name']?.toString() ?? '';
+          final voiceLocale = bestVoice['locale']?.toString() ?? 'pt-BR';
+          await _flutterTts.setVoice({
+            'name': voiceName,
+            'locale': voiceLocale,
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('TTS voice configuration error: $e');
     }
   }
 
@@ -160,6 +204,7 @@ class TtsNotifier extends StateNotifier<TtsState> {
   /// Toggles playback for a specific message.
   Future<void> toggleSpeak(String messageId, String rawContent) async {
     await _initTts();
+    await _configureVoice();
 
     // If currently speaking this message -> stop it
     if (state.isSpeaking(messageId)) {

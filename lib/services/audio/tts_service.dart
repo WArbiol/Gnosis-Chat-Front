@@ -81,7 +81,13 @@ class TtsNotifier extends StateNotifier<TtsState> {
       }
 
       _flutterTts.setCompletionHandler(() {
+        if (_isManuallyPaused) return;
         _onSentenceComplete();
+      });
+
+      _flutterTts.setCancelHandler(() {
+        if (_isManuallyPaused) return;
+        stop();
       });
 
       _flutterTts.setErrorHandler((msg) {
@@ -278,7 +284,11 @@ class TtsNotifier extends StateNotifier<TtsState> {
       try {
         await _flutterTts.stop();
       } catch (_) {}
-      state = state.copyWith(status: TtsPlaybackStatus.paused);
+      state = state.copyWith(
+        activeMessageId: messageId,
+        status: TtsPlaybackStatus.paused,
+        currentSentenceIndex: _currentIndex,
+      );
       return;
     }
 
@@ -286,7 +296,10 @@ class TtsNotifier extends StateNotifier<TtsState> {
     if (state.isPaused(messageId) && _sentenceQueue.isNotEmpty) {
       _isManuallyPaused = false;
       _playSessionId++;
-      state = state.copyWith(status: TtsPlaybackStatus.playing);
+      state = state.copyWith(
+        status: TtsPlaybackStatus.playing,
+        currentSentenceIndex: _currentIndex,
+      );
       await _speakCurrentSentence(_playSessionId);
       return;
     }

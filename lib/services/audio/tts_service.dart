@@ -115,7 +115,16 @@ class TtsNotifier extends StateNotifier<TtsState> {
       state = state.copyWith(currentSentenceIndex: _currentIndex);
       _speakCurrentSentence(_playSessionId);
     } else {
-      stop();
+      // Completed the entire message
+      _isManuallyPaused = true;
+      _currentIndex = 0;
+      _sentenceQueue = [];
+      state = state.copyWith(
+        status: TtsPlaybackStatus.stopped,
+        clearActiveId: true,
+        currentSentenceIndex: 0,
+        totalSentences: 0,
+      );
     }
   }
 
@@ -278,7 +287,8 @@ class TtsNotifier extends StateNotifier<TtsState> {
     await _initTts();
 
     // 1. If currently playing this message -> PAUSE it
-    if (state.isSpeaking(messageId)) {
+    if (state.activeMessageId == messageId &&
+        state.status == TtsPlaybackStatus.playing) {
       _isManuallyPaused = true;
       _playSessionId++;
       try {
@@ -292,11 +302,14 @@ class TtsNotifier extends StateNotifier<TtsState> {
       return;
     }
 
-    // 2. If paused on this SAME message -> RESUME from current sentence
-    if (state.isPaused(messageId) && _sentenceQueue.isNotEmpty) {
+    // 2. If paused or stopped on this SAME message and has remaining sentences -> RESUME
+    if (state.activeMessageId == messageId &&
+        _sentenceQueue.isNotEmpty &&
+        _currentIndex < _sentenceQueue.length) {
       _isManuallyPaused = false;
       _playSessionId++;
       state = state.copyWith(
+        activeMessageId: messageId,
         status: TtsPlaybackStatus.playing,
         currentSentenceIndex: _currentIndex,
       );
@@ -304,8 +317,12 @@ class TtsNotifier extends StateNotifier<TtsState> {
       return;
     }
 
-    // 3. Starting a new message or restarting from beginning
-    await stop();
+    // 3. Brand new message or replay from start:
+    _isManuallyPaused = true;
+    _playSessionId++;
+    try {
+      await _flutterTts.stop();
+    } catch (_) {}
 
     final speechText = sanitizeTextForSpeech(rawContent);
     if (speechText.isEmpty) return;
@@ -315,7 +332,6 @@ class TtsNotifier extends StateNotifier<TtsState> {
 
     _currentIndex = 0;
     _isManuallyPaused = false;
-    _playSessionId++;
 
     await _configureVoice();
 

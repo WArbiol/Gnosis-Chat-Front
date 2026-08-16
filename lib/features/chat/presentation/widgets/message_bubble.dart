@@ -650,9 +650,21 @@ class _TtsButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ttsState = ref.watch(ttsProvider);
     final isSpeaking = ttsState.isSpeaking(messageId);
+    final isPaused = ttsState.isPaused(messageId);
+    final isActive = isSpeaking || isPaused;
+
+    String tooltipMsg = 'Ouvir resposta';
+    IconData iconData = Icons.volume_up_rounded;
+    if (isSpeaking) {
+      tooltipMsg = 'Pausar leitura';
+      iconData = Icons.pause_rounded;
+    } else if (isPaused) {
+      tooltipMsg = 'Continuar leitura';
+      iconData = Icons.play_arrow_rounded;
+    }
 
     return Tooltip(
-      message: isSpeaking ? 'Parar leitura' : 'Ouvir resposta',
+      message: tooltipMsg,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -668,10 +680,12 @@ class _TtsButton extends ConsumerWidget {
               shape: BoxShape.circle,
               color: isSpeaking
                   ? AppColors.accent.withValues(alpha: 0.22)
-                  : Colors.white.withValues(alpha: 0.05),
+                  : isPaused
+                      ? AppColors.accent.withValues(alpha: 0.12)
+                      : Colors.white.withValues(alpha: 0.05),
               border: Border.all(
-                color: isSpeaking
-                    ? AppColors.accent.withValues(alpha: 0.7)
+                color: isActive
+                    ? AppColors.accent.withValues(alpha: isSpeaking ? 0.7 : 0.45)
                     : Colors.white.withValues(alpha: 0.12),
                 width: 0.8,
               ),
@@ -694,10 +708,10 @@ class _TtsButton extends ConsumerWidget {
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 child: Icon(
-                  isSpeaking ? Icons.stop_rounded : Icons.volume_up_rounded,
-                  key: ValueKey(isSpeaking),
+                  iconData,
+                  key: ValueKey('$isSpeaking-$isPaused'),
                   size: size * 0.52,
-                  color: isSpeaking
+                  color: isActive
                       ? AppColors.accentLight
                       : AppColors.onSurface.withValues(alpha: 0.65),
                 ),

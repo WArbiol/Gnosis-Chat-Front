@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-enum TtsPlaybackStatus { stopped, playing }
+enum TtsPlaybackStatus { stopped, playing, paused }
 
 class TtsState {
   const TtsState({
@@ -11,21 +11,30 @@ class TtsState {
     this.status = TtsPlaybackStatus.stopped,
     this.speechRate = kIsWeb ? 1.0 : 0.52,
     this.pitch = 0.88, // Deeper masculine and calm tone
+    this.currentSentenceIndex = 0,
+    this.totalSentences = 0,
   });
 
   final String? activeMessageId;
   final TtsPlaybackStatus status;
   final double speechRate;
   final double pitch;
+  final int currentSentenceIndex;
+  final int totalSentences;
 
   bool isSpeaking(String messageId) =>
       activeMessageId == messageId && status == TtsPlaybackStatus.playing;
+
+  bool isPaused(String messageId) =>
+      activeMessageId == messageId && status == TtsPlaybackStatus.paused;
 
   TtsState copyWith({
     String? activeMessageId,
     TtsPlaybackStatus? status,
     double? speechRate,
     double? pitch,
+    int? currentSentenceIndex,
+    int? totalSentences,
     bool clearActiveId = false,
   }) {
     return TtsState(
@@ -34,6 +43,9 @@ class TtsState {
       status: status ?? this.status,
       speechRate: speechRate ?? this.speechRate,
       pitch: pitch ?? this.pitch,
+      currentSentenceIndex:
+          currentSentenceIndex ?? this.currentSentenceIndex,
+      totalSentences: totalSentences ?? this.totalSentences,
     );
   }
 }
@@ -45,6 +57,11 @@ class TtsNotifier extends StateNotifier<TtsState> {
 
   final FlutterTts _flutterTts = FlutterTts();
   bool _isInitialized = false;
+
+  List<String> _sentenceQueue = [];
+  int _currentIndex = 0;
+  bool _isManuallyPaused = false;
+  int _playSessionId = 0;
 
   Future<void> _initTts() async {
     if (_isInitialized) return;
@@ -63,22 +80,8 @@ class TtsNotifier extends StateNotifier<TtsState> {
         );
       }
 
-      _flutterTts.setStartHandler(() {
-        state = state.copyWith(status: TtsPlaybackStatus.playing);
-      });
-
       _flutterTts.setCompletionHandler(() {
-        state = state.copyWith(
-          status: TtsPlaybackStatus.stopped,
-          clearActiveId: true,
-        );
-      });
-
-      _flutterTts.setCancelHandler(() {
-        state = state.copyWith(
-          status: TtsPlaybackStatus.stopped,
-          clearActiveId: true,
-        );
+        _onSentenceComplete();
       });
 
       _flutterTts.setErrorHandler((msg) {
@@ -89,15 +92,39 @@ class TtsNotifier extends StateNotifier<TtsState> {
           return;
         }
         debugPrint('TTS Error: $msg');
-        state = state.copyWith(
-          status: TtsPlaybackStatus.stopped,
-          clearActiveId: true,
-        );
       });
 
       _isInitialized = true;
     } catch (e) {
       debugPrint('TTS initialization error: $e');
+    }
+  }
+
+  void _onSentenceComplete() {
+    if (_isManuallyPaused || state.status != TtsPlaybackStatus.playing) return;
+
+    final nextIndex = _currentIndex + 1;
+    if (nextIndex < _sentenceQueue.length) {
+      _currentIndex = nextIndex;
+      state = state.copyWith(currentSentenceIndex: _currentIndex);
+      _speakCurrentSentence(_playSessionId);
+    } else {
+      stop();
+    }
+  }
+
+  Future<void> _speakCurrentSentence(int sessionId) async {
+    if (_isManuallyPaused || sessionId != _playSessionId) return;
+    if (_currentIndex >= _sentenceQueue.length) {
+      stop();
+      return;
+    }
+
+    final sentence = _sentenceQueue[_currentIndex];
+    try {
+      await _flutterTts.speak(sentence);
+    } catch (e) {
+      debugPrint('TTS speak sentence error: $e');
     }
   }
 
@@ -168,6 +195,20 @@ class TtsNotifier extends StateNotifier<TtsState> {
     }
   }
 
+  /// Splits clean text into natural sentences for deterministic pause/resume.
+  static List<String> splitIntoSentences(String text) {
+    if (text.isEmpty) return [];
+    final rawChunks = text.split(RegExp(r'(?<=[.!?;\n])\s+'));
+    final List<String> result = [];
+    for (final chunk in rawChunks) {
+      final trimmed = chunk.trim();
+      if (trimmed.isNotEmpty) {
+        result.add(trimmed);
+      }
+    }
+    return result.isEmpty ? [text] : result;
+  }
+
   /// Sanitizes AI response markdown for pleasant and natural speech reading.
   static String sanitizeTextForSpeech(String rawText) {
     var text = rawText;
@@ -226,50 +267,68 @@ class TtsNotifier extends StateNotifier<TtsState> {
     return text.trim();
   }
 
-  /// Toggles playback: Speaks from start or Stops completely.
+  /// Toggles playback: Speaks, Pauses, or Resumes from the current sentence.
   Future<void> toggleSpeak(String messageId, String rawContent) async {
     await _initTts();
 
-    // 1. If currently playing this message -> STOP completely
+    // 1. If currently playing this message -> PAUSE it
     if (state.isSpeaking(messageId)) {
-      await stop();
+      _isManuallyPaused = true;
+      _playSessionId++;
+      try {
+        await _flutterTts.stop();
+      } catch (_) {}
+      state = state.copyWith(status: TtsPlaybackStatus.paused);
       return;
     }
 
-    // 2. If speaking another message -> stop previous first
-    if (state.status == TtsPlaybackStatus.playing) {
-      await stop();
+    // 2. If paused on this SAME message -> RESUME from current sentence
+    if (state.isPaused(messageId) && _sentenceQueue.isNotEmpty) {
+      _isManuallyPaused = false;
+      _playSessionId++;
+      state = state.copyWith(status: TtsPlaybackStatus.playing);
+      await _speakCurrentSentence(_playSessionId);
+      return;
     }
+
+    // 3. Starting a new message or restarting from beginning
+    await stop();
 
     final speechText = sanitizeTextForSpeech(rawContent);
     if (speechText.isEmpty) return;
 
+    _sentenceQueue = splitIntoSentences(speechText);
+    if (_sentenceQueue.isEmpty) return;
+
+    _currentIndex = 0;
+    _isManuallyPaused = false;
+    _playSessionId++;
+
     await _configureVoice();
+
     state = state.copyWith(
       activeMessageId: messageId,
       status: TtsPlaybackStatus.playing,
+      currentSentenceIndex: 0,
+      totalSentences: _sentenceQueue.length,
     );
 
-    try {
-      await _flutterTts.speak(speechText);
-    } catch (e) {
-      debugPrint('TTS speak error: $e');
-      state = state.copyWith(
-        status: TtsPlaybackStatus.stopped,
-        clearActiveId: true,
-      );
-    }
+    await _speakCurrentSentence(_playSessionId);
   }
 
   Future<void> stop() async {
+    _isManuallyPaused = true;
+    _playSessionId++;
+    _currentIndex = 0;
+    _sentenceQueue = [];
     try {
       await _flutterTts.stop();
-    } catch (e) {
-      debugPrint('TTS stop error: $e');
-    }
+    } catch (_) {}
     state = state.copyWith(
       status: TtsPlaybackStatus.stopped,
       clearActiveId: true,
+      currentSentenceIndex: 0,
+      totalSentences: 0,
     );
   }
 

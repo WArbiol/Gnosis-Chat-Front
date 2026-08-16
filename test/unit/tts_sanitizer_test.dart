@@ -35,4 +35,18 @@ void main() {
       expect(result, contains('Item B'));
     });
   });
+
+  group('TtsNotifier.splitIntoSentences', () {
+    test('splits paragraphs into distinct spoken sentences', () {
+      const text =
+          'Na tradição da Gnosis, a Mãe Divina não é uma entidade externa. Ela é a força primordial do Ser! Como despertar esse poder? Pratique a auto-observação.';
+      final sentences = TtsNotifier.splitIntoSentences(text);
+
+      expect(sentences.length, equals(4));
+      expect(sentences[0], equals('Na tradição da Gnosis, a Mãe Divina não é uma entidade externa.'));
+      expect(sentences[1], equals('Ela é a força primordial do Ser!'));
+      expect(sentences[2], equals('Como despertar esse poder?'));
+      expect(sentences[3], equals('Pratique a auto-observação.'));
+    });
+  });
 }

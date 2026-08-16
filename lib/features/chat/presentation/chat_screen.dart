@@ -35,6 +35,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   late final Animation<double> _glowAnim;
 
   final _knownMessageIds = <String>{};
+  bool _isUserScrolledUp = false;
 
   @override
   void initState() {
@@ -48,6 +49,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
       end: 0.7,
     ).animate(CurvedAnimation(parent: _glowCtrl, curve: Curves.easeInOut));
     _queryCtrl.addListener(() => setState(() {}));
+
+    _scrollCtrl.addListener(() {
+      if (_scrollCtrl.hasClients) {
+        // In reverse: true ListView, offset 0.0 is the bottom (latest message).
+        // If offset > 50.0, the user intentionally scrolled up to read previous lines/messages.
+        final isUp = _scrollCtrl.offset > 50.0;
+        if (_isUserScrolledUp != isUp) {
+          setState(() {
+            _isUserScrolledUp = isUp;
+          });
+        }
+      }
+    });
   }
 
   @override
@@ -63,6 +77,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     if (query.isEmpty) return;
     _queryCtrl.clear();
     HapticFeedback.lightImpact();
+
+    _isUserScrolledUp = false;
+    _scrollToBottom();
 
     try {
       await ref.read(chatProvider.notifier).ask(query);
@@ -146,6 +163,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   }
 
   void _jumpToBottom() {
+    _isUserScrolledUp = false;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (_scrollCtrl.hasClients) {
@@ -157,13 +175,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   }
 
   void _scrollToBottom() {
+    if (_isUserScrolledUp) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (_scrollCtrl.hasClients) {
+      if (_scrollCtrl.hasClients && !_isUserScrolledUp) {
         try {
           _scrollCtrl.animateTo(
             0.0,
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 250),
             curve: Curves.easeOut,
           );
         } catch (_) {}
@@ -200,8 +219,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
         _knownMessageIds.addAll(nextList.map((m) => m.id));
         _jumpToBottom();
       } else if (nextList.length > prevList.length && prevList.isNotEmpty) {
-        // New incoming message in active conversation: animate scroll down
-        _scrollToBottom();
+        // New incoming message in active conversation: only scroll if user is not reading above
+        if (!_isUserScrolledUp) {
+          _scrollToBottom();
+        }
       }
     });
 

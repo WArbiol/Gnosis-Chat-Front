@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:gnosis_chat/services/audio/web_tts.dart';
 
 enum TtsPlaybackStatus { stopped, playing, paused }
 
@@ -66,10 +67,24 @@ class TtsNotifier extends StateNotifier<TtsState> {
   Future<void> _initTts() async {
     if (_isInitialized) return;
 
+    if (kIsWeb) {
+      try {
+        setJsOnGnosisTtsComplete(() {
+          if (!_isManuallyPaused) {
+            _onSentenceComplete();
+          }
+        });
+      } catch (e) {
+        debugPrint('Web TTS setup error: $e');
+      }
+      _isInitialized = true;
+      return;
+    }
+
     try {
       await _configureVoice();
 
-      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
         await _flutterTts.setIosAudioCategory(
           IosTextToSpeechAudioCategory.playback,
           [
@@ -115,7 +130,7 @@ class TtsNotifier extends StateNotifier<TtsState> {
       state = state.copyWith(currentSentenceIndex: _currentIndex);
       _speakCurrentSentence(_playSessionId);
     } else {
-      // Completed the entire message
+      // Completed full message
       _isManuallyPaused = true;
       _currentIndex = 0;
       _sentenceQueue = [];
@@ -136,14 +151,30 @@ class TtsNotifier extends StateNotifier<TtsState> {
     }
 
     final sentence = _sentenceQueue[_currentIndex];
+
+    if (kIsWeb) {
+      try {
+        jsGnosisSpeak(
+          sentence,
+          state.pitch,
+          state.speechRate,
+        );
+      } catch (e) {
+        debugPrint('Web TTS speak error: $e');
+      }
+      return;
+    }
+
     try {
       await _flutterTts.speak(sentence);
     } catch (e) {
-      debugPrint('TTS speak sentence error: $e');
+      debugPrint('Native TTS speak error: $e');
     }
   }
 
   Future<void> _configureVoice() async {
+    if (kIsWeb) return;
+
     try {
       await _flutterTts.setLanguage('pt-BR');
       await _flutterTts.setSpeechRate(state.speechRate);
@@ -291,9 +322,17 @@ class TtsNotifier extends StateNotifier<TtsState> {
         state.status == TtsPlaybackStatus.playing) {
       _isManuallyPaused = true;
       _playSessionId++;
-      try {
-        await _flutterTts.stop();
-      } catch (_) {}
+
+      if (kIsWeb) {
+        try {
+          jsGnosisStopTts();
+        } catch (_) {}
+      } else {
+        try {
+          await _flutterTts.stop();
+        } catch (_) {}
+      }
+
       state = state.copyWith(
         activeMessageId: messageId,
         status: TtsPlaybackStatus.paused,
@@ -320,9 +359,16 @@ class TtsNotifier extends StateNotifier<TtsState> {
     // 3. Brand new message or replay from start:
     _isManuallyPaused = true;
     _playSessionId++;
-    try {
-      await _flutterTts.stop();
-    } catch (_) {}
+
+    if (kIsWeb) {
+      try {
+        jsGnosisStopTts();
+      } catch (_) {}
+    } else {
+      try {
+        await _flutterTts.stop();
+      } catch (_) {}
+    }
 
     final speechText = sanitizeTextForSpeech(rawContent);
     if (speechText.isEmpty) return;
@@ -350,9 +396,17 @@ class TtsNotifier extends StateNotifier<TtsState> {
     _playSessionId++;
     _currentIndex = 0;
     _sentenceQueue = [];
-    try {
-      await _flutterTts.stop();
-    } catch (_) {}
+
+    if (kIsWeb) {
+      try {
+        jsGnosisStopTts();
+      } catch (_) {}
+    } else {
+      try {
+        await _flutterTts.stop();
+      } catch (_) {}
+    }
+
     state = state.copyWith(
       status: TtsPlaybackStatus.stopped,
       clearActiveId: true,
@@ -363,7 +417,7 @@ class TtsNotifier extends StateNotifier<TtsState> {
 
   @override
   void dispose() {
-    _flutterTts.stop();
+    stop();
     super.dispose();
   }
 }

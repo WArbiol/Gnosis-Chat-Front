@@ -76,6 +76,60 @@
       }
     };
   </script>
+  <!-- Web Speech API Helper for direct, reliable TTS on all browsers (Safari iOS, Chrome, etc.) -->
+  <script>
+    window.gnosisSpeak = function(text, pitch, rate) {
+      try {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        
+        var u = new SpeechSynthesisUtterance(text);
+        u.lang = 'pt-BR';
+        u.pitch = pitch || 0.88;
+        u.rate = rate || 1.0;
+        
+        var voices = window.speechSynthesis.getVoices();
+        if (voices && voices.length > 0) {
+          for (var i = 0; i < voices.length; i++) {
+            var v = voices[i];
+            var name = (v.name || '').toLowerCase();
+            var lang = (v.lang || '').toLowerCase();
+            if (lang.indexOf('pt') !== -1 || name.indexOf('brazil') !== -1 || name.indexOf('brasil') !== -1) {
+              if (name.indexOf('antonio') !== -1 || name.indexOf('daniel') !== -1 || name.indexOf('felipe') !== -1 || name.indexOf('ricardo') !== -1 || name.indexOf('male') !== -1 || name.indexOf('standard-b') !== -1 || name.indexOf('wavenet-b') !== -1) {
+                u.voice = v;
+                break;
+              } else if (!u.voice) {
+                u.voice = v;
+              }
+            }
+          }
+        }
+        
+        u.onend = function() {
+          if (window.onGnosisTtsComplete) {
+            window.onGnosisTtsComplete();
+          }
+        };
+        u.onerror = function(e) {
+          if (e && e.error !== 'interrupted' && e.error !== 'canceled') {
+            console.warn('TTS error:', e);
+          }
+        };
+        
+        window.speechSynthesis.speak(u);
+      } catch (err) {
+        console.error('Error in gnosisSpeak:', err);
+      }
+    };
+    
+    window.gnosisStopTts = function() {
+      try {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+      } catch (err) {}
+    };
+  </script>
 
   <script src="flutter_bootstrap.js" async></script>
 </body>

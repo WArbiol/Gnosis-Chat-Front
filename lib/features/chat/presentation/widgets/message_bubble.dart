@@ -93,7 +93,11 @@ class MessageBubble extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              _TtsButton(messageId: message.id, content: message.content),
+              _TtsButton(
+                messageId: message.id,
+                content: message.content,
+                size: 30.0,
+              ),
             ],
           ),
           const SizedBox(height: 2),
@@ -632,73 +636,73 @@ class _ContextAction extends StatelessWidget {
 // TTS & Message Actions Bar
 // ---------------------------------------------------------------------------
 class _TtsButton extends ConsumerWidget {
-  const _TtsButton({required this.messageId, required this.content});
+  const _TtsButton({
+    required this.messageId,
+    required this.content,
+    this.size = 34.0,
+  });
 
   final String messageId;
   final String content;
+  final double size;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ttsState = ref.watch(ttsProvider);
     final isSpeaking = ttsState.isSpeaking(messageId);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          ref.read(ttsProvider.notifier).toggleSpeak(messageId, content);
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: isSpeaking
-                ? AppColors.accent.withValues(alpha: 0.18)
-                : Colors.white.withValues(alpha: 0.04),
-            border: Border.all(
+    return Tooltip(
+      message: isSpeaking ? 'Parar leitura' : 'Ouvir resposta',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            ref.read(ttsProvider.notifier).toggleSpeak(messageId, content);
+          },
+          borderRadius: BorderRadius.circular(size / 2),
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
               color: isSpeaking
-                  ? AppColors.accent.withValues(alpha: 0.6)
-                  : Colors.white.withValues(alpha: 0.08),
-              width: 0.8,
+                  ? AppColors.accent.withValues(alpha: 0.2)
+                  : Colors.white.withValues(alpha: 0.05),
+              border: Border.all(
+                color: isSpeaking
+                    ? AppColors.accent.withValues(alpha: 0.6)
+                    : Colors.white.withValues(alpha: 0.12),
+                width: 0.8,
+              ),
+              boxShadow: [
+                if (isSpeaking)
+                  BoxShadow(
+                    color: AppColors.accent.withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  )
+                else
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+              ],
             ),
-            boxShadow: [
-              if (isSpeaking)
-                BoxShadow(
-                  color: AppColors.accent.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  spreadRadius: 1,
-                ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedSwitcher(
+            child: Center(
+              child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 child: Icon(
                   isSpeaking ? Icons.stop_rounded : Icons.volume_up_rounded,
                   key: ValueKey(isSpeaking),
-                  size: 14,
+                  size: size * 0.48,
                   color: isSpeaking
                       ? AppColors.accentLight
                       : AppColors.onSurface.withValues(alpha: 0.65),
                 ),
               ),
-              const SizedBox(width: 4),
-              Text(
-                isSpeaking ? 'Parar' : 'Ouvir',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isSpeaking ? FontWeight.w600 : FontWeight.w500,
-                  color: isSpeaking
-                      ? AppColors.accentLight
-                      : AppColors.onSurface.withValues(alpha: 0.65),
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -716,6 +720,8 @@ class _MessageActionBar extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        _TtsButton(messageId: message.id, content: message.content),
+        const SizedBox(width: 8),
         _CopyButton(content: message.content),
         const SizedBox(width: 8),
         _SharePdfButton(message: message),

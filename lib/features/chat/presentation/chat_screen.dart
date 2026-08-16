@@ -51,10 +51,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     _queryCtrl.addListener(() => setState(() {}));
 
     _scrollCtrl.addListener(() {
-      if (_scrollCtrl.hasClients) {
-        // In reverse: true ListView, offset 0.0 is the bottom (latest message).
-        // If offset > 50.0, the user intentionally scrolled up to read previous lines/messages.
-        final isUp = _scrollCtrl.offset > 50.0;
+      if (_scrollCtrl.hasClients && _scrollCtrl.position.hasContentDimensions) {
+        final distanceToBottom =
+            _scrollCtrl.position.maxScrollExtent - _scrollCtrl.offset;
+        final isUp = distanceToBottom > 60.0;
         if (_isUserScrolledUp != isUp) {
           setState(() {
             _isUserScrolledUp = isUp;
@@ -166,9 +166,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     _isUserScrolledUp = false;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (_scrollCtrl.hasClients) {
+      if (_scrollCtrl.hasClients && _scrollCtrl.position.hasContentDimensions) {
         try {
-          _scrollCtrl.jumpTo(0.0);
+          _scrollCtrl.jumpTo(_scrollCtrl.position.maxScrollExtent);
         } catch (_) {}
       }
     });
@@ -178,11 +178,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     if (_isUserScrolledUp) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (_scrollCtrl.hasClients && !_isUserScrolledUp) {
+      if (_scrollCtrl.hasClients &&
+          _scrollCtrl.position.hasContentDimensions &&
+          !_isUserScrolledUp) {
         try {
           _scrollCtrl.animateTo(
-            0.0,
-            duration: const Duration(milliseconds: 250),
+            _scrollCtrl.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 150),
             curve: Curves.easeOut,
           );
         } catch (_) {}
@@ -297,7 +299,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                   messages.length + (showTyping ? 1 : 0);
 
                               return ListView.builder(
-                                reverse: true,
                                 controller: _scrollCtrl,
                                 padding: const EdgeInsets.only(
                                   left: 16,
@@ -307,11 +308,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 ),
                                 itemCount: itemCount,
                                 itemBuilder: (context, index) {
-                                  final actualIndex = itemCount - 1 - index;
+                                  if (index < messages.length) {
+                                    final msg = messages[index];
+                                    final isNew = !_knownMessageIds.contains(
+                                      msg.id,
+                                    );
+                                    if (isNew) _knownMessageIds.add(msg.id);
 
-                                  // Typing indicator
-                                  if (showTyping &&
-                                      actualIndex == messages.length) {
+                                    return AnimatedMessage(
+                                      key: ValueKey(msg.id),
+                                      animate: isNew,
+                                      child: MessageBubble(message: msg),
+                                    );
+                                  }
+
+                                  // Typing indicator after the last message
+                                  if (showTyping) {
                                     return const Padding(
                                       padding: EdgeInsets.only(
                                         top: 4,
@@ -321,17 +333,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                     );
                                   }
 
-                                  final msg = messages[actualIndex];
-                                  final isNew = !_knownMessageIds.contains(
-                                    msg.id,
-                                  );
-                                  if (isNew) _knownMessageIds.add(msg.id);
-
-                                  return AnimatedMessage(
-                                    key: ValueKey(msg.id),
-                                    animate: isNew,
-                                    child: MessageBubble(message: msg),
-                                  );
+                                  return const SizedBox.shrink();
                                 },
                               );
                             },

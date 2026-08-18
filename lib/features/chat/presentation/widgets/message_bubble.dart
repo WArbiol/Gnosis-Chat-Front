@@ -61,14 +61,7 @@ class MessageBubble extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withValues(alpha: 0.7),
-            AppColors.primaryDark.withValues(alpha: 0.5),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: AppColors.primaryDark.withValues(alpha: 0.85), // Azul nobre liso
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(18),
           topRight: Radius.circular(18),
@@ -76,11 +69,11 @@ class MessageBubble extends StatelessWidget {
           bottomRight: Radius.circular(4),
         ),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.3),
-          width: 0.5,
+          color: AppColors.primaryLight.withValues(alpha: 0.25),
+          width: 0.75,
         ),
       ),
-      child: _content(context, AppColors.onSurface),
+      child: _content(context, Colors.white),
     );
   }
 

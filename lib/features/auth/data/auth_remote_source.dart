@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:gnosis_chat/features/auth/data/auth_repository.dart';
 import 'package:gnosis_chat/features/auth/domain/social_provider.dart';
 import 'package:gnosis_chat/features/auth/domain/user_entity.dart';
+import 'package:gnosis_chat/features/auth/infrastructure/apple_auth_service.dart';
 import 'package:gnosis_chat/features/auth/infrastructure/google_auth_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -35,15 +36,30 @@ class AuthRemoteSource implements AuthRepository {
       );
     }
 
+    if (provider == SocialProvider.apple) {
+      final response = await AppleAuthService.signIn();
+      if (response == null) {
+        throw Exception('CANCELLED');
+      }
+
+      final currentUser = await getCurrentUser();
+      if (currentUser != null) return currentUser;
+
+      final sbUser = response.user;
+      if (sbUser == null) {
+        throw Exception('CANCELLED');
+      }
+
+      return UserEntity(
+        id: sbUser.id,
+        email: sbUser.email ?? '',
+        avatarUrl: sbUser.userMetadata?['avatar_url'] as String?,
+      );
+    }
+
     final oAuthProvider = provider == SocialProvider.facebook
         ? OAuthProvider.facebook
         : OAuthProvider.apple;
-
-    if (oAuthProvider == OAuthProvider.apple) {
-      throw UnimplementedError(
-        'Login com Apple ainda não implementado (Fase 7.3)',
-      );
-    }
 
     // This launches the browser/web-view for OAuth login
     final success = await _supabase.auth.signInWithOAuth(

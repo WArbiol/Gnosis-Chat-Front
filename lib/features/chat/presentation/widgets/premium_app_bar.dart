@@ -25,37 +25,17 @@ class PremiumAppBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 1. Floating Reflective Glass Menu Button (Liquid Glass)
+          // 1. Floating Pure Frosted Glass Menu Button (sem contorno, sem reflexo branco)
           ClipRRect(
             borderRadius: BorderRadius.circular(22),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
               child: Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(22),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.18), // Reflexo especular superior
-                      Colors.white.withValues(alpha: 0.05),
-                      Colors.black.withValues(alpha: 0.35), // Profundidade do vidro
-                    ],
-                    stops: const [0.0, 0.45, 1.0],
-                  ),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.20),
-                    width: 0.75,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  color: const Color(0x6618181B), // Vidro escuro fosco e limpo
                 ),
                 child: IconButton(
                   onPressed: onMenuTap,
@@ -71,36 +51,16 @@ class PremiumAppBar extends StatelessWidget {
             ),
           ),
 
-          // 2. Floating Discreet Reflective Capsule for "Gnosis"
+          // 2. Floating Discreet Frosted Glass Capsule for "Gnosis" (sem contorno)
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.14),
-                      Colors.white.withValues(alpha: 0.03),
-                      Colors.black.withValues(alpha: 0.30),
-                    ],
-                    stops: const [0.0, 0.45, 1.0],
-                  ),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    width: 0.75,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                  color: const Color(0x4D18181B), // Cápsula escura e suave
                 ),
                 child: ShaderMask(
                   shaderCallback: (bounds) => const LinearGradient(
@@ -125,7 +85,7 @@ class PremiumAppBar extends StatelessWidget {
             ),
           ),
 
-          // 3. User Avatar Icon (Clean, without outer bubble)
+          // 3. User Avatar Icon (Clean, direct)
           IconButton(
             onPressed: onProfileTap,
             icon: UserAvatar(

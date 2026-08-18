@@ -40,7 +40,6 @@ Future<AuthResponse?> signInPlatform({
     provider: OAuthProvider.google,
     idToken: idToken,
     accessToken: accessToken,
-    nonce: rawNonce,
   );
 }
 

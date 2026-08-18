@@ -148,7 +148,27 @@ class MessageBubble extends StatelessWidget {
             ),
             styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
                 .copyWith(
-                  p: TextStyle(color: textColor, fontSize: 16.5, height: 1.55),
+                  p: TextStyle(
+                    color: textColor,
+                    fontSize: 16.5,
+                    fontWeight: FontWeight.w400,
+                    height: 1.55,
+                    letterSpacing: -0.1,
+                  ),
+                  strong: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.1,
+                  ),
+                  em: TextStyle(
+                    color: textColor.withValues(alpha: 0.95),
+                    fontStyle: FontStyle.italic,
+                  ),
+                  listBullet: TextStyle(
+                    color: textColor,
+                    fontSize: 16.5,
+                    fontWeight: FontWeight.w500,
+                  ),
                   h1: TextStyle(
                     color: textColor,
                     fontSize: 34,
@@ -186,7 +206,7 @@ class MessageBubble extends StatelessWidget {
                     ),
                   ),
                   blockquote: TextStyle(
-                    color: textColor.withValues(alpha: 0.8),
+                    color: textColor.withValues(alpha: 0.85),
                     fontStyle: FontStyle.italic,
                     fontSize: 15,
                   ),

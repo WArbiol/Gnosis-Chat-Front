@@ -100,8 +100,91 @@ O Flutter Web gera arquivos estáticos (`HTML`, `JS`, `WebAssembly`). O deploy n
 - [x] **Webhooks Assíncronos:** Stripe Webhook configurado no backend em produção (`POST /payments/webhook`) para sincronização automática com o Supabase.
 
 ### 6.2. Configuração Mobile (RevenueCat)
-1. Integração via `RevenueCat` com produtos e entitlements `premium_access`.
-2. Webhooks de sincro no backend: `POST /payments/revenuecat-webhook`.
+
+O **RevenueCat** é o gateway unificador de In-App Purchases (IAP) para iOS e Android. Ele abstrai toda a complexidade do StoreKit 2 (Apple) e Google Play Billing, gerenciando o ciclo de vida das assinaturas, recibos e renovações.
+
+#### 1. Arquitetura de Identificadores (Mapeamento)
+
+| Entitlement RevenueCat | Produto Loja (Product ID) | Descrição | Preço Referência | Limite Mensal |
+|------------------------|---------------------------|-----------|------------------|---------------|
+| `basic` | `gnosis_basic_monthly` | Acesso Básico Mensal | R$ 9,90 / mês | 100 perguntas |
+| `premium` | `gnosis_premium_monthly` | Acesso Premium Mensal | R$ 29,90 / mês | 1.000 perguntas |
+
+---
+
+#### 2. Passo a Passo no Dashboard do RevenueCat
+
+1. **Criar o Projeto:**
+   - Nome do projeto: `Pergunte à Gnosis`.
+   - Confirmar o e-mail de verificação da conta (clicar no link de confirmação).
+
+2. **Cadastrar os Aplicativos (Apps):**
+   - **iOS (Apple App Store):**
+     - **App Name:** `Pergunte à Gnosis (App Store)`
+     - **Bundle ID:** `com.gnosischat.gnosisChat`
+     - **Custom URL Scheme:** `gnosis`
+     - **In-App Purchase Key (StoreKit 2):**
+       1. Acesse o [App Store Connect](https://appstoreconnect.apple.com) > **Usuários e Acesso** > **Integrações/Chaves** > **In-App Purchase**.
+       2. Clique em `+`, crie uma chave com o nome `RevenueCat Key` e baixe o arquivo `.p8` (guarde-o com segurança, download único).
+       3. Copie o **Key ID** (código de 10 caracteres) e o **Issuer ID** (UUID no topo da página).
+       4. No RevenueCat, faça upload do arquivo `.p8`, cole o `Key ID` e o `Issuer ID` e salve.
+   - **Android (Google Play):**
+     - **App Name:** `Pergunte à Gnosis (Google Play)`
+     - **Package Name:** `com.gnosischat.gnosis_chat`
+     - **Google Play Service Account Credentials JSON:**
+       1. No Google Cloud Console (projeto vinculado à Play Console), crie uma Service Account com permissão para gerenciar compras e assinaturas do Google Play.
+       2. Gere a chave privada em formato JSON.
+       3. No RevenueCat, faça o upload desse arquivo JSON e salve.
+
+3. **Configurar o Catálogo de Produtos:**
+   - **Entitlements (`Product catalog > Entitlements`):**
+     - Criar `basic` com descrição `Acesso Básico (100 perguntas/mês)`.
+     - Criar `premium` com descrição `Acesso Premium (1.000 perguntas/mês)`.
+   - **Products (`Product catalog > Products`):**
+     - Cadastrar `gnosis_basic_monthly` e vincular ao entitlement `basic`.
+     - Cadastrar `gnosis_premium_monthly` e vincular ao entitlement `premium`.
+   - **Offerings (`Product catalog > Offerings`):**
+     - Criar a Offering marcada como **Default** (Identifier: `default`).
+     - Adicionar os Packages:
+       - Package `$rc_monthly` (ou `basic`) → Produto `gnosis_basic_monthly`
+       - Package Custom (ex: `premium`) → Produto `gnosis_premium_monthly`
+
+4. **Obter Chaves de API (`API keys`):**
+   - Copiar a **Public Apple API Key** (`appl_...`).
+   - Copiar a **Public Google API Key** (`goog_...`).
+   - Configurar no `.env` do Flutter (`gnosis-chat-front/.env`):
+     ```env
+     REVENUECAT_APPLE_KEY=appl_xxxxxxxxxxxxxxxxxxxx
+     REVENUECAT_GOOGLE_KEY=goog_xxxxxxxxxxxxxxxxxxxx
+     ```
+
+5. **Integração no Frontend Flutter:**
+   - Pacote oficial: `purchases_flutter`.
+   - Inicialização em `main.dart`:
+     ```dart
+     if (!kIsWeb) {
+       final apiKey = Platform.isIOS
+           ? dotenv.env['REVENUECAT_APPLE_KEY']!
+           : dotenv.env['REVENUECAT_GOOGLE_KEY']!;
+       await Purchases.configure(
+         PurchasesConfiguration(apiKey)..appUserID = supabaseUser.id,
+       );
+     }
+     ```
+   - No `subscription_provider.dart`: Ao comprar em dispositivos móveis, chamar `Purchases.purchasePackage(package)`. Na Web (`kIsWeb`), redirecionar para o Stripe Checkout.
+
+6. **Webhooks Assíncronos no Backend (FastAPI):**
+   - No RevenueCat, vá em **Integrations > Webhooks** e cadastre o endpoint:
+     `POST https://gnosischat.com/payments/revenuecat-webhook`
+   - Configurar a chave de autorização no cabeçalho (Webhook Authorization Header).
+   - O backend processa eventos (`INITIAL_PURCHASE`, `RENEWAL`, `CANCELLATION`, `EXPIRATION`) e sincroniza com a tabela `users` no Supabase:
+     ```json
+     {
+       "plan": "basic" | "premium",
+       "subscription_provider": "revenuecat",
+       "subscription_status": "active" | "canceled"
+     }
+     ```
 
 ### 6.3. Ciclo de Vida da Conta & Exclusão de Perfil (Account Deletion & UI/UX)
 
@@ -151,7 +234,7 @@ O Flutter Web gera arquivos estáticos (`HTML`, `JS`, `WebAssembly`). O deploy n
 
 ### 7.1. Burocracias Iniciais
 1. Conta no [Apple Developer Program](https://developer.apple.com/programs/).
-2. App ID (`com.gnosischat.app`) com In-App Purchase e Sign in with Apple.
+2. App ID (`com.gnosischat.gnosisChat`) com In-App Purchase e Sign in with Apple.
 
 ### 7.2. Configurando Assinaturas
 1. Assinaturas Auto-Renováveis no App Store Connect associadas ao RevenueCat.
@@ -165,7 +248,7 @@ O Flutter Web gera arquivos estáticos (`HTML`, `JS`, `WebAssembly`). O deploy n
 
 ### 8.1. Burocracias Iniciais
 1. Taxa única no [Google Play Console](https://play.google.com/console/).
-2. Service Account para validação de assinaturas RevenueCat.
+2. App Package (`com.gnosischat.gnosis_chat`) e Service Account para validação de assinaturas RevenueCat.
 
 ### 8.2. Build e Submissão
 1. Compilação do pacote AAB: `flutter build appbundle`.

@@ -36,10 +36,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
   final _knownMessageIds = <String>{};
   bool _isUserScrolledUp = false;
+  late final AppLifecycleListener _lifecycleListener;
 
   @override
   void initState() {
     super.initState();
+    _lifecycleListener = AppLifecycleListener(
+      onResume: () {
+        debugPrint('LIFECYCLE: App resumed. Refreshing session and data...');
+        ref.read(authProvider.notifier).ensureValidSessionAndRefresh();
+        ref.read(conversationProvider.notifier).loadConversations();
+      },
+    );
     _glowCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -66,6 +74,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
   @override
   void dispose() {
+    _lifecycleListener.dispose();
     _glowCtrl.dispose();
     _queryCtrl.dispose();
     _scrollCtrl.dispose();

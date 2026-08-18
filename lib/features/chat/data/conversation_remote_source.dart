@@ -63,7 +63,17 @@ class ConversationRemoteSource {
     final baseUrl = _dio.options.baseUrl;
     final url = Uri.parse('${baseUrl}chat/ask');
     
-    final session = Supabase.instance.client.auth.currentSession;
+    var session = Supabase.instance.client.auth.currentSession;
+    if (session != null) {
+      final nowSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final expiresAt = session.expiresAt;
+      if (session.isExpired || (expiresAt != null && expiresAt - nowSeconds < 60)) {
+        try {
+          final refreshed = await Supabase.instance.client.auth.refreshSession();
+          session = refreshed.session ?? session;
+        } catch (_) {}
+      }
+    }
     final token = session?.accessToken;
     
     final request = http.Request('POST', url);

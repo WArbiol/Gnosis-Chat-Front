@@ -19,16 +19,19 @@ final authProvider = StateNotifierProvider<AuthNotifier, app.AuthState>((ref) {
 class AuthNotifier extends StateNotifier<app.AuthState> {
   AuthNotifier(this._repo, this._ref) : super(const app.AuthState.initial()) {
     _initAuthListener();
+    _startPeriodicSessionCheck();
   }
 
   final AuthRepository _repo;
   final Ref _ref;
+  StreamSubscription<sb.AuthState>? _supabaseListener;
+  Timer? _periodicCheckTimer;
 
   void _initAuthListener() {
     // 1. Initial check for existing session
     final initialSession = sb.Supabase.instance.client.auth.currentSession;
     if (initialSession != null) {
-      fetchUser();
+      ensureValidSessionAndRefresh();
     }
 
     _supabaseListener = sb.Supabase.instance.client.auth.onAuthStateChange.listen((
@@ -74,7 +77,41 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
     });
   }
 
-  StreamSubscription<sb.AuthState>? _supabaseListener;
+  void _startPeriodicSessionCheck() {
+    _periodicCheckTimer?.cancel();
+    // Check session health every 5 minutes
+    _periodicCheckTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+      final session = sb.Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        final nowSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        final expiresAt = session.expiresAt;
+        // If expired or expiring in less than 5 minutes (300s)
+        if (session.isExpired || (expiresAt != null && expiresAt - nowSeconds < 300)) {
+          debugPrint('AUTH: Proactive periodic token refresh triggered');
+          ensureValidSessionAndRefresh();
+        }
+      }
+    });
+  }
+
+  /// Proactively ensures the token is fresh and syncs user profile & conversations.
+  /// Ideal for app resume / tab focus events.
+  Future<void> ensureValidSessionAndRefresh() async {
+    try {
+      final session = sb.Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        final nowSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        final expiresAt = session.expiresAt;
+        if (session.isExpired || (expiresAt != null && expiresAt - nowSeconds < 120)) {
+          debugPrint('AUTH: Session expired/near expiry. Refreshing session...');
+          await sb.Supabase.instance.client.auth.refreshSession();
+        }
+      }
+      await fetchUser();
+    } catch (e) {
+      debugPrint('AUTH: Error during ensureValidSessionAndRefresh: $e');
+    }
+  }
 
   Future<void> fetchUser() async {
     debugPrint('AUTH: Fetching user profile...');
@@ -87,7 +124,20 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
         debugPrint('AUTH: Fetch skipped (user null or unmounted)');
       }
     } catch (e) {
-      debugPrint('AUTH: CRITICAL ERROR in fetchUser: $e');
+      debugPrint('AUTH: ERROR in fetchUser: $e');
+      // If error might be due to stale token, attempt one fresh recovery refresh
+      final session = sb.Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        try {
+          debugPrint('AUTH: Attempting recovery session refresh...');
+          await sb.Supabase.instance.client.auth.refreshSession();
+          final retryUser = await _repo.getCurrentUser();
+          if (retryUser != null && mounted) {
+            state = app.AuthState.authenticated(retryUser);
+            return;
+          }
+        } catch (_) {}
+      }
       if (mounted) state = app.AuthState.error(e.toString());
     }
   }
@@ -95,6 +145,7 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
   @override
   void dispose() {
     _supabaseListener?.cancel();
+    _periodicCheckTimer?.cancel();
     super.dispose();
   }
 
@@ -127,8 +178,6 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
       state = app.AuthState.error(e.toString());
     }
   }
-
-  // Social auth only: signup and classic login with password removed.
 
   Future<void> logout() async {
     debugPrint('AUTH: Logging out...');

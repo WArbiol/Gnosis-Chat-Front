@@ -11,13 +11,19 @@ class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     var session = Supabase.instance.client.auth.currentSession;
-    if (session != null && session.isExpired) {
-      debugPrint('API: Session is expired. Refreshing token...');
-      try {
-        final res = await Supabase.instance.client.auth.refreshSession();
-        session = res.session ?? session;
-      } catch (e) {
-        debugPrint('API: Session refresh failed: $e');
+    if (session != null) {
+      final nowSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final expiresAt = session.expiresAt;
+      final isExpiringSoon = session.isExpired || (expiresAt != null && expiresAt - nowSeconds < 60);
+
+      if (isExpiringSoon) {
+        debugPrint('API: Session is expired or expiring soon. Refreshing token...');
+        try {
+          final res = await Supabase.instance.client.auth.refreshSession();
+          session = res.session ?? session;
+        } catch (e) {
+          debugPrint('API: Session refresh failed: $e');
+        }
       }
     }
 

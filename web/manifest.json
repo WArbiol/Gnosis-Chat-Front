@@ -1,6 +1,6 @@
 {
     "name": "Pergunte à Gnosis",
-    "short_name": "Gnosis",
+    "short_name": "Chat",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#070709",

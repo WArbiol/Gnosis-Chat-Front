@@ -259,14 +259,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                     colors: [
                       Color(0x1A000000), // ~10% suave no topo da status bar
                       Color(0x80000000), // ~50% passando pela altura dos botões
-                      Colors.black,      // 100% nítido abaixo do header
+                      Colors.black, // 100% nítido abaixo do header
                       Colors.black,
                       Colors.transparent,
                     ],
                     stops: [
                       0.0,
-                      0.05,
-                      0.11, // Transição aveludada e gradual
+                      0.08,
+                      0.15, // Transição aveludada e gradual
                       0.96,
                       1.0,
                     ],
@@ -284,8 +284,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                         final isLoading =
                             loadingId != null &&
                             (loadingId == activeId ||
-                                (activeId == null &&
-                                    loadingId == 'NEW_CONV'));
+                                (activeId == null && loadingId == 'NEW_CONV'));
                         final isLastUserMessage =
                             messages.isNotEmpty &&
                             messages.last.role == MessageRole.user;
@@ -295,9 +294,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                           if (isLoading) {
                             return const Center(
                               child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                ),
+                                padding: EdgeInsets.symmetric(horizontal: 24),
                                 child: TypingIndicator(),
                               ),
                             );
@@ -313,16 +310,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                           padding: EdgeInsets.only(
                             left: 16,
                             right: 16,
-                            top: topPadding + 64, // Comfortably below floating header on start
+                            top:
+                                topPadding +
+                                64, // Comfortably below floating header on start
                             bottom: bottomPadding + 110,
                           ),
                           itemCount: itemCount,
                           itemBuilder: (context, index) {
                             if (index < messages.length) {
                               final msg = messages[index];
-                              final isNew = !_knownMessageIds.contains(
-                                msg.id,
-                              );
+                              final isNew = !_knownMessageIds.contains(msg.id);
                               if (isNew) _knownMessageIds.add(msg.id);
 
                               return AnimatedMessage(
@@ -335,10 +332,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                             // Typing indicator after the last message
                             if (showTyping) {
                               return const Padding(
-                                padding: EdgeInsets.only(
-                                  top: 4,
-                                  bottom: 8,
-                                ),
+                                padding: EdgeInsets.only(top: 4, bottom: 8),
                                 child: TypingIndicator(),
                               );
                             }

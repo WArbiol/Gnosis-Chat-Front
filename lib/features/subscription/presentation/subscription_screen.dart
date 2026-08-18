@@ -10,6 +10,7 @@ import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/subscription/domain/plan_entity.dart';
 import 'package:gnosis_chat/features/subscription/presentation/subscription_provider.dart';
 import 'package:gnosis_chat/features/subscription/presentation/widgets/subscription_cancel_dialog.dart';
+import 'package:gnosis_chat/features/subscription/presentation/widgets/subscription_change_dialog.dart';
 import 'package:gnosis_chat/features/subscription/presentation/widgets/subscription_success_dialog.dart';
 import 'package:gnosis_chat/shared/providers/user_provider.dart';
 
@@ -273,49 +274,12 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen>
                                       }
                                     }
                                   } else {
-                                    if (type == PlanType.basic && currentPlan == 'premium') {
-                                      final confirm = await showDialog<bool>(
-                                        context: context,
-                                        builder: (ctx) => AlertDialog(
-                                          backgroundColor: AppColors.surface,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                          ),
-                                          title: const Text(
-                                            'Alterar para Plano Básico?',
-                                            style: TextStyle(
-                                              color: AppColors.onSurface,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          content: const Text(
-                                            'Você está mudando do plano Premium para o Plano Básico. Suas vantagens e o limite de perguntas serão reduzidos para 100 perguntas/mês imediatamente.',
-                                            style: TextStyle(
-                                              color: AppColors.onSurfaceVariant,
-                                            ),
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.of(ctx).pop(false),
-                                              child: const Text(
-                                                'Voltar',
-                                                style: TextStyle(
-                                                  color: AppColors.onSurfaceVariant,
-                                                ),
-                                              ),
-                                            ),
-                                            TextButton(
-                                              onPressed: () => Navigator.of(ctx).pop(true),
-                                              child: const Text(
-                                                'Confirmar',
-                                                style: TextStyle(
-                                                  color: AppColors.primary,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                    // If user already has an active paid plan (basic or premium), confirm upgrade/downgrade intention
+                                    if (currentPlan != 'free' && (type == PlanType.basic || type == PlanType.premium)) {
+                                      final confirm = await SubscriptionChangeDialog.show(
+                                        context,
+                                        currentPlan: currentPlan,
+                                        targetPlan: type,
                                       );
                                       if (confirm != true) return;
                                     }

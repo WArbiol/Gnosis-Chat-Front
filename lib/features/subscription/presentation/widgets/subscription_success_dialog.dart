@@ -20,20 +20,7 @@ class SubscriptionSuccessDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isPremium = plan == 'premium';
-
-    // Set colors based on plan
-    final primaryColor = isPremium ? AppColors.accent : AppColors.primary;
-    final secondaryColor = isPremium
-        ? AppColors.accentLight
-        : AppColors.primaryLight;
-    final emoji = isPremium ? '👑' : '✨';
-    final title = isPremium ? 'Bem-vindo ao Premium' : 'Plano Básico Ativado';
-    final subtitle = isPremium ? 'O CAMINHO DO MESTRE' : 'ACESSO EXPANDIDO';
-    final description = isPremium
-        ? 'Agora você tem acesso a até 1000 perguntas/mês.'
-        : 'Você acaba de liberar até 100 perguntas/mês para acelerar seus estudos e pesquisas.';
-    final buttonText = isPremium ? 'Iniciar Estudos' : 'Aproveitar Plano';
+    final config = _getPlanConfig(plan);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -65,12 +52,12 @@ class SubscriptionSuccessDialog extends StatelessWidget {
                 color: AppColors.surface.withValues(alpha: 0.92),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: primaryColor.withValues(alpha: 0.3),
+                  color: config.primaryColor.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: primaryColor.withValues(alpha: 0.12),
+                    color: config.primaryColor.withValues(alpha: 0.12),
                     blurRadius: 50,
                     spreadRadius: 5,
                   ),
@@ -90,8 +77,8 @@ class SubscriptionSuccessDialog extends StatelessWidget {
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              primaryColor.withValues(alpha: 0.25),
-                              primaryColor.withValues(alpha: 0.0),
+                              config.primaryColor.withValues(alpha: 0.25),
+                              config.primaryColor.withValues(alpha: 0.0),
                             ],
                           ),
                         ),
@@ -102,13 +89,13 @@ class SubscriptionSuccessDialog extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: LinearGradient(
-                            colors: [primaryColor, secondaryColor],
+                            colors: [config.primaryColor, config.secondaryColor],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: primaryColor.withValues(alpha: 0.3),
+                              color: config.primaryColor.withValues(alpha: 0.3),
                               blurRadius: 15,
                               offset: const Offset(0, 4),
                             ),
@@ -116,7 +103,7 @@ class SubscriptionSuccessDialog extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            emoji,
+                            config.emoji,
                             style: const TextStyle(fontSize: 32),
                           ),
                         ),
@@ -129,10 +116,10 @@ class SubscriptionSuccessDialog extends StatelessWidget {
                   // Title with Gradient
                   ShaderMask(
                     shaderCallback: (bounds) => LinearGradient(
-                      colors: [primaryColor, secondaryColor],
+                      colors: [config.primaryColor, config.secondaryColor],
                     ).createShader(bounds),
                     child: Text(
-                      title,
+                      config.title,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 22,
@@ -147,9 +134,9 @@ class SubscriptionSuccessDialog extends StatelessWidget {
 
                   // Subtitle
                   Text(
-                    subtitle,
+                    config.subtitle,
                     style: TextStyle(
-                      color: primaryColor,
+                      color: config.primaryColor,
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.5,
@@ -160,7 +147,7 @@ class SubscriptionSuccessDialog extends StatelessWidget {
 
                   // Description
                   Text(
-                    description,
+                    config.description,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: AppColors.onSurface.withValues(alpha: 0.8),
@@ -177,13 +164,13 @@ class SubscriptionSuccessDialog extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       gradient: LinearGradient(
-                        colors: [primaryColor, secondaryColor],
+                        colors: [config.primaryColor, config.secondaryColor],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryColor.withValues(alpha: 0.25),
+                          color: config.primaryColor.withValues(alpha: 0.25),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -200,7 +187,7 @@ class SubscriptionSuccessDialog extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           child: Text(
-                            buttonText,
+                            config.buttonText,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               color: AppColors.background,
@@ -221,4 +208,47 @@ class SubscriptionSuccessDialog extends StatelessWidget {
       ),
     );
   }
+
+  static _SuccessConfig _getPlanConfig(String plan) {
+    if (plan == 'premium') {
+      return const _SuccessConfig(
+        primaryColor: AppColors.accent,
+        secondaryColor: AppColors.accentLight,
+        emoji: '👑',
+        title: 'Bem-vindo ao Premium',
+        subtitle: 'O CAMINHO DO MESTRE',
+        description: 'Agora você tem acesso a até 1.000 perguntas/mês e prioridade no modelo avançado.',
+        buttonText: 'Iniciar Estudos',
+      );
+    }
+    return const _SuccessConfig(
+      primaryColor: AppColors.primary,
+      secondaryColor: AppColors.primaryLight,
+      emoji: '✨',
+      title: 'Plano Básico Ativado',
+      subtitle: 'ACESSO EXPANDIDO',
+      description: 'Você acaba de liberar até 100 perguntas/mês para acelerar seus estudos e pesquisas.',
+      buttonText: 'Aproveitar Plano',
+    );
+  }
+}
+
+class _SuccessConfig {
+  const _SuccessConfig({
+    required this.primaryColor,
+    required this.secondaryColor,
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.description,
+    required this.buttonText,
+  });
+
+  final Color primaryColor;
+  final Color secondaryColor;
+  final String emoji;
+  final String title;
+  final String subtitle;
+  final String description;
+  final String buttonText;
 }

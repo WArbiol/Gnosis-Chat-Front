@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,7 +7,6 @@ import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/glass_filter_sheet.dart';
-import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 class GlassInputBar extends ConsumerStatefulWidget {
   const GlassInputBar({
@@ -162,143 +162,147 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-        child: LiquidGlassLens(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOut,
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(26),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.white.withValues(alpha: 0.08),
-                  Colors.white.withValues(alpha: 0.03),
-                ],
-              ),
-              border: Border.all(
-                color: _hasFocus
-                    ? AppColors.accent.withValues(alpha: 0.45)
-                    : Colors.white.withValues(alpha: 0.2),
-                width: _hasFocus ? 1.5 : 1,
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (chips.isNotEmpty) ...[
-                  SizedBox(
-                    height: 32,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      child: Row(children: chips),
-                    ),
-                  ),
-                  Container(
-                    height: 1,
-                    color: Colors.white.withValues(alpha: 0.08),
-                    margin: const EdgeInsets.symmetric(vertical: 2),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(26),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(26),
+                color: Colors.white.withValues(alpha: 0.08),
+                border: Border.all(
+                  color: _hasFocus
+                      ? AppColors.accent.withValues(alpha: 0.5)
+                      : Colors.white.withValues(alpha: 0.18),
+                  width: _hasFocus ? 1.5 : 0.8,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
                   ),
                 ],
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Filter Button
-                    IconButton(
-                      icon: Icon(
-                        Icons.tune,
-                        color: activeFilters.isEmpty
-                            ? AppColors.onSurfaceVariant
-                            : AppColors.accent,
-                        size: 20,
-                      ),
-                      onPressed: () => _showFilterSheet(context),
-                    ),
-
-                    Expanded(
-                      child: Theme(
-                        data: Theme.of(context).copyWith(
-                          inputDecorationTheme: const InputDecorationTheme(),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (chips.isNotEmpty) ...[
+                    SizedBox(
+                      height: 32,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                        child: TextField(
-                          controller: widget.controller,
-                          focusNode: _focusNode,
-                          minLines: 1,
-                          maxLines: 5,
-                          keyboardType: TextInputType.multiline,
-                          textCapitalization: TextCapitalization.sentences,
-                          textInputAction: TextInputAction.newline,
-                          style: const TextStyle(
-                            color: AppColors.onSurface,
-                            fontSize: 15,
+                        child: Row(children: chips),
+                      ),
+                    ),
+                    Container(
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.08),
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                    ),
+                  ],
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Filter Button
+                      IconButton(
+                        icon: Icon(
+                          Icons.tune,
+                          color: activeFilters.isEmpty
+                              ? AppColors.onSurfaceVariant
+                              : AppColors.accent,
+                          size: 20,
+                        ),
+                        onPressed: () => _showFilterSheet(context),
+                      ),
+
+                      Expanded(
+                        child: Theme(
+                          data: Theme.of(context).copyWith(
+                            inputDecorationTheme: const InputDecorationTheme(),
                           ),
-                          decoration: InputDecoration(
-                            hintText: 'Pergunte à Gnosis...',
-                            hintStyle: TextStyle(
-                              color: AppColors.onSurfaceVariant.withValues(
-                                alpha: 0.5,
-                              ),
+                          child: TextField(
+                            controller: widget.controller,
+                            focusNode: _focusNode,
+                            minLines: 1,
+                            maxLines: 5,
+                            keyboardType: TextInputType.multiline,
+                            textCapitalization: TextCapitalization.sentences,
+                            textInputAction: TextInputAction.newline,
+                            style: const TextStyle(
+                              color: AppColors.onSurface,
                               fontSize: 15,
                             ),
-                            filled: false,
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 10,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Send button
-                    AnimatedScale(
-                      scale: widget.hasText ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOut,
-                      child: AnimatedOpacity(
-                        opacity: widget.hasText ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 200),
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.accent,
-                                AppColors.accentLight,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: widget.onSend,
-                              borderRadius: BorderRadius.circular(18),
-                              child: const Icon(
-                                Icons.arrow_upward_rounded,
-                                color: AppColors.background,
-                                size: 20,
+                            decoration: InputDecoration(
+                              hintText: 'Pergunte à Gnosis...',
+                              hintStyle: TextStyle(
+                                color: AppColors.onSurfaceVariant.withValues(
+                                  alpha: 0.5,
+                                ),
+                                fontSize: 15,
+                              ),
+                              filled: false,
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 10,
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                  ],
-                ),
-              ],
+
+                      // Send button
+                      AnimatedScale(
+                        scale: widget.hasText ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOut,
+                        child: AnimatedOpacity(
+                          opacity: widget.hasText ? 1.0 : 0.0,
+                          duration: const Duration(milliseconds: 200),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.accent,
+                                  AppColors.accentLight,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: widget.onSend,
+                                borderRadius: BorderRadius.circular(18),
+                                child: const Icon(
+                                  Icons.arrow_upward_rounded,
+                                  color: AppColors.background,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

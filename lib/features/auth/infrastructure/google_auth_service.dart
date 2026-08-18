@@ -19,9 +19,13 @@ class GoogleAuthService {
     return '971574732695-ndhmbf15ocp31buk94kgf5jo0jj3j0rq.apps.googleusercontent.com';
   }
 
-  static String get iosClientId =>
-      dotenv.env['GOOGLE_IOS_CLIENT_ID'] ??
-      const String.fromEnvironment('GOOGLE_IOS_CLIENT_ID', defaultValue: '');
+  static String get iosClientId {
+    final fromEnv = dotenv.env['GOOGLE_IOS_CLIENT_ID'];
+    if (fromEnv != null && fromEnv.isNotEmpty) return fromEnv;
+    const fromDef = String.fromEnvironment('GOOGLE_IOS_CLIENT_ID', defaultValue: '');
+    if (fromDef.isNotEmpty) return fromDef;
+    return '971574732695-h109b8ijvbs8istffs71vpmkc37eq0i9.apps.googleusercontent.com';
+  }
 
   static String _generateRawNonce([int length = 32]) {
     const charset =

@@ -23,62 +23,81 @@ class PremiumAppBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 1. Floating Pure Frosted Glass Menu Button (sem contorno, sem reflexo branco)
+          // 1. Floating ChatGPT-style Glass Lens Button
           ClipRRect(
             borderRadius: BorderRadius.circular(22),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
               child: Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(22),
-                  color: const Color(0x6618181B), // Vidro escuro fosco e limpo
+                  shape: BoxShape.circle,
+                  color: const Color(0x73141416), // Dark translucent smoky glass
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: IconButton(
-                  onPressed: onMenuTap,
-                  icon: const Icon(Icons.menu_rounded),
-                  tooltip: 'Conversas',
-                  iconSize: 22,
-                  style: IconButton.styleFrom(
-                    foregroundColor: AppColors.onSurface,
-                    padding: EdgeInsets.zero,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(22),
+                    onTap: onMenuTap,
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 18,
+                            height: 2.2,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(height: 4.5),
+                          Container(
+                            width: 13,
+                            height: 2.2,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
 
-          // 2. Floating Discreet Frosted Glass Capsule for "Gnosis" (sem contorno)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: const Color(0x4D18181B), // Cápsula escura e suave
-                ),
-                child: ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: [
-                      AppColors.accent,
-                      AppColors.accentLight,
-                      AppColors.accent,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ).createShader(bounds),
-                  child: Text(
-                    'Gnosis',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                    ),
+          // 2. Centered Clean Floating "Gnosis" Title
+          Expanded(
+            child: Center(
+              child: ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    AppColors.accent,
+                    AppColors.accentLight,
+                    AppColors.accent,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ).createShader(bounds),
+                child: Text(
+                  'Gnosis',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),

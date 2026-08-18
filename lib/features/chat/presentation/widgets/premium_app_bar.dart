@@ -25,24 +25,33 @@ class PremiumAppBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 1. Floating Glass Menu Button
+          // 1. Floating Reflective Glass Menu Button (Liquid Glass)
           ClipRRect(
             borderRadius: BorderRadius.circular(22),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0x6618181B), // 40% dark glass
                   borderRadius: BorderRadius.circular(22),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.18), // Reflexo especular superior
+                      Colors.white.withValues(alpha: 0.05),
+                      Colors.black.withValues(alpha: 0.35), // Profundidade do vidro
+                    ],
+                    stops: const [0.0, 0.45, 1.0],
+                  ),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.14),
-                    width: 0.8,
+                    color: Colors.white.withValues(alpha: 0.20),
+                    width: 0.75,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
+                      color: Colors.black.withValues(alpha: 0.35),
                       blurRadius: 10,
                       offset: const Offset(0, 3),
                     ),
@@ -52,7 +61,7 @@ class PremiumAppBar extends StatelessWidget {
                   onPressed: onMenuTap,
                   icon: const Icon(Icons.menu_rounded),
                   tooltip: 'Conversas',
-                  iconSize: 21,
+                  iconSize: 22,
                   style: IconButton.styleFrom(
                     foregroundColor: AppColors.onSurface,
                     padding: EdgeInsets.zero,
@@ -62,103 +71,74 @@ class PremiumAppBar extends StatelessWidget {
             ),
           ),
 
-          // 2. Floating Central "Gnosis" Glass Capsule
+          // 2. Floating Discreet Reflective Capsule for "Gnosis"
           ClipRRect(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(20),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
                 decoration: BoxDecoration(
-                  color: const Color(0x6618181B), // 40% dark glass
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.14),
+                      Colors.white.withValues(alpha: 0.03),
+                      Colors.black.withValues(alpha: 0.30),
+                    ],
+                    stops: const [0.0, 0.45, 1.0],
+                  ),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.14),
-                    width: 0.8,
+                    color: Colors.white.withValues(alpha: 0.15),
+                    width: 0.75,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
+                      color: Colors.black.withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.auto_awesome_rounded,
-                      size: 14,
-                      color: AppColors.accent,
+                child: ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [
+                      AppColors.accent,
+                      AppColors.accentLight,
+                      AppColors.accent,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ).createShader(bounds),
+                  child: Text(
+                    'Gnosis',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
                     ),
-                    const SizedBox(width: 6),
-                    ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
-                        colors: [
-                          AppColors.accent,
-                          AppColors.accentLight,
-                          AppColors.accent,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ).createShader(bounds),
-                      child: const Text(
-                        'Gnosis',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
 
-          // 3. Floating Glass Avatar / Profile Button
-          ClipRRect(
-            borderRadius: BorderRadius.circular(22),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0x6618181B), // 40% dark glass
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.14),
-                    width: 0.8,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(22),
-                    onTap: onProfileTap,
-                    child: Center(
-                      child: UserAvatar(
-                        avatarUrl: user?.avatarUrl,
-                        email: user?.email,
-                        size: 30,
-                        fontSize: 13,
-                        borderWidth: 1.2,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+          // 3. User Avatar Icon (Clean, without outer bubble)
+          IconButton(
+            onPressed: onProfileTap,
+            icon: UserAvatar(
+              avatarUrl: user?.avatarUrl,
+              email: user?.email,
+              size: 34,
+              fontSize: 14,
+              borderWidth: 1.5,
+            ),
+            tooltip: 'Perfil',
+            style: IconButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(44, 44),
             ),
           ),
         ],

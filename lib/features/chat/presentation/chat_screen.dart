@@ -257,14 +257,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.transparent,
-                      Colors.black,
+                      Color(0x1A000000), // ~10% suave no topo da status bar
+                      Color(0x80000000), // ~50% passando pela altura dos botões
+                      Colors.black,      // 100% nítido abaixo do header
                       Colors.black,
                       Colors.transparent,
                     ],
                     stops: [
                       0.0,
-                      0.035, // Ultralight 3.5% fade at the very top edge of the screen
+                      0.05,
+                      0.11, // Transição aveludada e gradual
                       0.96,
                       1.0,
                     ],

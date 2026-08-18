@@ -23,23 +23,28 @@ class PremiumAppBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 1. Floating ChatGPT-style Glass Lens Button
+          // 1. Floating True Glassmorphic Menu Button (Lens Effect)
           ClipRRect(
             borderRadius: BorderRadius.circular(22),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0x73141416), // Dark translucent smoky glass
+                  color: Colors.white.withValues(alpha: 0.12), // True dark-mode glass lens
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    width: 0.8,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -79,32 +84,53 @@ class PremiumAppBar extends StatelessWidget {
             ),
           ),
 
-          // 2. Centered Clean Floating "Gnosis" Title
-          Expanded(
-            child: Center(
-              child: ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [
-                    AppColors.accent,
-                    AppColors.accentLight,
-                    AppColors.accent,
+          // 2. Floating True Glassmorphic "Gnosis" Capsule
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white.withValues(alpha: 0.10), // True dark-mode glass capsule
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    width: 0.8,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
                   ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ).createShader(bounds),
-                child: Text(
-                  'Gnosis',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
+                ),
+                child: ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [
+                      AppColors.accent,
+                      AppColors.accentLight,
+                      AppColors.accent,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ).createShader(bounds),
+                  child: Text(
+                    'Gnosis',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
 
-          // 3. User Avatar Icon (Clean, direct)
+          // 3. User Avatar (Clean, direct)
           IconButton(
             onPressed: onProfileTap,
             icon: UserAvatar(

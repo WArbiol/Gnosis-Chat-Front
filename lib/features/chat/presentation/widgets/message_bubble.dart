@@ -139,7 +139,7 @@ class MessageBubble extends StatelessWidget {
           selectable: false,
             builders: {
               'latex': LatexElementBuilder(
-                textStyle: TextStyle(color: textColor, fontSize: 15),
+                textStyle: TextStyle(color: textColor, fontSize: 16.5),
               ),
             },
             extensionSet: md.ExtensionSet(
@@ -148,30 +148,30 @@ class MessageBubble extends StatelessWidget {
             ),
             styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
                 .copyWith(
-                  p: TextStyle(color: textColor, fontSize: 15, height: 1.5),
+                  p: TextStyle(color: textColor, fontSize: 16.5, height: 1.55),
                   h1: TextStyle(
                     color: textColor,
-                    fontSize: 32,
+                    fontSize: 34,
                     fontWeight: FontWeight.w800,
                     height: 1.3,
                     letterSpacing: -0.5,
                   ),
                   h2: TextStyle(
                     color: textColor,
-                    fontSize: 26,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                     height: 1.3,
                     letterSpacing: -0.5,
                   ),
                   h3: TextStyle(
                     color: textColor,
-                    fontSize: 22,
+                    fontSize: 23,
                     fontWeight: FontWeight.bold,
                     height: 1.3,
                   ),
                   h4: TextStyle(
                     color: textColor,
-                    fontSize: 18,
+                    fontSize: 19,
                     fontWeight: FontWeight.bold,
                     height: 1.4,
                   ),
@@ -188,7 +188,14 @@ class MessageBubble extends StatelessWidget {
                   blockquote: TextStyle(
                     color: textColor.withValues(alpha: 0.8),
                     fontStyle: FontStyle.italic,
-                    fontSize: 14,
+                    fontSize: 15,
+                  ),
+                  code: TextStyle(
+                    color: textColor,
+                    fontSize: 14.5,
+                    backgroundColor: AppColors.surfaceVariant.withValues(
+                      alpha: 0.4,
+                    ),
                   ),
                   blockquoteDecoration: BoxDecoration(
                     color: AppColors.surfaceVariant.withValues(alpha: 0.25),

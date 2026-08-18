@@ -237,6 +237,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
       }
     });
 
+    final topPadding = MediaQuery.of(context).padding.top;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -246,167 +249,166 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
             // Subtle animated background blobs
             AnimatedBackground(animation: _glowAnim, intensity: 0.65),
 
-            // Main content
-            SafeArea(
-              child: Stack(
-                children: [
-                  // Chat body (bottom layer, scrolls under app bar and input)
-                  Positioned.fill(
-                    child: ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return const LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black,
-                            Colors.black,
-                            Colors.transparent,
-                          ],
-                          stops: [
-                            0.05,
-                            0.12,
-                            0.95,
-                            1.0,
-                          ], // Push bottom fade zone much lower to avoid hiding the typing indicator
-                        ).createShader(bounds);
-                      },
-                      blendMode: BlendMode.dstIn,
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 850),
-                          child: chatState.when(
-                            data: (messages) {
-                              final loadingId = ref.watch(
-                                loadingConversationIdProvider,
-                              );
-                              final isLoading =
-                                  loadingId != null &&
-                                  (loadingId == activeId ||
-                                      (activeId == null &&
-                                          loadingId == 'NEW_CONV'));
-                              final isLastUserMessage =
-                                  messages.isNotEmpty &&
-                                  messages.last.role == MessageRole.user;
-                              final showTyping = isLoading || isLastUserMessage;
+            // Chat body (True Edge-to-Edge: bottom layer, scrolls under floating glass header and input)
+            Positioned.fill(
+              child: ShaderMask(
+                shaderCallback: (Rect bounds) {
+                  return const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black,
+                      Colors.black,
+                      Colors.transparent,
+                    ],
+                    stops: [
+                      0.0,
+                      0.035, // Ultralight 3.5% fade at the very top edge of the screen
+                      0.96,
+                      1.0,
+                    ],
+                  ).createShader(bounds);
+                },
+                blendMode: BlendMode.dstIn,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 850),
+                    child: chatState.when(
+                      data: (messages) {
+                        final loadingId = ref.watch(
+                          loadingConversationIdProvider,
+                        );
+                        final isLoading =
+                            loadingId != null &&
+                            (loadingId == activeId ||
+                                (activeId == null &&
+                                    loadingId == 'NEW_CONV'));
+                        final isLastUserMessage =
+                            messages.isNotEmpty &&
+                            messages.last.role == MessageRole.user;
+                        final showTyping = isLoading || isLastUserMessage;
 
-                              if (messages.isEmpty) {
-                                if (isLoading) {
-                                  return const Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                      ),
-                                      child: TypingIndicator(),
-                                    ),
-                                  );
-                                }
-                                return EmptyState(glowAnim: _glowAnim);
-                              }
-
-                              final itemCount =
-                                  messages.length + (showTyping ? 1 : 0);
-
-                              return ListView.builder(
-                                controller: _scrollCtrl,
-                                padding: const EdgeInsets.only(
-                                  left: 16,
-                                  right: 16,
-                                  top: 100,
-                                  bottom: 120,
+                        if (messages.isEmpty) {
+                          if (isLoading) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 24,
                                 ),
-                                itemCount: itemCount,
-                                itemBuilder: (context, index) {
-                                  if (index < messages.length) {
-                                    final msg = messages[index];
-                                    final isNew = !_knownMessageIds.contains(
-                                      msg.id,
-                                    );
-                                    if (isNew) _knownMessageIds.add(msg.id);
-
-                                    return AnimatedMessage(
-                                      key: ValueKey(msg.id),
-                                      animate: isNew,
-                                      child: MessageBubble(message: msg),
-                                    );
-                                  }
-
-                                  // Typing indicator after the last message
-                                  if (showTyping) {
-                                    return const Padding(
-                                      padding: EdgeInsets.only(
-                                        top: 4,
-                                        bottom: 8,
-                                      ),
-                                      child: TypingIndicator(),
-                                    );
-                                  }
-
-                                  return const SizedBox.shrink();
-                                },
-                              );
-                            },
-                            loading: () => const Center(
-                              child: SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: AppColors.accent,
-                                  strokeWidth: 2.5,
-                                ),
+                                child: TypingIndicator(),
                               ),
-                            ),
-                            error: (e, _) => ErrorView(
-                              message:
-                                  e.toString().contains('connection') ||
-                                      e.toString().contains('XMLHttpRequest')
-                                  ? 'Falha de conexão com o servidor. Verifique se a API está online.'
-                                  : e
-                                        .toString()
-                                        .replaceAll('DioException:', '')
-                                        .trim(),
-                              onRetry: () {
-                                if (activeId != null) {
-                                  ref
-                                      .read(conversationProvider.notifier)
-                                      .selectConversation(activeId);
-                                } else {
-                                  ref.invalidate(chatProvider);
-                                }
-                              },
-                            ),
+                            );
+                          }
+                          return EmptyState(glowAnim: _glowAnim);
+                        }
+
+                        final itemCount =
+                            messages.length + (showTyping ? 1 : 0);
+
+                        return ListView.builder(
+                          controller: _scrollCtrl,
+                          padding: EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            top: topPadding + 64, // Comfortably below floating header on start
+                            bottom: bottomPadding + 110,
+                          ),
+                          itemCount: itemCount,
+                          itemBuilder: (context, index) {
+                            if (index < messages.length) {
+                              final msg = messages[index];
+                              final isNew = !_knownMessageIds.contains(
+                                msg.id,
+                              );
+                              if (isNew) _knownMessageIds.add(msg.id);
+
+                              return AnimatedMessage(
+                                key: ValueKey(msg.id),
+                                animate: isNew,
+                                child: MessageBubble(message: msg),
+                              );
+                            }
+
+                            // Typing indicator after the last message
+                            if (showTyping) {
+                              return const Padding(
+                                padding: EdgeInsets.only(
+                                  top: 4,
+                                  bottom: 8,
+                                ),
+                                child: TypingIndicator(),
+                              );
+                            }
+
+                            return const SizedBox.shrink();
+                          },
+                        );
+                      },
+                      loading: () => const Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: AppColors.accent,
+                            strokeWidth: 2.5,
                           ),
                         ),
                       ),
-                    ),
-                  ),
-
-                  // Custom premium AppBar (top layer)
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: PremiumAppBar(
-                      glowAnim: _glowAnim,
-                      user: user,
-                      onMenuTap: widget.onMenuTap,
-                      onProfileTap: widget.onProfileTap,
-                    ),
-                  ),
-
-                  // Premium input bar (bottom layer)
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 850),
-                      child: GlassInputBar(
-                        controller: _queryCtrl,
-                        hasText: _queryCtrl.text.trim().isNotEmpty,
-                        onSend: _sendMessage,
+                      error: (e, _) => ErrorView(
+                        message:
+                            e.toString().contains('connection') ||
+                                e.toString().contains('XMLHttpRequest')
+                            ? 'Falha de conexão com o servidor. Verifique se a API está online.'
+                            : e
+                                  .toString()
+                                  .replaceAll('DioException:', '')
+                                  .trim(),
+                        onRetry: () {
+                          if (activeId != null) {
+                            ref
+                                .read(conversationProvider.notifier)
+                                .selectConversation(activeId);
+                          } else {
+                            ref.invalidate(chatProvider);
+                          }
+                        },
                       ),
                     ),
                   ),
-                ],
+                ),
+              ),
+            ),
+
+            // Custom floating glass AppBar (top layer with safe area)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                bottom: false,
+                child: PremiumAppBar(
+                  glowAnim: _glowAnim,
+                  user: user,
+                  onMenuTap: widget.onMenuTap,
+                  onProfileTap: widget.onProfileTap,
+                ),
+              ),
+            ),
+
+            // Premium input bar (bottom layer with safe area)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SafeArea(
+                top: false,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 850),
+                  child: GlassInputBar(
+                    controller: _queryCtrl,
+                    hasText: _queryCtrl.text.trim().isNotEmpty,
+                    onSend: _sendMessage,
+                  ),
+                ),
               ),
             ),
           ],

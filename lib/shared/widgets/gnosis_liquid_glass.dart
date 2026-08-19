@@ -19,8 +19,8 @@ class GnosisLiquidGlass extends StatelessWidget {
     this.borderColor,
     this.tintColor,
     this.enableTouchFlex = false,
-    this.blurSigma = 3.5,
-    this.shadowOpacity = 0.40,
+    this.blurSigma = 3.5, //3.5
+    this.shadowOpacity = 0.80,
     this.distortion = 0.12,
     this.distortionWidth = 20.0,
     this.lightIntensity = 0.75,
@@ -68,10 +68,7 @@ class GnosisLiquidGlass extends StatelessWidget {
           ),
           appearance: LiquidGlassAppearance(
             color: effectiveTint,
-            blur: LiquidGlassBlur(
-              sigmaX: blurSigma,
-              sigmaY: blurSigma,
-            ),
+            blur: LiquidGlassBlur(sigmaX: blurSigma, sigmaY: blurSigma),
             shadow: LiquidGlassShadow(
               color: Colors.black,
               opacity: shadowOpacity,
@@ -133,10 +130,7 @@ class GnosisLiquidGlass extends StatelessWidget {
                 ],
                 stops: const [0.0, 0.45, 1.0],
               ),
-              border: Border.all(
-                color: borderCol,
-                width: borderWidth,
-              ),
+              border: Border.all(color: borderCol, width: borderWidth),
             ),
             child: child,
           ),

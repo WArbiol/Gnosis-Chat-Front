@@ -290,7 +290,7 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
             borderColor: _hasFocus
                 ? AppColors.accent.withValues(alpha: 0.70)
                 : Colors.white.withValues(alpha: 0.20),
-            tintColor: const Color(0x592C2C38), // Soft graphite-gray input glass
+            tintColor: const Color(0x663A3A4A), // Lighter, soft slate-graphite input glass
             lightIntensity: 0.85,
             distortion: 0.12,
             distortionWidth: 20.0,
@@ -321,8 +321,8 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0x592C2C38),
-                    Color(0x4020202A),
+                    Color(0x663A3A4A),
+                    Color(0x4D2C2C3A),
                   ],
                 ),
                 border: Border.all(

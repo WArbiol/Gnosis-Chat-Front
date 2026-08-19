@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 /// A customized, ultra-premium Dark Liquid Glass surface tailored for Gnosis.
-/// Inspired by Apple's iOS/visionOS optical glass:
-/// - On Impeller (Mobile): leverages hardware LiquidGlass shaders, touch flex, and edge reflections.
+/// Inspired by Apple's iOS/visionOS optical liquid glass:
+/// - On Impeller (Mobile): crystal-clear refraction, high-specular light reflection,
+///   liquid magnification, and zero matte fogging.
 /// - On Web/Skia: provides a rich, multi-layered crystal glass with top specular sheen,
 ///   silky backdrop blur, and dual-layer OLED shadows so it never looks flat or opaque.
 class GnosisLiquidGlass extends StatelessWidget {
@@ -18,10 +19,11 @@ class GnosisLiquidGlass extends StatelessWidget {
     this.borderColor,
     this.tintColor,
     this.enableTouchFlex = false,
-    this.blurSigma = 12.0,
-    this.shadowOpacity = 0.45,
-    this.distortion = 0.05,
-    this.distortionWidth = 16.0,
+    this.blurSigma = 0.0,
+    this.shadowOpacity = 0.40,
+    this.distortion = 0.12,
+    this.distortionWidth = 20.0,
+    this.lightIntensity = 0.75,
   });
 
   final Widget child;
@@ -35,6 +37,7 @@ class GnosisLiquidGlass extends StatelessWidget {
   final double shadowOpacity;
   final double distortion;
   final double distortionWidth;
+  final double lightIntensity;
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +46,9 @@ class GnosisLiquidGlass extends StatelessWidget {
     // 1. If running on a platform supporting live Impeller shaders (Mobile):
     if (isShaderSupported) {
       final effectiveBorderColor =
-          borderColor ?? Colors.white.withValues(alpha: 0.18);
-      final effectiveTint = tintColor ?? const Color(0x9914141A);
+          borderColor ?? Colors.white.withValues(alpha: 0.22);
+      // Dark smoky crystal translucency (not opaque/matte)
+      final effectiveTint = tintColor ?? const Color(0x38121218);
 
       return LiquidGlassLens(
         touch: enableTouchFlex
@@ -55,11 +59,11 @@ class GnosisLiquidGlass extends StatelessWidget {
             cornerRadius: cornerRadius,
             borderWidth: borderWidth,
             borderColor: effectiveBorderColor,
-            lightIntensity: 0.45,
+            lightIntensity: lightIntensity,
             lightDirection: 90,
             borderType: ClassicBorder(
-              borderSoftness: 1.2,
-              shadowColor: Colors.black.withValues(alpha: 0.45),
+              borderSoftness: 0.8,
+              shadowColor: Colors.black.withValues(alpha: 0.35),
             ),
           ),
           appearance: LiquidGlassAppearance(
@@ -80,7 +84,7 @@ class GnosisLiquidGlass extends StatelessWidget {
             distortion: distortion,
             distortionWidth: distortionWidth,
             chromaticAberration: 0.0,
-            magnification: 1.0,
+            magnification: 1.03,
           ),
         ),
         child: padding != null
@@ -113,7 +117,7 @@ class GnosisLiquidGlass extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(cornerRadius),
         child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+          filter: ui.ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
           child: Container(
             padding: padding,
             decoration: BoxDecoration(

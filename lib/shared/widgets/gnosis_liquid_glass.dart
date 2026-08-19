@@ -19,7 +19,7 @@ class GnosisLiquidGlass extends StatelessWidget {
     this.borderColor,
     this.tintColor,
     this.enableTouchFlex = false,
-    this.blurSigma = 0.0,
+    this.blurSigma = 3.5,
     this.shadowOpacity = 0.40,
     this.distortion = 0.12,
     this.distortionWidth = 20.0,

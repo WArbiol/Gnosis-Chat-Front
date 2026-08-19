@@ -142,7 +142,7 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
               icon: Icon(
                 Icons.tune,
                 color: activeFilters.isEmpty
-                    ? Colors.white.withValues(alpha: 0.60)
+                    ? AppColors.onSurfaceVariant
                     : AppColors.accent,
                 size: 20,
               ),
@@ -164,16 +164,16 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.newline,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+                    color: AppColors.onSurface,
+                    fontSize: 15,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Pergunte à Gnosis...',
                     hintStyle: TextStyle(
-                      color: Colors.white.withValues(
-                        alpha: 0.65,
+                      color: AppColors.onSurfaceVariant.withValues(
+                        alpha: 0.5,
                       ),
-                      fontSize: 16,
+                      fontSize: 15,
                     ),
                     filled: false,
                     border: InputBorder.none,

@@ -5,7 +5,7 @@ import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 /// A customized, ultra-premium Dark Liquid Glass surface tailored for Gnosis.
 /// Inspired by Apple's iOS/visionOS optical glass:
-/// - On Impeller (Mobile): leverages hardware LiquidGlass shaders and touch flex.
+/// - On Impeller (Mobile): leverages hardware LiquidGlass shaders, touch flex, and edge reflections.
 /// - On Web/Skia: provides a rich, multi-layered crystal glass with top specular sheen,
 ///   silky backdrop blur, and dual-layer OLED shadows so it never looks flat or opaque.
 class GnosisLiquidGlass extends StatelessWidget {
@@ -14,14 +14,14 @@ class GnosisLiquidGlass extends StatelessWidget {
     required this.child,
     this.cornerRadius = 24,
     this.padding,
-    this.borderWidth = 0.9,
+    this.borderWidth = 0.85,
     this.borderColor,
     this.tintColor,
     this.enableTouchFlex = false,
-    this.blurSigma = 16.0,
-    this.shadowOpacity = 0.40,
-    this.distortion = 0.035,
-    this.distortionWidth = 12.0,
+    this.blurSigma = 12.0,
+    this.shadowOpacity = 0.45,
+    this.distortion = 0.05,
+    this.distortionWidth = 16.0,
   });
 
   final Widget child;
@@ -42,8 +42,9 @@ class GnosisLiquidGlass extends StatelessWidget {
 
     // 1. If running on a platform supporting live Impeller shaders (Mobile):
     if (isShaderSupported) {
-      final effectiveBorderColor = borderColor ?? Colors.white.withValues(alpha: 0.14);
-      final effectiveTint = tintColor ?? const Color(0x8C141418);
+      final effectiveBorderColor =
+          borderColor ?? Colors.white.withValues(alpha: 0.18);
+      final effectiveTint = tintColor ?? const Color(0x9914141A);
 
       return LiquidGlassLens(
         touch: enableTouchFlex
@@ -54,10 +55,10 @@ class GnosisLiquidGlass extends StatelessWidget {
             cornerRadius: cornerRadius,
             borderWidth: borderWidth,
             borderColor: effectiveBorderColor,
-            lightIntensity: 0.25,
+            lightIntensity: 0.45,
             lightDirection: 90,
             borderType: ClassicBorder(
-              borderSoftness: 1.5,
+              borderSoftness: 1.2,
               shadowColor: Colors.black.withValues(alpha: 0.45),
             ),
           ),
@@ -72,7 +73,7 @@ class GnosisLiquidGlass extends StatelessWidget {
               opacity: shadowOpacity,
               blur: 16,
               cornerRadius: cornerRadius,
-              offset: const Offset(0, 5),
+              offset: const Offset(0, 4),
             ),
           ),
           refraction: LiquidGlassRefraction(
@@ -124,7 +125,7 @@ class GnosisLiquidGlass extends StatelessWidget {
                 colors: [
                   Colors.white.withValues(alpha: 0.14), // top specular catch
                   Colors.white.withValues(alpha: 0.04), // middle glass
-                  const Color(0x66101014),              // bottom smoky tint
+                  const Color(0x66101014), // bottom smoky tint
                 ],
                 stops: const [0.0, 0.45, 1.0],
               ),

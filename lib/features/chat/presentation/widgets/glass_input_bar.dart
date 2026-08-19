@@ -142,7 +142,7 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
               icon: Icon(
                 Icons.tune,
                 color: activeFilters.isEmpty
-                    ? AppColors.onSurfaceVariant
+                    ? Colors.white.withValues(alpha: 0.60)
                     : AppColors.accent,
                 size: 20,
               ),
@@ -163,16 +163,16 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.newline,
                   style: const TextStyle(
-                    color: AppColors.onSurface,
-                    fontSize: 15,
+                    color: Colors.white,
+                    fontSize: 16,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Pergunte à Gnosis...',
                     hintStyle: TextStyle(
-                      color: AppColors.onSurfaceVariant.withValues(
-                        alpha: 0.5,
+                      color: Colors.white.withValues(
+                        alpha: 0.65,
                       ),
-                      fontSize: 15,
+                      fontSize: 16,
                     ),
                     filled: false,
                     border: InputBorder.none,
@@ -286,10 +286,13 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
           padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
           child: GnosisLiquidGlass(
             cornerRadius: 28,
-            borderWidth: _hasFocus ? 1.4 : 0.8,
+            borderWidth: _hasFocus ? 1.4 : 0.85,
             borderColor: _hasFocus
-                ? AppColors.accent.withValues(alpha: 0.5)
-                : Colors.white.withValues(alpha: 0.12),
+                ? AppColors.accent.withValues(alpha: 0.65)
+                : Colors.white.withValues(alpha: 0.22),
+            tintColor: const Color(0x4014141E),
+            lightIntensity: 0.80,
+            enableTouchFlex: false,
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: _buildInputBody(chips, activeFilters),
           ),

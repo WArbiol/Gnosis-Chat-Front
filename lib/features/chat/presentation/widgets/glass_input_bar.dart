@@ -157,6 +157,7 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
                 child: TextField(
                   controller: widget.controller,
                   focusNode: _focusNode,
+                  cursorColor: AppColors.accent,
                   minLines: 1,
                   maxLines: 5,
                   keyboardType: TextInputType.multiline,
@@ -290,7 +291,7 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
             borderColor: _hasFocus
                 ? AppColors.accent.withValues(alpha: 0.70)
                 : Colors.white.withValues(alpha: 0.20),
-            tintColor: const Color(0x663A3A4A), // Lighter, soft slate-graphite input glass
+            tintColor: const Color(0x66383838), // Pure neutral graphite gray (no blue tint)
             lightIntensity: 0.85,
             distortion: 0.12,
             distortionWidth: 20.0,
@@ -321,8 +322,8 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0x663A3A4A),
-                    Color(0x4D2C2C3A),
+                    Color(0x66383838),
+                    Color(0x4D2C2C2C),
                   ],
                 ),
                 border: Border.all(

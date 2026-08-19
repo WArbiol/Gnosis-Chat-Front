@@ -279,7 +279,7 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
     }
 
     if (!kIsWeb) {
-      // Mobile native: liquid glass lens
+      // Mobile native: liquid glass lens with pleasant slate-gray input tint
       return SafeArea(
         top: false,
         child: Padding(
@@ -288,10 +288,12 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
             cornerRadius: 28,
             borderWidth: _hasFocus ? 1.4 : 0.85,
             borderColor: _hasFocus
-                ? AppColors.accent.withValues(alpha: 0.65)
-                : Colors.white.withValues(alpha: 0.22),
-            tintColor: const Color(0x4014141E),
-            lightIntensity: 0.80,
+                ? AppColors.accent.withValues(alpha: 0.70)
+                : Colors.white.withValues(alpha: 0.20),
+            tintColor: const Color(0x592C2C38), // Soft graphite-gray input glass
+            lightIntensity: 0.85,
+            distortion: 0.12,
+            distortionWidth: 20.0,
             enableTouchFlex: false,
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: _buildInputBody(chips, activeFilters),
@@ -300,7 +302,7 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
       );
     }
 
-    // Web: The classic, flat with subtle reflection layout from yesterday
+    // Web: The classic, flat with subtle reflection layout
     return SafeArea(
       top: false,
       child: Padding(
@@ -315,18 +317,18 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(26),
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withValues(alpha: 0.08),
-                    Colors.white.withValues(alpha: 0.03),
+                    Color(0x592C2C38),
+                    Color(0x4020202A),
                   ],
                 ),
                 border: Border.all(
                   color: _hasFocus
-                      ? AppColors.accent.withValues(alpha: 0.45)
-                      : Colors.white.withValues(alpha: 0.2),
+                      ? AppColors.accent.withValues(alpha: 0.50)
+                      : Colors.white.withValues(alpha: 0.20),
                   width: _hasFocus ? 1.5 : 1,
                 ),
               ),

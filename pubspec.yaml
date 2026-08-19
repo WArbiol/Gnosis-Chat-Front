@@ -58,9 +58,6 @@ dependencies:
   sign_in_with_apple: ^6.1.4
   flutter_tts: ^4.2.5
   liquid_glass_easy: ^4.0.0
-
-
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

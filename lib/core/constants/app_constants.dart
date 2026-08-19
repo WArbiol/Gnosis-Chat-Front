@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class AppConstants {
   AppConstants._();
 
@@ -10,16 +8,7 @@ class AppConstants {
     if (envUrl.isNotEmpty) {
       return envUrl.endsWith('/') ? envUrl : '$envUrl/';
     }
-    if (kReleaseMode) {
-      return 'https://gnosis-chat-api-971574732695.southamerica-east1.run.app/api/v1/';
-    }
-    if (kIsWeb) {
-      return 'http://localhost:8000/api/v1/';
-    }
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:8000/api/v1/';
-    }
-    // Por padrão no iOS/iPhone, aponta para o backend remoto de produção no Cloud Run
+    // Por padrão em todas as plataformas (Web, iOS, Android), aponta para o backend deployado no Cloud Run
     return 'https://gnosis-chat-api-971574732695.southamerica-east1.run.app/api/v1/';
   }
 

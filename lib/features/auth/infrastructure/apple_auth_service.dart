@@ -22,11 +22,23 @@ class AppleAuthService {
     return digest.toString();
   }
 
-  /// Realiza o login nativo com a Apple via OpenID Connect (ID Token).
-  /// Retorna a `AuthResponse` do Supabase se autenticado com sucesso,
-  /// ou `null` se o usuário cancelou a operação voluntariamente.
+  /// Realiza o login com a Apple:
+  /// - Na Web: Redireciona via Supabase OAuth (utilizando Services ID).
+  /// - No iOS Nativo: Executa o fluxo nativo com ID Token e biometria (Face ID).
   static Future<AuthResponse?> signIn() async {
     try {
+      if (kIsWeb) {
+        debugPrint('APPLE_AUTH: Web OAuth flow initiated...');
+        final success = await Supabase.instance.client.auth.signInWithOAuth(
+          OAuthProvider.apple,
+          redirectTo: Uri.base.origin,
+        );
+        if (!success) {
+          throw Exception('Falha ao iniciar autenticação com a Apple.');
+        }
+        throw Exception('Redirecionando...');
+      }
+
       final rawNonce = _generateRawNonce();
       final hashedNonce = _hashNonce(rawNonce);
 

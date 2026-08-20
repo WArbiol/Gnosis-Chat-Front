@@ -7,6 +7,8 @@ import 'package:gnosis_chat/features/chat/presentation/conversation_provider.dar
 import 'package:gnosis_chat/features/chat/presentation/widgets/conversations_panel.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/profile_bottom_sheet.dart';
 
+import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
+
 class ChatShell extends ConsumerStatefulWidget {
   const ChatShell({super.key});
 
@@ -15,7 +17,7 @@ class ChatShell extends ConsumerStatefulWidget {
 }
 
 class _ChatShellState extends ConsumerState<ChatShell>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _slideCtrl;
   late final Animation<double> _slideAnim;
 
@@ -28,6 +30,7 @@ class _ChatShellState extends ConsumerState<ChatShell>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _slideCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -41,8 +44,18 @@ class _ChatShellState extends ConsumerState<ChatShell>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _slideCtrl.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      debugPrint('CHAT_SHELL: App resumed. Proactively syncing session & conversations...');
+      ref.read(authProvider.notifier).onAppResumed();
+      ref.read(conversationProvider.notifier).loadConversations();
+    }
   }
 
   void _togglePanel() {

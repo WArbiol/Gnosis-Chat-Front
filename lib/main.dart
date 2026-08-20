@@ -6,6 +6,7 @@ import 'package:gnosis_chat/app.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:gnosis_chat/features/auth/data/user_cache.dart';
 import 'package:gnosis_chat/features/chat/data/conversation_cache.dart';
 
 void main() async {
@@ -34,6 +35,7 @@ void main() async {
 
   await Hive.initFlutter();
   await Hive.openBox<String>(ConversationCache.boxName);
+  await Hive.openBox<String>(UserCache.boxName);
 
   runApp(const ProviderScope(child: GnosisApp()));
 }

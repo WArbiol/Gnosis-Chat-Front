@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/features/auth/data/auth_remote_source.dart';
 import 'package:gnosis_chat/features/auth/data/auth_repository.dart';
+import 'package:gnosis_chat/features/auth/data/user_cache.dart';
 import 'package:gnosis_chat/features/auth/domain/auth_state.dart' as app;
 import 'package:gnosis_chat/features/auth/domain/social_provider.dart';
 import 'package:gnosis_chat/features/auth/domain/user_entity.dart';
@@ -13,11 +14,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, app.AuthState>((ref) {
   final api = ref.watch(apiClientProvider);
-  return AuthNotifier(AuthRemoteSource(api.dio), ref);
+  final userCache = ref.watch(userCacheProvider);
+  return AuthNotifier(AuthRemoteSource(api.dio, userCache), userCache, ref);
 });
 
 class AuthNotifier extends StateNotifier<app.AuthState> {
-  AuthNotifier(this._repo, this._ref) : super(const app.AuthState.initial()) {
+  AuthNotifier(this._repo, UserCache userCache, this._ref)
+      : super(_computeInitialState(userCache)) {
     _initAuthListener();
     _startPeriodicSessionCheck();
   }
@@ -26,6 +29,17 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
   final Ref _ref;
   StreamSubscription<sb.AuthState>? _supabaseListener;
   Timer? _periodicCheckTimer;
+
+  static app.AuthState _computeInitialState(UserCache userCache) {
+    final session = sb.Supabase.instance.client.auth.currentSession;
+    if (session != null) {
+      final cachedUser = userCache.loadUser();
+      if (cachedUser != null) {
+        return app.AuthState.authenticated(cachedUser);
+      }
+    }
+    return const app.AuthState.initial();
+  }
 
   void _initAuthListener() {
     // 1. Initial check for existing session
@@ -94,8 +108,13 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
     });
   }
 
+  /// Called when the app resumes from background or tab gains focus
+  Future<void> onAppResumed() async {
+    debugPrint('AUTH: App resumed from background. Syncing session health...');
+    await ensureValidSessionAndRefresh();
+  }
+
   /// Proactively ensures the token is fresh and syncs user profile & conversations.
-  /// Ideal for app resume / tab focus events.
   Future<void> ensureValidSessionAndRefresh() async {
     try {
       final session = sb.Supabase.instance.client.auth.currentSession;
@@ -118,7 +137,7 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
     try {
       final user = await _repo.getCurrentUser();
       if (user != null && mounted) {
-        debugPrint('AUTH: Profile obtained. Avatar: ${user.avatarUrl}');
+        debugPrint('AUTH: Profile obtained. Plan: ${user.plan}, Avatar: ${user.avatarUrl}');
         state = app.AuthState.authenticated(user);
       } else {
         debugPrint('AUTH: Fetch skipped (user null or unmounted)');
@@ -138,7 +157,15 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
           }
         } catch (_) {}
       }
-      if (mounted) state = app.AuthState.error(e.toString());
+
+      // If we already have a cached/authenticated user, keep it rather than degrading to error
+      final isAlreadyAuth = state.maybeMap(
+        authenticated: (_) => true,
+        orElse: () => false,
+      );
+      if (!isAlreadyAuth && mounted) {
+        state = app.AuthState.error(e.toString());
+      }
     }
   }
 

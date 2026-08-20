@@ -16,54 +16,73 @@ class ConversationCache {
     _box = await Hive.openBox<String>(boxName);
   }
 
+  Box<String> get _openBox {
+    if (_box != null && _box!.isOpen) return _box!;
+    if (Hive.isBoxOpen(boxName)) return Hive.box<String>(boxName);
+    return _box!;
+  }
+
   /// Check if cache has data
-  bool get hasData => _box?.isNotEmpty ?? false;
+  bool get hasData {
+    try {
+      return _openBox.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
 
   /// Loads cached conversations
   List<ConversationEntity> loadConversations() {
-    if (_box == null || _box!.isEmpty) return [];
+    try {
+      final box = _openBox;
+      if (box.isEmpty) return [];
 
-    final list = _box!.values.toList();
-    final items = list.map((jsonStr) {
-      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+      final list = box.values.toList();
+      final items = list.map((jsonStr) {
+        final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+        return ConversationEntity.fromJson(map);
+      }).toList();
 
-      // Handle the fact that our freezed entity might need manual conversion of dates in some edge cases
-      // though json_serializable usually handles that well if the string is ISO8601
-      return ConversationEntity.fromJson(map);
-    }).toList();
-
-    // Sort descending by updated_at
-    items.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-    return items;
+      // Sort descending by updated_at
+      items.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      return items;
+    } catch (_) {
+      return [];
+    }
   }
 
   /// Replace the whole list over the local cache
   Future<void> saveConversations(List<ConversationEntity> conversations) async {
-    if (_box == null) return;
+    try {
+      final box = _openBox;
+      await box.clear();
 
-    await _box!.clear();
+      final mapToSave = {
+        for (var c in conversations) c.id: jsonEncode(c.toJson()),
+      };
 
-    final mapToSave = {
-      for (var c in conversations) c.id: jsonEncode(c.toJson()),
-    };
-
-    await _box!.putAll(mapToSave);
+      await box.putAll(mapToSave);
+    } catch (_) {}
   }
 
   /// Update or add a single item
   Future<void> saveSingle(ConversationEntity conversation) async {
-    if (_box == null) return;
-    await _box!.put(conversation.id, jsonEncode(conversation.toJson()));
+    try {
+      await _openBox.put(conversation.id, jsonEncode(conversation.toJson()));
+    } catch (_) {}
   }
 
   /// Delete single item
   Future<void> deleteSingle(String id) async {
-    if (_box == null) return;
-    await _box!.delete(id);
+    try {
+      await _openBox.delete(id);
+    } catch (_) {}
   }
 
   /// Clear all cache
   Future<void> clear() async {
-    await _box?.clear();
+    try {
+      await _openBox.clear();
+    } catch (_) {}
   }
 }

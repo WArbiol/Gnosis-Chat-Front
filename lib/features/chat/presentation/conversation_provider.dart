@@ -8,6 +8,8 @@ import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 import 'package:gnosis_chat/services/api/api_client.dart';
 
+import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
+
 final conversationRemoteSourceProvider = Provider<ConversationRemoteSource>((
   ref,
 ) {
@@ -19,14 +21,31 @@ final conversationProvider =
     StateNotifierProvider<ConversationNotifier, ConversationState>((ref) {
       final repo = ref.watch(conversationRemoteSourceProvider);
       final cache = ref.watch(conversationCacheProvider);
-      return ConversationNotifier(ref, repo, cache)..loadConversations();
+      final notifier = ConversationNotifier(ref, repo, cache)..loadConversations();
+
+      // Automatically reload conversations whenever user is authenticated or session refreshes
+      ref.listen(authProvider, (previous, next) {
+        next.maybeWhen(
+          authenticated: (_) {
+            notifier.loadConversations();
+          },
+          orElse: () {},
+        );
+      });
+
+      return notifier;
     });
 
 class ConversationState {
-  const ConversationState({this.conversations = const [], this.activeId});
+  const ConversationState({
+    this.conversations = const [],
+    this.activeId,
+    this.isLoading = false,
+  });
 
   final List<ConversationEntity> conversations;
   final String? activeId;
+  final bool isLoading;
 
   ConversationEntity? get active => activeId == null
       ? null
@@ -35,17 +54,24 @@ class ConversationState {
   ConversationState copyWith({
     List<ConversationEntity>? conversations,
     String? Function()? activeId,
+    bool? isLoading,
   }) {
     return ConversationState(
       conversations: conversations ?? this.conversations,
       activeId: activeId != null ? activeId() : this.activeId,
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 }
 
 class ConversationNotifier extends StateNotifier<ConversationState> {
   ConversationNotifier(this._ref, this._repo, this._cache)
-    : super(const ConversationState());
+    : super(
+        ConversationState(
+          conversations: _cache.loadConversations(),
+          isLoading: _cache.loadConversations().isEmpty,
+        ),
+      );
 
   final Ref _ref;
   final ConversationRemoteSource _repo;
@@ -53,9 +79,9 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
 
   Future<void> loadConversations() async {
     // 1. Load from offline cache immediately for fast UI
-    if (_cache.hasData) {
-      final cachedList = _cache.loadConversations();
-      state = state.copyWith(conversations: cachedList);
+    final cachedList = _cache.loadConversations();
+    if (cachedList.isNotEmpty) {
+      state = state.copyWith(conversations: cachedList, isLoading: false);
     }
 
     // 2. Fetch fresh data from backend
@@ -77,11 +103,12 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
         return remoteConv;
       }).toList();
 
-      state = state.copyWith(conversations: merged);
+      state = state.copyWith(conversations: merged, isLoading: false);
 
       // Save merged list to cache
       await _cache.saveConversations(merged);
     } catch (e) {
+      state = state.copyWith(isLoading: false);
       // Handle error cleanly, rely on cached state
     }
   }

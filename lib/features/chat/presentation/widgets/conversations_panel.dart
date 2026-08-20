@@ -123,23 +123,25 @@ class _ConversationsPanelState extends ConsumerState<ConversationsPanel> {
 
             // Conversations list
             Expanded(
-              child: conversations.isEmpty
-                  ? _EmptyState(hasSearch: _searchQuery.isNotEmpty)
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      itemCount: conversations.length,
-                      itemBuilder: (context, index) {
-                        final conv = conversations[index];
-                        final isActive = conv.id == convState.activeId;
+              child: convState.isLoading && conversations.isEmpty
+                  ? const _LoadingState()
+                  : conversations.isEmpty
+                      ? _EmptyState(hasSearch: _searchQuery.isNotEmpty)
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          itemCount: conversations.length,
+                          itemBuilder: (context, index) {
+                            final conv = conversations[index];
+                            final isActive = conv.id == convState.activeId;
 
-                        return _ConversationTile(
-                          conversation: conv,
-                          isActive: isActive,
-                          onTap: () => widget.onSelectConversation(conv.id),
-                          onDelete: () => widget.onDeleteConversation(conv.id),
-                        );
-                      },
-                    ),
+                            return _ConversationTile(
+                              conversation: conv,
+                              isActive: isActive,
+                              onTap: () => widget.onSelectConversation(conv.id),
+                              onDelete: () => widget.onDeleteConversation(conv.id),
+                            );
+                          },
+                        ),
             ),
           ],
         ),
@@ -287,6 +289,40 @@ class _ConversationTile extends StatelessWidget {
     if (diff.inDays < 7) return '${diff.inDays}d atrás';
 
     return '${localDate.day.toString().padLeft(2, '0')}/${localDate.month.toString().padLeft(2, '0')}';
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Loading state
+// ---------------------------------------------------------------------------
+class _LoadingState extends StatelessWidget {
+  const _LoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Carregando conversas...',
+            style: TextStyle(
+              color: AppColors.onSurfaceVariant.withValues(alpha: 0.5),
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

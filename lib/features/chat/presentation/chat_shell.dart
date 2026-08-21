@@ -183,12 +183,26 @@ class _ChatShellState extends ConsumerState<ChatShell>
       final messages = ref.read(chatProvider).valueOrNull ?? [];
       final hasMessages = messages.isNotEmpty;
 
-      // When there are active messages in the chat, only allow drag from the edge (<= 40px)
-      // to avoid conflicting with user text selection inside message bubbles.
-      // When in empty/draft state (no messages), allow swiping freely from anywhere on screen.
-      if (hasMessages && details.globalPosition.dx > 40) {
-        _isDragging = false;
-        return;
+      if (hasMessages) {
+        final screenWidth = MediaQuery.sizeOf(context).width;
+        const maxContentWidth = 850.0;
+        final leftMargin = screenWidth > maxContentWidth
+            ? (screenWidth - maxContentWidth) / 2.0
+            : 0.0;
+        final rightMargin = screenWidth > maxContentWidth
+            ? screenWidth - leftMargin
+            : screenWidth;
+
+        final dx = details.globalPosition.dx;
+        final isEdge = dx <= 40;
+        final isInLeftGutter = dx < leftMargin;
+        final isInRightGutter = dx > rightMargin;
+
+        // Only block drag when the gesture starts directly over the central text content area
+        if (!isEdge && !isInLeftGutter && !isInRightGutter) {
+          _isDragging = false;
+          return;
+        }
       }
     }
     _isDragging = true;

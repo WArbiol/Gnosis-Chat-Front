@@ -180,8 +180,13 @@ class _ChatShellState extends ConsumerState<ChatShell>
 
   void _onDragStart(DragStartDetails details) {
     if (!_isPanelOpen) {
-      // Only initiate drag to open if touch started within edge zone (<= 40px from left)
-      if (details.globalPosition.dx > 40) {
+      final messages = ref.read(chatProvider).valueOrNull ?? [];
+      final hasMessages = messages.isNotEmpty;
+
+      // When there are active messages in the chat, only allow drag from the edge (<= 40px)
+      // to avoid conflicting with user text selection inside message bubbles.
+      // When in empty/draft state (no messages), allow swiping freely from anywhere on screen.
+      if (hasMessages && details.globalPosition.dx > 40) {
         _isDragging = false;
         return;
       }

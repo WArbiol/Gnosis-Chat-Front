@@ -109,70 +109,73 @@ class _ChatShellState extends ConsumerState<ChatShell>
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          // Conversations panel (behind)
-          ConversationsPanel(
-            width: _panelWidth,
-            onNewConversation: _onNewConversation,
-            onSelectConversation: _onSelectConversation,
-            onDeleteConversation: _onDeleteConversation,
-          ),
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onHorizontalDragStart: _onDragStart,
+        onHorizontalDragUpdate: _onDragUpdate,
+        onHorizontalDragEnd: _onDragEnd,
+        child: Stack(
+          children: [
+            // Conversations panel (behind)
+            ConversationsPanel(
+              width: _panelWidth,
+              onNewConversation: _onNewConversation,
+              onSelectConversation: _onSelectConversation,
+              onDeleteConversation: _onDeleteConversation,
+            ),
 
-          // Chat screen (slides over)
-          AnimatedBuilder(
-            animation: _slideAnim,
-            builder: (context, child) {
-              final slide = _slideAnim.value;
-              final scale = 1.0 - ((1.0 - _chatScale) * slide);
-              final translateX = _panelWidth * slide;
-              final radius = _chatBorderRadius * slide;
+            // Chat screen (slides over)
+            AnimatedBuilder(
+              animation: _slideAnim,
+              builder: (context, child) {
+                final slide = _slideAnim.value;
+                final scale = 1.0 - ((1.0 - _chatScale) * slide);
+                final translateX = _panelWidth * slide;
+                final radius = _chatBorderRadius * slide;
 
-              return Transform.translate(
-                offset: Offset(translateX, 0),
-                child: Transform.scale(
-                  scale: scale,
-                  alignment: Alignment.centerLeft,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(radius),
-                    child: child,
+                return Transform.translate(
+                  offset: Offset(translateX, 0),
+                  child: Transform.scale(
+                    scale: scale,
+                    alignment: Alignment.centerLeft,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(radius),
+                      child: child,
+                    ),
                   ),
-                ),
-              );
-            },
-            child: GestureDetector(
-              onTap: _isPanelOpen ? _closePanel : null,
-              onHorizontalDragStart: _onDragStart,
-              onHorizontalDragUpdate: _onDragUpdate,
-              onHorizontalDragEnd: _onDragEnd,
-              child: AbsorbPointer(
-                absorbing: _isPanelOpen,
-                child: Stack(
-                  children: [
-                    ChatScreen(
-                      onMenuTap: _togglePanel,
-                      onProfileTap: _showProfile,
-                    ),
-                    // Scrim overlay when panel is open
-                    AnimatedBuilder(
-                      animation: _slideAnim,
-                      builder: (context, _) {
-                        if (_slideAnim.value == 0) {
-                          return const SizedBox.shrink();
-                        }
-                        return Container(
-                          color: Colors.black.withValues(
-                            alpha: 0.3 * _slideAnim.value,
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                );
+              },
+              child: GestureDetector(
+                onTap: _isPanelOpen ? _closePanel : null,
+                child: AbsorbPointer(
+                  absorbing: _isPanelOpen,
+                  child: Stack(
+                    children: [
+                      ChatScreen(
+                        onMenuTap: _togglePanel,
+                        onProfileTap: _showProfile,
+                      ),
+                      // Scrim overlay when panel is open
+                      AnimatedBuilder(
+                        animation: _slideAnim,
+                        builder: (context, _) {
+                          if (_slideAnim.value == 0) {
+                            return const SizedBox.shrink();
+                          }
+                          return Container(
+                            color: Colors.black.withValues(
+                              alpha: 0.3 * _slideAnim.value,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

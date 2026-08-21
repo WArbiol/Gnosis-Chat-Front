@@ -553,7 +553,7 @@ class _CitationBottomSheetState extends ConsumerState<_CitationBottomSheet> {
               ),
             ],
           ),
-          if (widget.citation.snippet.isNotEmpty) ...[
+          if (_snippet.isNotEmpty) ...[
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
@@ -561,7 +561,7 @@ class _CitationBottomSheetState extends ConsumerState<_CitationBottomSheet> {
               child: ElevatedButton.icon(
                 onPressed: () {
                   Clipboard.setData(
-                    ClipboardData(text: widget.citation.snippet),
+                    ClipboardData(text: _snippet),
                   );
                   HapticFeedback.lightImpact();
                   Navigator.of(context).pop();

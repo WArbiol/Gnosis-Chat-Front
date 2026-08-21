@@ -8,6 +8,7 @@ part of 'message_entity.dart';
 
 _$CitationEntityImpl _$$CitationEntityImplFromJson(Map<String, dynamic> json) =>
     _$CitationEntityImpl(
+      id: json['id'] as String? ?? '',
       pdfName: json['pdf_name'] as String,
       page: (json['page'] as num).toInt(),
       snippet: json['snippet'] as String? ?? '',
@@ -16,6 +17,7 @@ _$CitationEntityImpl _$$CitationEntityImplFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$$CitationEntityImplToJson(
   _$CitationEntityImpl instance,
 ) => <String, dynamic>{
+  'id': instance.id,
   'pdf_name': instance.pdfName,
   'page': instance.page,
   'snippet': instance.snippet,

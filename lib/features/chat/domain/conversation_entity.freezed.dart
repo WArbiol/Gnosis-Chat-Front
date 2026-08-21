@@ -15,10 +15,6 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-ConversationEntity _$ConversationEntityFromJson(Map<String, dynamic> json) {
-  return _ConversationEntity.fromJson(json);
-}
-
 /// @nodoc
 mixin _$ConversationEntity {
   String get id => throw _privateConstructorUsedError;
@@ -29,13 +25,9 @@ mixin _$ConversationEntity {
   DateTime get updatedAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_pinned')
   bool get isPinned => throw _privateConstructorUsedError;
-  @JsonKey(includeToJson: false)
   List<MessageEntity> get messages => throw _privateConstructorUsedError;
   int get messageCount => throw _privateConstructorUsedError;
   String? get lastMessagePreview => throw _privateConstructorUsedError;
-
-  /// Serializes this ConversationEntity to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of ConversationEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -57,7 +49,7 @@ abstract class $ConversationEntityCopyWith<$Res> {
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt,
     @JsonKey(name: 'is_pinned') bool isPinned,
-    @JsonKey(includeToJson: false) List<MessageEntity> messages,
+    List<MessageEntity> messages,
     int messageCount,
     String? lastMessagePreview,
   });
@@ -142,7 +134,7 @@ abstract class _$$ConversationEntityImplCopyWith<$Res>
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt,
     @JsonKey(name: 'is_pinned') bool isPinned,
-    @JsonKey(includeToJson: false) List<MessageEntity> messages,
+    List<MessageEntity> messages,
     int messageCount,
     String? lastMessagePreview,
   });
@@ -211,22 +203,19 @@ class __$$ConversationEntityImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
-class _$ConversationEntityImpl implements _ConversationEntity {
+
+class _$ConversationEntityImpl extends _ConversationEntity {
   const _$ConversationEntityImpl({
     required this.id,
     required this.title,
     @JsonKey(name: 'created_at') required this.createdAt,
     @JsonKey(name: 'updated_at') required this.updatedAt,
     @JsonKey(name: 'is_pinned') this.isPinned = false,
-    @JsonKey(includeToJson: false)
     final List<MessageEntity> messages = const [],
     this.messageCount = 0,
     this.lastMessagePreview,
-  }) : _messages = messages;
-
-  factory _$ConversationEntityImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ConversationEntityImplFromJson(json);
+  }) : _messages = messages,
+       super._();
 
   @override
   final String id;
@@ -243,7 +232,7 @@ class _$ConversationEntityImpl implements _ConversationEntity {
   final bool isPinned;
   final List<MessageEntity> _messages;
   @override
-  @JsonKey(includeToJson: false)
+  @JsonKey()
   List<MessageEntity> get messages {
     if (_messages is EqualUnmodifiableListView) return _messages;
     // ignore: implicit_dynamic_type
@@ -281,7 +270,6 @@ class _$ConversationEntityImpl implements _ConversationEntity {
                 other.lastMessagePreview == lastMessagePreview));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
@@ -305,27 +293,20 @@ class _$ConversationEntityImpl implements _ConversationEntity {
         this,
         _$identity,
       );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ConversationEntityImplToJson(this);
-  }
 }
 
-abstract class _ConversationEntity implements ConversationEntity {
+abstract class _ConversationEntity extends ConversationEntity {
   const factory _ConversationEntity({
     required final String id,
     required final String title,
     @JsonKey(name: 'created_at') required final DateTime createdAt,
     @JsonKey(name: 'updated_at') required final DateTime updatedAt,
     @JsonKey(name: 'is_pinned') final bool isPinned,
-    @JsonKey(includeToJson: false) final List<MessageEntity> messages,
+    final List<MessageEntity> messages,
     final int messageCount,
     final String? lastMessagePreview,
   }) = _$ConversationEntityImpl;
-
-  factory _ConversationEntity.fromJson(Map<String, dynamic> json) =
-      _$ConversationEntityImpl.fromJson;
+  const _ConversationEntity._() : super._();
 
   @override
   String get id;
@@ -341,7 +322,6 @@ abstract class _ConversationEntity implements ConversationEntity {
   @JsonKey(name: 'is_pinned')
   bool get isPinned;
   @override
-  @JsonKey(includeToJson: false)
   List<MessageEntity> get messages;
   @override
   int get messageCount;

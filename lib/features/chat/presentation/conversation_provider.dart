@@ -101,16 +101,20 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
     try {
       final list = await _repo.listConversations();
 
-      // Merge remote list with currently loaded in-memory messages to avoid wiping out active chat
+      // Merge remote list with cached/in-memory conversations to preserve offline messages
       final merged = list.map((remoteConv) {
         final existing = state.conversations
-            .where((c) => c.id == remoteConv.id)
-            .firstOrNull;
+                .where((c) => c.id == remoteConv.id)
+                .firstOrNull ??
+            cachedList.where((c) => c.id == remoteConv.id).firstOrNull;
         if (existing != null && existing.messages.isNotEmpty) {
           return remoteConv.copyWith(
             messages: existing.messages,
             messageCount: existing.messages.length,
-            lastMessagePreview: existing.messages.last.content,
+            lastMessagePreview: existing.lastMessagePreview ??
+                (existing.messages.isNotEmpty
+                    ? existing.messages.last.content
+                    : null),
           );
         }
         return remoteConv;
@@ -320,6 +324,36 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
     final targetConv = updated.where((c) => c.id == targetId).firstOrNull;
     if (targetConv != null) {
       _cache.saveSingle(targetConv);
+    }
+  }
+
+  /// Updates a specific citation's snippet in memory and persists to Hive for instant offline reuse
+  void updateCitationSnippet(String citationId, String snippet) {
+    if (citationId.isEmpty || snippet.isEmpty) return;
+
+    final activeId = state.activeId;
+    if (activeId == null) return;
+
+    final currentMsgs = _ref.read(chatProvider).valueOrNull ?? [];
+    bool messageUpdated = false;
+    final updatedMsgs = currentMsgs.map((msg) {
+      final hasCit = msg.citations.any((c) => c.id == citationId);
+      if (hasCit) {
+        messageUpdated = true;
+        final updatedCits = msg.citations.map((c) {
+          if (c.id == citationId) {
+            return c.copyWith(snippet: snippet);
+          }
+          return c;
+        }).toList();
+        return msg.copyWith(citations: updatedCits);
+      }
+      return msg;
+    }).toList();
+
+    if (messageUpdated) {
+      _ref.read(chatProvider.notifier).loadMessages(updatedMsgs);
+      syncMessagesForId(activeId, updatedMsgs);
     }
   }
 

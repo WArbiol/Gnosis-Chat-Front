@@ -190,6 +190,7 @@ class ConversationRemoteSource {
     final citations = citationsList.map((e) {
       final map = e as Map<String, dynamic>;
       return CitationEntity(
+        id: map['id']?.toString() ?? '',
         pdfName: map['pdf_name'] ?? map['book_name'] ?? 'N/A',
         page: map['page'] ?? 0,
         snippet: map['snippet'] ?? '',

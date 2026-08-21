@@ -190,7 +190,7 @@ class __$$MessageEntityImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$MessageEntityImpl implements _MessageEntity {
+class _$MessageEntityImpl extends _MessageEntity {
   const _$MessageEntityImpl({
     required this.id,
     required this.content,
@@ -201,7 +201,8 @@ class _$MessageEntityImpl implements _MessageEntity {
     final List<String> suggestedFollowups = const [],
     this.route = '',
   }) : _citations = citations,
-       _suggestedFollowups = suggestedFollowups;
+       _suggestedFollowups = suggestedFollowups,
+       super._();
 
   @override
   final String id;
@@ -282,7 +283,7 @@ class _$MessageEntityImpl implements _MessageEntity {
       __$$MessageEntityImplCopyWithImpl<_$MessageEntityImpl>(this, _$identity);
 }
 
-abstract class _MessageEntity implements MessageEntity {
+abstract class _MessageEntity extends MessageEntity {
   const factory _MessageEntity({
     required final String id,
     required final String content,
@@ -292,6 +293,7 @@ abstract class _MessageEntity implements MessageEntity {
     @JsonKey(name: 'suggested_followups') final List<String> suggestedFollowups,
     final String route,
   }) = _$MessageEntityImpl;
+  const _MessageEntity._() : super._();
 
   @override
   String get id;
@@ -324,6 +326,7 @@ CitationEntity _$CitationEntityFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$CitationEntity {
+  String get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'pdf_name')
   String get pdfName => throw _privateConstructorUsedError;
   int get page => throw _privateConstructorUsedError;
@@ -347,6 +350,7 @@ abstract class $CitationEntityCopyWith<$Res> {
   ) = _$CitationEntityCopyWithImpl<$Res, CitationEntity>;
   @useResult
   $Res call({
+    String id,
     @JsonKey(name: 'pdf_name') String pdfName,
     int page,
     String snippet,
@@ -368,12 +372,17 @@ class _$CitationEntityCopyWithImpl<$Res, $Val extends CitationEntity>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = null,
     Object? pdfName = null,
     Object? page = null,
     Object? snippet = null,
   }) {
     return _then(
       _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
             pdfName: null == pdfName
                 ? _value.pdfName
                 : pdfName // ignore: cast_nullable_to_non_nullable
@@ -402,6 +411,7 @@ abstract class _$$CitationEntityImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
+    String id,
     @JsonKey(name: 'pdf_name') String pdfName,
     int page,
     String snippet,
@@ -422,12 +432,17 @@ class __$$CitationEntityImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = null,
     Object? pdfName = null,
     Object? page = null,
     Object? snippet = null,
   }) {
     return _then(
       _$CitationEntityImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
         pdfName: null == pdfName
             ? _value.pdfName
             : pdfName // ignore: cast_nullable_to_non_nullable
@@ -449,6 +464,7 @@ class __$$CitationEntityImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$CitationEntityImpl implements _CitationEntity {
   const _$CitationEntityImpl({
+    this.id = '',
     @JsonKey(name: 'pdf_name') required this.pdfName,
     required this.page,
     this.snippet = '',
@@ -457,6 +473,9 @@ class _$CitationEntityImpl implements _CitationEntity {
   factory _$CitationEntityImpl.fromJson(Map<String, dynamic> json) =>
       _$$CitationEntityImplFromJson(json);
 
+  @override
+  @JsonKey()
+  final String id;
   @override
   @JsonKey(name: 'pdf_name')
   final String pdfName;
@@ -468,7 +487,7 @@ class _$CitationEntityImpl implements _CitationEntity {
 
   @override
   String toString() {
-    return 'CitationEntity(pdfName: $pdfName, page: $page, snippet: $snippet)';
+    return 'CitationEntity(id: $id, pdfName: $pdfName, page: $page, snippet: $snippet)';
   }
 
   @override
@@ -476,6 +495,7 @@ class _$CitationEntityImpl implements _CitationEntity {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$CitationEntityImpl &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.pdfName, pdfName) || other.pdfName == pdfName) &&
             (identical(other.page, page) || other.page == page) &&
             (identical(other.snippet, snippet) || other.snippet == snippet));
@@ -483,7 +503,7 @@ class _$CitationEntityImpl implements _CitationEntity {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, pdfName, page, snippet);
+  int get hashCode => Object.hash(runtimeType, id, pdfName, page, snippet);
 
   /// Create a copy of CitationEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -504,6 +524,7 @@ class _$CitationEntityImpl implements _CitationEntity {
 
 abstract class _CitationEntity implements CitationEntity {
   const factory _CitationEntity({
+    final String id,
     @JsonKey(name: 'pdf_name') required final String pdfName,
     required final int page,
     final String snippet,
@@ -512,6 +533,8 @@ abstract class _CitationEntity implements CitationEntity {
   factory _CitationEntity.fromJson(Map<String, dynamic> json) =
       _$CitationEntityImpl.fromJson;
 
+  @override
+  String get id;
   @override
   @JsonKey(name: 'pdf_name')
   String get pdfName;

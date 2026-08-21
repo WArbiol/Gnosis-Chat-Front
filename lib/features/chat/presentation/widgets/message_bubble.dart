@@ -15,6 +15,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/chat/domain/message_entity.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
+import 'package:gnosis_chat/features/chat/presentation/conversation_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/suggested_followups_chips.dart';
 import 'package:gnosis_chat/services/api/api_client.dart';
 import 'package:gnosis_chat/services/audio/tts_service.dart';
@@ -302,11 +303,54 @@ class _CitationBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _CitationBottomSheetState extends ConsumerState<_CitationBottomSheet> {
-  bool _isLoading = false;
+  bool _isLoadingPdf = false;
+  bool _isLoadingSnippet = false;
+  late String _snippet;
+
+  @override
+  void initState() {
+    super.initState();
+    _snippet = widget.citation.snippet;
+    if (_snippet.isEmpty && widget.citation.id.isNotEmpty) {
+      _fetchSnippet();
+    }
+  }
+
+  Future<void> _fetchSnippet() async {
+    setState(() {
+      _isLoadingSnippet = true;
+    });
+
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      final response = await apiClient.dio.get('/citations/${widget.citation.id}');
+      final data = response.data as Map<String, dynamic>;
+      final fetchedSnippet = data['snippet'] as String? ?? '';
+
+      if (mounted) {
+        setState(() {
+          _snippet = fetchedSnippet;
+          _isLoadingSnippet = false;
+        });
+
+        // Persist snippet to memory and Hive cache for future instant loads
+        ref.read(conversationProvider.notifier).updateCitationSnippet(
+              widget.citation.id,
+              fetchedSnippet,
+            );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoadingSnippet = false;
+        });
+      }
+    }
+  }
 
   Future<void> _openPdf() async {
     setState(() {
-      _isLoading = true;
+      _isLoadingPdf = true;
     });
     HapticFeedback.lightImpact();
 
@@ -322,7 +366,7 @@ class _CitationBottomSheetState extends ConsumerState<_CitationBottomSheet> {
 
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _isLoadingPdf = false;
         });
         Navigator.of(context).pop(); // close sheet
 
@@ -338,7 +382,7 @@ class _CitationBottomSheetState extends ConsumerState<_CitationBottomSheet> {
     } on DioException catch (e) {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _isLoadingPdf = false;
         });
 
         String errorMsg = 'Erro ao carregar o PDF. Tente novamente.';
@@ -357,7 +401,7 @@ class _CitationBottomSheetState extends ConsumerState<_CitationBottomSheet> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _isLoadingPdf = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -443,25 +487,41 @@ class _CitationBottomSheetState extends ConsumerState<_CitationBottomSheet> {
                 left: BorderSide(color: AppColors.accent, width: 3),
               ),
             ),
-            child: SingleChildScrollView(
-              child: SelectableText(
-                widget.citation.snippet.isNotEmpty
-                    ? '“${widget.citation.snippet}”'
-                    : 'Trecho não disponível.',
-                style: const TextStyle(
-                  color: AppColors.onSurface,
-                  fontSize: 15,
-                  fontStyle: FontStyle.italic,
-                  height: 1.6,
-                ),
-              ),
-            ),
+            child: _isLoadingSnippet
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.accent,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : SingleChildScrollView(
+                    child: SelectableText(
+                      _snippet.isNotEmpty
+                          ? '“$_snippet”'
+                          : 'Trecho não disponível.',
+                      style: const TextStyle(
+                        color: AppColors.onSurface,
+                        fontSize: 15,
+                        fontStyle: FontStyle.italic,
+                        height: 1.6,
+                      ),
+                    ),
+                  ),
           ),
           const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
-                child: _isLoading
+                child: _isLoadingPdf
                     ? const Center(
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),

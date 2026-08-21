@@ -8,8 +8,10 @@ part 'message_entity.g.dart';
 
 enum MessageRole { user, assistant }
 
-@freezed
+@Freezed(toJson: false, fromJson: false)
 class MessageEntity with _$MessageEntity {
+  const MessageEntity._();
+
   const factory MessageEntity({
     required String id,
     required String content,
@@ -50,7 +52,7 @@ class MessageEntity with _$MessageEntity {
         : extractedFollowups;
 
     final modifiedJson = Map<String, dynamic>.from(json);
-    return _MessageEntity(
+    return MessageEntity(
       id: modifiedJson['id'] as String,
       content: rawContent,
       role: modifiedJson['role'] is MessageRole
@@ -68,11 +70,29 @@ class MessageEntity with _$MessageEntity {
       route: modifiedJson['route'] as String? ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'content': content,
+        'role': role.name,
+        'created_at': timestamp.toIso8601String(),
+        'citations': citations
+            .map((c) => {
+                  'id': c.id,
+                  'pdf_name': c.pdfName,
+                  'page': c.page,
+                  'snippet': c.snippet,
+                })
+            .toList(),
+        'suggested_followups': suggestedFollowups,
+        'route': route,
+      };
 }
 
 @freezed
 class CitationEntity with _$CitationEntity {
   const factory CitationEntity({
+    @Default('') String id,
     @JsonKey(name: 'pdf_name') required String pdfName,
     required int page,
     @Default('') String snippet,

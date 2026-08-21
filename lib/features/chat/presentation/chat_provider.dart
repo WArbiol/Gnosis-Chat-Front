@@ -211,6 +211,12 @@ class ChatNotifier extends StateNotifier<AsyncValue<List<MessageEntity>>> {
           a[i].citations.length != b[i].citations.length) {
         return false;
       }
+      for (var j = 0; j < a[i].citations.length; j++) {
+        if (a[i].citations[j].snippet != b[i].citations[j].snippet ||
+            a[i].citations[j].id != b[i].citations[j].id) {
+          return false;
+        }
+      }
     }
     return true;
   }

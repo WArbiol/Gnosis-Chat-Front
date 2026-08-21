@@ -470,5 +470,91 @@ void main() {
           .firstWhere((c) => c.id == 'conv-rename');
       expect(updated.title, equals('Novo Título Incrível'));
     });
+
+    test('ConversationEntity and MessageEntity serialization preserves all fields in JSON for Hive', () {
+      const citation = CitationEntity(
+        id: 'cit-1',
+        pdfName: 'Psicologia Revolucionária',
+        page: 42,
+        snippet: 'O homem é uma máquina...',
+      );
+      final message = MessageEntity(
+        id: 'msg-1',
+        content: 'Explicação gnóstica',
+        role: MessageRole.assistant,
+        timestamp: DateTime.parse('2026-08-21T12:00:00.000Z'),
+        citations: [citation],
+        suggestedFollowups: ['O que é a máquina humana?'],
+        route: 'RAG',
+      );
+      final conv = ConversationEntity(
+        id: 'conv-100',
+        title: 'Estudos Gnósticos',
+        createdAt: DateTime.parse('2026-08-21T12:00:00.000Z'),
+        updatedAt: DateTime.parse('2026-08-21T12:05:00.000Z'),
+        isPinned: true,
+        messages: [message],
+        messageCount: 1,
+        lastMessagePreview: 'Explicação gnóstica',
+      );
+
+      final jsonMap = conv.toJson();
+      final restored = ConversationEntity.fromJson(jsonMap);
+
+      expect(restored.id, equals('conv-100'));
+      expect(restored.title, equals('Estudos Gnósticos'));
+      expect(restored.isPinned, isTrue);
+      expect(restored.messages.length, equals(1));
+      
+      final restoredMsg = restored.messages.first;
+      expect(restoredMsg.id, equals('msg-1'));
+      expect(restoredMsg.content, equals('Explicação gnóstica'));
+      expect(restoredMsg.role, equals(MessageRole.assistant));
+      expect(restoredMsg.citations.length, equals(1));
+      
+      final restoredCit = restoredMsg.citations.first;
+      expect(restoredCit.id, equals('cit-1'));
+      expect(restoredCit.pdfName, equals('Psicologia Revolucionária'));
+      expect(restoredCit.page, equals(42));
+      expect(restoredCit.snippet, equals('O homem é uma máquina...'));
+    });
+
+    test('updateCitationSnippet updates citation snippet in active conversation and persists to cache', () async {
+      const initialCitation = CitationEntity(
+        id: 'cit-lazy',
+        pdfName: 'Tratado de Alquimia',
+        page: 15,
+        snippet: '',
+      );
+      final initialMessage = MessageEntity(
+        id: 'msg-lazy',
+        content: 'Sobre o mercúrio',
+        role: MessageRole.assistant,
+        timestamp: DateTime.now(),
+        citations: [initialCitation],
+      );
+      final conv = ConversationEntity(
+        id: 'conv-lazy-test',
+        title: 'Alquimia',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        messages: [initialMessage],
+      );
+
+      mockRemote.conversations.add(conv);
+      final convNotifier = container.read(conversationProvider.notifier);
+      await convNotifier.loadConversations();
+      await convNotifier.selectConversation('conv-lazy-test');
+
+      // Update snippet lazily
+      convNotifier.updateCitationSnippet('cit-lazy', 'O mercúrio filosófico é a matéria prima.');
+
+      final activeMessages = container.read(chatProvider).value!;
+      expect(activeMessages.first.citations.first.snippet, equals('O mercúrio filosófico é a matéria prima.'));
+
+      // Check conversation in state
+      final activeConv = container.read(conversationProvider).active!;
+      expect(activeConv.messages.first.citations.first.snippet, equals('O mercúrio filosófico é a matéria prima.'));
+    });
   });
 }

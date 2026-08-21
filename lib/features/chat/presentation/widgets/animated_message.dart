@@ -45,9 +45,11 @@ class _AnimatedMessageState extends State<AnimatedMessage>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnim,
-      child: SlideTransition(position: _slideAnim, child: widget.child),
+    return RepaintBoundary(
+      child: FadeTransition(
+        opacity: _fadeAnim,
+        child: SlideTransition(position: _slideAnim, child: widget.child),
+      ),
     );
   }
 }

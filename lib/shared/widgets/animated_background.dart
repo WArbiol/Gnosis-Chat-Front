@@ -21,10 +21,11 @@ class AnimatedBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final screen = MediaQuery.sizeOf(context);
 
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, _) {
-        return Stack(
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (context, _) {
+          return Stack(
           children: [
             // Subtle gold — upper left
             if (showTopLeftGold)
@@ -70,8 +71,9 @@ class AnimatedBackground extends StatelessWidget {
           ],
         );
       },
-    );
-  }
+    ),
+  );
+}
 }
 
 class _Blob extends StatelessWidget {

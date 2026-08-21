@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
@@ -119,47 +118,41 @@ class PremiumAppBar extends StatelessWidget {
       );
     }
 
-    // Web: Clean flat glass with balanced opacity and "Gnosis" capsule
+    // Web: Clean flat glass with balanced opacity and "Gnosis" capsule (Optimized for 60 FPS)
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 1. Menu button (less transparent, sleek dark glass)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(22),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xD918181C), // ~85% opacity, less transparent
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.14),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+          // 1. Menu button (sleek dark glass with zero blur overhead)
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xF218181C),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.14),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(22),
-                    onTap: onMenuTap,
-                    child: const Center(
-                      child: Icon(
-                        Icons.menu_rounded,
-                        color: AppColors.onSurface,
-                        size: 22,
-                      ),
-                    ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(22),
+                onTap: onMenuTap,
+                child: const Center(
+                  child: Icon(
+                    Icons.menu_rounded,
+                    color: AppColors.onSurface,
+                    size: 22,
                   ),
                 ),
               ),
@@ -167,47 +160,30 @@ class PremiumAppBar extends StatelessWidget {
           ),
 
           // 2. Gnosis Title Capsule on Web
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
-                decoration: BoxDecoration(
-                  color: const Color(0xD918181C), // matching less transparent glass
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.14),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+            decoration: BoxDecoration(
+              color: const Color(0xF218181C),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.14),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
-                child: ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: [
-                      AppColors.accent,
-                      AppColors.accentLight,
-                      AppColors.accent,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ).createShader(bounds),
-                  child: Text(
-                    'Gnosis',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
+              ],
+            ),
+            child: Text(
+              'Gnosis',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: AppColors.accentLight,
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                letterSpacing: 0.5,
               ),
             ),
           ),

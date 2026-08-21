@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -303,39 +302,33 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
       );
     }
 
-    // Web: The classic, flat with subtle reflection layout
+    // Web: High-performance sleek dark glass layout (0ms GPU blur pass)
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(26),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOut,
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(26),
-                gradient: const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0x66383838),
-                    Color(0x4D2C2C2C),
-                  ],
-                ),
-                border: Border.all(
-                  color: _hasFocus
-                      ? AppColors.accent.withValues(alpha: 0.50)
-                      : Colors.white.withValues(alpha: 0.20),
-                  width: _hasFocus ? 1.5 : 1,
-                ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(26),
+            color: const Color(0xF21C1C22),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
               ),
-              child: _buildInputBody(chips, activeFilters),
+            ],
+            border: Border.all(
+              color: _hasFocus
+                  ? AppColors.accent.withValues(alpha: 0.50)
+                  : Colors.white.withValues(alpha: 0.20),
+              width: _hasFocus ? 1.5 : 1,
             ),
           ),
+          child: _buildInputBody(chips, activeFilters),
         ),
       ),
     );

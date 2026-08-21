@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
@@ -179,9 +180,9 @@ class _NewConversationButton extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Single conversation tile with swipe-to-delete
+// Single conversation tile with context actions (Pin, Rename, Delete)
 // ---------------------------------------------------------------------------
-class _ConversationTile extends StatelessWidget {
+class _ConversationTile extends ConsumerStatefulWidget {
   const _ConversationTile({
     required this.conversation,
     required this.isActive,
@@ -195,12 +196,221 @@ class _ConversationTile extends StatelessWidget {
   final VoidCallback onDelete;
 
   @override
+  ConsumerState<_ConversationTile> createState() => _ConversationTileState();
+}
+
+class _ConversationTileState extends ConsumerState<_ConversationTile> {
+  bool _isHovered = false;
+
+  Future<bool> _confirmDelete(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Excluir conversa?',
+          style: TextStyle(
+            color: AppColors.onSurface,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
+        content: Text(
+          'Tem certeza de que deseja excluir "${widget.conversation.title}"? Esta ação não pode ser desfeita.',
+          style: const TextStyle(
+            color: AppColors.onSurfaceVariant,
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: AppColors.onSurfaceVariant),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.flame,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+  void _showRenameDialog(BuildContext context) {
+    final controller = TextEditingController(text: widget.conversation.title);
+    controller.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: controller.text.length,
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Renomear conversa',
+          style: TextStyle(
+            color: AppColors.onSurface,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: const TextStyle(color: AppColors.onSurface, fontSize: 14),
+          decoration: InputDecoration(
+            hintText: 'Novo título',
+            hintStyle: TextStyle(
+              color: AppColors.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
+            filled: true,
+            fillColor: AppColors.surfaceVariant.withValues(alpha: 0.4),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          onSubmitted: (value) {
+            final trimmed = value.trim();
+            if (trimmed.isNotEmpty) {
+              ref
+                  .read(conversationProvider.notifier)
+                  .renameConversation(widget.conversation.id, trimmed);
+            }
+            Navigator.of(dialogCtx).pop();
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: AppColors.onSurfaceVariant),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              final trimmed = controller.text.trim();
+              if (trimmed.isNotEmpty) {
+                ref
+                    .read(conversationProvider.notifier)
+                    .renameConversation(widget.conversation.id, trimmed);
+              }
+              Navigator.of(dialogCtx).pop();
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMobileBottomSheet(BuildContext context) {
+    final isPinned = widget.conversation.isPinned;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.onSurfaceVariant.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                leading: Icon(
+                  isPinned ? Icons.push_pin_outlined : Icons.push_pin_rounded,
+                  color: AppColors.accent,
+                ),
+                title: Text(
+                  isPinned ? 'Desafixar do topo' : 'Fixar no topo',
+                  style: const TextStyle(color: AppColors.onSurface, fontSize: 15),
+                ),
+                onTap: () {
+                  Navigator.of(sheetCtx).pop();
+                  ref
+                      .read(conversationProvider.notifier)
+                      .togglePinConversation(widget.conversation.id);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit_outlined, color: AppColors.onSurface),
+                title: const Text(
+                  'Renomear conversa',
+                  style: TextStyle(color: AppColors.onSurface, fontSize: 15),
+                ),
+                onTap: () {
+                  Navigator.of(sheetCtx).pop();
+                  _showRenameDialog(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline_rounded, color: AppColors.flame),
+                title: const Text(
+                  'Excluir conversa',
+                  style: TextStyle(color: AppColors.flame, fontSize: 15),
+                ),
+                onTap: () async {
+                  Navigator.of(sheetCtx).pop();
+                  final confirmed = await _confirmDelete(context);
+                  if (confirmed) {
+                    widget.onDelete();
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isPinned = widget.conversation.isPinned;
+    final showActions = _isHovered || widget.isActive || kIsWeb;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Dismissible(
-        key: ValueKey(conversation.id),
+        key: ValueKey(widget.conversation.id),
         direction: DismissDirection.endToStart,
+        confirmDismiss: (_) => _confirmDelete(context),
+        onDismissed: (_) => widget.onDelete(),
         background: Container(
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 20),
@@ -214,62 +424,183 @@ class _ConversationTile extends StatelessWidget {
             size: 22,
           ),
         ),
-        onDismissed: (_) => onDelete(),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: isActive
-                    ? AppColors.surfaceVariant.withValues(alpha: 0.6)
-                    : Colors.transparent,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.chat_bubble_outline_rounded,
-                    size: 18,
-                    color: isActive
-                        ? AppColors.accent
-                        : AppColors.onSurfaceVariant.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          conversation.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: isActive
-                                ? AppColors.onSurface
-                                : AppColors.onSurfaceVariant,
-                            fontSize: 14,
-                            fontWeight: isActive
-                                ? FontWeight.w500
-                                : FontWeight.w400,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          _formatDate(conversation.updatedAt),
-                          style: TextStyle(
-                            color: AppColors.onSurfaceVariant.withValues(
-                              alpha: 0.4,
-                            ),
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: widget.onTap,
+              onLongPress: () => _showMobileBottomSheet(context),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: widget.isActive
+                      ? AppColors.surfaceVariant.withValues(alpha: 0.6)
+                      : Colors.transparent,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isPinned
+                          ? Icons.push_pin_rounded
+                          : Icons.chat_bubble_outline_rounded,
+                      size: 18,
+                      color: isPinned
+                          ? AppColors.accent
+                          : widget.isActive
+                              ? AppColors.accent
+                              : AppColors.onSurfaceVariant.withValues(alpha: 0.5),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.conversation.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: widget.isActive
+                                  ? AppColors.onSurface
+                                  : AppColors.onSurfaceVariant,
+                              fontSize: 14,
+                              fontWeight: isPinned || widget.isActive
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              if (isPinned) ...[
+                                Text(
+                                  'Fixada • ',
+                                  style: TextStyle(
+                                    color: AppColors.accent.withValues(alpha: 0.8),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                              Text(
+                                _formatDate(widget.conversation.updatedAt),
+                                style: TextStyle(
+                                  color: AppColors.onSurfaceVariant.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (showActions)
+                      PopupMenuButton<String>(
+                        icon: Icon(
+                          Icons.more_horiz_rounded,
+                          size: 18,
+                          color: AppColors.onSurfaceVariant.withValues(alpha: 0.6),
+                        ),
+                        tooltip: 'Opções',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 140),
+                        color: AppColors.surface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: AppColors.surfaceVariant.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        onSelected: (action) async {
+                          if (action == 'pin') {
+                            ref
+                                .read(conversationProvider.notifier)
+                                .togglePinConversation(widget.conversation.id);
+                          } else if (action == 'rename') {
+                            _showRenameDialog(context);
+                          } else if (action == 'delete') {
+                            final confirmed = await _confirmDelete(context);
+                            if (confirmed) {
+                              widget.onDelete();
+                            }
+                          }
+                        },
+                        itemBuilder: (menuCtx) => [
+                          PopupMenuItem<String>(
+                            value: 'pin',
+                            height: 36,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isPinned
+                                      ? Icons.push_pin_outlined
+                                      : Icons.push_pin_rounded,
+                                  size: 16,
+                                  color: AppColors.accent,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isPinned ? 'Desafixar' : 'Fixar no topo',
+                                  style: const TextStyle(
+                                    color: AppColors.onSurface,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'rename',
+                            height: 36,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.edit_outlined,
+                                  size: 16,
+                                  color: AppColors.onSurface,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Renomear',
+                                  style: TextStyle(
+                                    color: AppColors.onSurface,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'delete',
+                            height: 36,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.delete_outline_rounded,
+                                  size: 16,
+                                  color: AppColors.flame,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Excluir',
+                                  style: TextStyle(
+                                    color: AppColors.flame,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

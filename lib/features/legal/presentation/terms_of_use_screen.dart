@@ -98,7 +98,7 @@ class TermsOfUseScreen extends StatelessWidget {
                   number: '6',
                   title: 'Encerramento e Exclusão de Conta',
                   content:
-                      '• Exclusão Voluntária: Você pode excluir permanentemente sua conta a qualquer momento diretamente no aplicativo, através do menu de Perfil ("Excluir conta"). Ao confirmar a exclusão, todo o seu histórico de conversas criptografadas, dados cadastrais e preferências serão apagados de forma irreversível de nossos servidores.\n\n'
+                      '• Exclusão Voluntária: Você pode excluir permanentemente sua conta a qualquer momento diretamente no aplicativo, através do menu de Perfil ("Excluir conta"). Ao confirmar a exclusão, todo o seu histórico de conversas criptografadas e dados cadastrais serão apagados de forma irreversível de nossos servidores.\n\n'
                       '• Assinaturas e Cobranças: Ao excluir a conta, qualquer assinatura ativa gerenciada via Web (Stripe) será cancelada automaticamente. Para assinaturas realizadas via lojas de aplicativos (Apple App Store / Google Play Store), o usuário deve cancelar a renovação nos Ajustes do respectivo dispositivo, em conformidade com as diretrizes das plataformas.\n\n'
                       '• Suspensão por Violação: Reservamo-nos o direito de suspender ou encerrar o acesso de usuários que violem estes Termos ou que tentem fraudar os sistemas de pagamento, cota e segurança do serviço.',
                 ),

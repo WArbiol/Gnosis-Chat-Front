@@ -43,8 +43,12 @@ class ConversationCache {
         return ConversationEntity.fromJson(map);
       }).toList();
 
-      // Sort descending by updated_at
-      items.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      // Sort: pinned first (descending), then updated_at (descending)
+      items.sort((a, b) {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return b.updatedAt.compareTo(a.updatedAt);
+      });
       return items;
     } catch (_) {
       return [];

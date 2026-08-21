@@ -88,10 +88,17 @@ class FakeConversationRemoteSource implements ConversationRemoteSource {
     }
     if (invocation.memberName == #updateConversation) {
       final id = invocation.positionalArguments[0] as String;
-      final title = invocation.positionalArguments[1] as String;
+      final title = invocation.namedArguments[#title] as String? ??
+          (invocation.positionalArguments.length > 1
+              ? invocation.positionalArguments[1] as String?
+              : null);
+      final isPinned = invocation.namedArguments[#isPinned] as bool?;
       final index = conversations.indexWhere((c) => c.id == id);
       if (index != -1) {
-        final updated = conversations[index].copyWith(title: title, updatedAt: DateTime.now());
+        var updated = conversations[index];
+        if (title != null) updated = updated.copyWith(title: title);
+        if (isPinned != null) updated = updated.copyWith(isPinned: isPinned);
+        updated = updated.copyWith(updatedAt: DateTime.now());
         conversations[index] = updated;
         return Future.value(updated);
       }
@@ -405,6 +412,63 @@ void main() {
       final messages = container.read(chatProvider).value!;
       expect(messages.length, equals(1));
       expect(messages.first.content, equals('Pergunta salva no cache'));
+    });
+
+    test('togglePinConversation toggles isPinned and places pinned conversation at top', () async {
+      final conv1 = ConversationEntity(
+        id: 'conv-1',
+        title: 'Conversa 1',
+        createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
+        updatedAt: DateTime.now().subtract(const Duration(minutes: 5)),
+      );
+      final conv2 = ConversationEntity(
+        id: 'conv-2',
+        title: 'Conversa 2',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      mockRemote.conversations.addAll([conv1, conv2]);
+
+      final convNotifier = container.read(conversationProvider.notifier);
+      await convNotifier.loadConversations();
+
+      // Initially conv2 is on top because it has newer updatedAt
+      expect(container.read(conversationProvider).conversations.first.id, equals('conv-2'));
+
+      // Pin conv1
+      await convNotifier.togglePinConversation('conv-1');
+
+      // Now conv1 should be at the top because it is pinned
+      final convs = container.read(conversationProvider).conversations;
+      expect(convs.first.id, equals('conv-1'));
+      expect(convs.first.isPinned, isTrue);
+
+      // Unpin conv1
+      await convNotifier.togglePinConversation('conv-1');
+      final convsAfterUnpin = container.read(conversationProvider).conversations;
+      expect(convsAfterUnpin.first.id, equals('conv-2'));
+      expect(convsAfterUnpin.first.isPinned, isFalse);
+    });
+
+    test('renameConversation updates title locally and remotely', () async {
+      final conv = ConversationEntity(
+        id: 'conv-rename',
+        title: 'Título Antigo',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      mockRemote.conversations.add(conv);
+
+      final convNotifier = container.read(conversationProvider.notifier);
+      await convNotifier.loadConversations();
+
+      await convNotifier.renameConversation('conv-rename', 'Novo Título Incrível');
+
+      final updated = container
+          .read(conversationProvider)
+          .conversations
+          .firstWhere((c) => c.id == 'conv-rename');
+      expect(updated.title, equals('Novo Título Incrível'));
     });
   });
 }

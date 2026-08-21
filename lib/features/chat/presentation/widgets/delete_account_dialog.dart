@@ -125,7 +125,7 @@ class _DeleteAccountDialogState extends ConsumerState<DeleteAccountDialog> {
 
               // Message
               Text(
-                'Esta ação é irreversível. Todas as suas conversas criptografadas, histórico de perguntas e preferências serão apagados definitivamente dos nossos servidores.',
+                'Esta ação é irreversível. Todas as suas conversas criptografadas e histórico de perguntas serão apagados definitivamente dos nossos servidores.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.onSurfaceVariant,

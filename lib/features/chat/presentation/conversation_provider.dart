@@ -77,11 +77,24 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
   final ConversationRemoteSource _repo;
   final ConversationCache _cache;
 
+  List<ConversationEntity> _sortConversations(List<ConversationEntity> list) {
+    final sorted = List<ConversationEntity>.from(list);
+    sorted.sort((a, b) {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return b.updatedAt.compareTo(a.updatedAt);
+    });
+    return sorted;
+  }
+
   Future<void> loadConversations() async {
     // 1. Load from offline cache immediately for fast UI
     final cachedList = _cache.loadConversations();
     if (cachedList.isNotEmpty) {
-      state = state.copyWith(conversations: cachedList, isLoading: false);
+      state = state.copyWith(
+        conversations: _sortConversations(cachedList),
+        isLoading: false,
+      );
     }
 
     // 2. Fetch fresh data from backend
@@ -103,10 +116,11 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
         return remoteConv;
       }).toList();
 
-      state = state.copyWith(conversations: merged, isLoading: false);
+      final sorted = _sortConversations(merged);
+      state = state.copyWith(conversations: sorted, isLoading: false);
 
       // Save merged list to cache
-      await _cache.saveConversations(merged);
+      await _cache.saveConversations(sorted);
     } catch (e) {
       state = state.copyWith(isLoading: false);
       // Handle error cleanly, rely on cached state
@@ -272,7 +286,7 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
         // Self-healing: if the backend title is still "Nova conversa" but we have full content (user + AI),
         // push the calculated title to the server to fix it permanently.
         if (title != 'Nova conversa' && c.title == 'Nova conversa' && messages.length >= 2) {
-          _repo.updateConversation(c.id, title).catchError((e) {
+          _repo.updateConversation(c.id, title: title).catchError((e) {
             debugPrint('CONV: Failed to push self-healing title: $e');
             return c; // Return current as fallback to satisfy type
           });
@@ -301,11 +315,79 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
       updated = [newConv, ...state.conversations];
     }
 
-    state = state.copyWith(conversations: updated);
+    state = state.copyWith(conversations: _sortConversations(updated));
 
     final targetConv = updated.where((c) => c.id == targetId).firstOrNull;
     if (targetConv != null) {
       _cache.saveSingle(targetConv);
+    }
+  }
+
+  /// Toggle pin status for a conversation (pinned to top)
+  Future<void> togglePinConversation(String id) async {
+    final conv = state.conversations.where((c) => c.id == id).firstOrNull;
+    if (conv == null) return;
+
+    final newPinned = !conv.isPinned;
+    final updatedList = state.conversations.map((c) {
+      if (c.id == id) {
+        return c.copyWith(isPinned: newPinned);
+      }
+      return c;
+    }).toList();
+
+    final sorted = _sortConversations(updatedList);
+    state = state.copyWith(conversations: sorted);
+    await _cache.saveConversations(sorted);
+
+    try {
+      await _repo.updateConversation(id, isPinned: newPinned);
+    } catch (e) {
+      debugPrint('CONV: Failed to update pin status remotely: $e');
+      // Revert if failed
+      final reverted = state.conversations.map((c) {
+        if (c.id == id) {
+          return c.copyWith(isPinned: !newPinned);
+        }
+        return c;
+      }).toList();
+      final revertedSorted = _sortConversations(reverted);
+      state = state.copyWith(conversations: revertedSorted);
+      await _cache.saveConversations(revertedSorted);
+    }
+  }
+
+  /// Rename conversation
+  Future<void> renameConversation(String id, String newTitle) async {
+    final trimmed = newTitle.trim();
+    if (trimmed.isEmpty) return;
+
+    final oldConv = state.conversations.where((c) => c.id == id).firstOrNull;
+    if (oldConv == null || oldConv.title == trimmed) return;
+
+    final updatedList = state.conversations.map((c) {
+      if (c.id == id) {
+        return c.copyWith(title: trimmed);
+      }
+      return c;
+    }).toList();
+
+    state = state.copyWith(conversations: updatedList);
+    await _cache.saveConversations(updatedList);
+
+    try {
+      await _repo.updateConversation(id, title: trimmed);
+    } catch (e) {
+      debugPrint('CONV: Failed to update title remotely: $e');
+      // Revert if failed
+      final reverted = state.conversations.map((c) {
+        if (c.id == id) {
+          return c.copyWith(title: oldConv.title);
+        }
+        return c;
+      }).toList();
+      state = state.copyWith(conversations: reverted);
+      await _cache.saveConversations(reverted);
     }
   }
 

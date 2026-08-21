@@ -13,6 +13,7 @@ _$ConversationEntityImpl _$$ConversationEntityImplFromJson(
   title: json['title'] as String,
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
+  isPinned: json['is_pinned'] as bool? ?? false,
   messages:
       (json['messages'] as List<dynamic>?)
           ?.map((e) => MessageEntity.fromJson(e as Map<String, dynamic>))
@@ -29,6 +30,7 @@ Map<String, dynamic> _$$ConversationEntityImplToJson(
   'title': instance.title,
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
+  'is_pinned': instance.isPinned,
   'messageCount': instance.messageCount,
   'lastMessagePreview': instance.lastMessagePreview,
 };

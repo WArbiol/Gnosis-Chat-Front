@@ -27,6 +27,8 @@ mixin _$ConversationEntity {
   DateTime get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'updated_at')
   DateTime get updatedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'is_pinned')
+  bool get isPinned => throw _privateConstructorUsedError;
   @JsonKey(includeToJson: false)
   List<MessageEntity> get messages => throw _privateConstructorUsedError;
   int get messageCount => throw _privateConstructorUsedError;
@@ -54,6 +56,7 @@ abstract class $ConversationEntityCopyWith<$Res> {
     String title,
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt,
+    @JsonKey(name: 'is_pinned') bool isPinned,
     @JsonKey(includeToJson: false) List<MessageEntity> messages,
     int messageCount,
     String? lastMessagePreview,
@@ -79,6 +82,7 @@ class _$ConversationEntityCopyWithImpl<$Res, $Val extends ConversationEntity>
     Object? title = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? isPinned = null,
     Object? messages = null,
     Object? messageCount = null,
     Object? lastMessagePreview = freezed,
@@ -101,6 +105,10 @@ class _$ConversationEntityCopyWithImpl<$Res, $Val extends ConversationEntity>
                 ? _value.updatedAt
                 : updatedAt // ignore: cast_nullable_to_non_nullable
                       as DateTime,
+            isPinned: null == isPinned
+                ? _value.isPinned
+                : isPinned // ignore: cast_nullable_to_non_nullable
+                      as bool,
             messages: null == messages
                 ? _value.messages
                 : messages // ignore: cast_nullable_to_non_nullable
@@ -133,6 +141,7 @@ abstract class _$$ConversationEntityImplCopyWith<$Res>
     String title,
     @JsonKey(name: 'created_at') DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime updatedAt,
+    @JsonKey(name: 'is_pinned') bool isPinned,
     @JsonKey(includeToJson: false) List<MessageEntity> messages,
     int messageCount,
     String? lastMessagePreview,
@@ -157,6 +166,7 @@ class __$$ConversationEntityImplCopyWithImpl<$Res>
     Object? title = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? isPinned = null,
     Object? messages = null,
     Object? messageCount = null,
     Object? lastMessagePreview = freezed,
@@ -179,6 +189,10 @@ class __$$ConversationEntityImplCopyWithImpl<$Res>
             ? _value.updatedAt
             : updatedAt // ignore: cast_nullable_to_non_nullable
                   as DateTime,
+        isPinned: null == isPinned
+            ? _value.isPinned
+            : isPinned // ignore: cast_nullable_to_non_nullable
+                  as bool,
         messages: null == messages
             ? _value._messages
             : messages // ignore: cast_nullable_to_non_nullable
@@ -204,6 +218,7 @@ class _$ConversationEntityImpl implements _ConversationEntity {
     required this.title,
     @JsonKey(name: 'created_at') required this.createdAt,
     @JsonKey(name: 'updated_at') required this.updatedAt,
+    @JsonKey(name: 'is_pinned') this.isPinned = false,
     @JsonKey(includeToJson: false)
     final List<MessageEntity> messages = const [],
     this.messageCount = 0,
@@ -223,6 +238,9 @@ class _$ConversationEntityImpl implements _ConversationEntity {
   @override
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
+  @override
+  @JsonKey(name: 'is_pinned')
+  final bool isPinned;
   final List<MessageEntity> _messages;
   @override
   @JsonKey(includeToJson: false)
@@ -240,7 +258,7 @@ class _$ConversationEntityImpl implements _ConversationEntity {
 
   @override
   String toString() {
-    return 'ConversationEntity(id: $id, title: $title, createdAt: $createdAt, updatedAt: $updatedAt, messages: $messages, messageCount: $messageCount, lastMessagePreview: $lastMessagePreview)';
+    return 'ConversationEntity(id: $id, title: $title, createdAt: $createdAt, updatedAt: $updatedAt, isPinned: $isPinned, messages: $messages, messageCount: $messageCount, lastMessagePreview: $lastMessagePreview)';
   }
 
   @override
@@ -254,6 +272,8 @@ class _$ConversationEntityImpl implements _ConversationEntity {
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt) &&
+            (identical(other.isPinned, isPinned) ||
+                other.isPinned == isPinned) &&
             const DeepCollectionEquality().equals(other._messages, _messages) &&
             (identical(other.messageCount, messageCount) ||
                 other.messageCount == messageCount) &&
@@ -269,6 +289,7 @@ class _$ConversationEntityImpl implements _ConversationEntity {
     title,
     createdAt,
     updatedAt,
+    isPinned,
     const DeepCollectionEquality().hash(_messages),
     messageCount,
     lastMessagePreview,
@@ -297,6 +318,7 @@ abstract class _ConversationEntity implements ConversationEntity {
     required final String title,
     @JsonKey(name: 'created_at') required final DateTime createdAt,
     @JsonKey(name: 'updated_at') required final DateTime updatedAt,
+    @JsonKey(name: 'is_pinned') final bool isPinned,
     @JsonKey(includeToJson: false) final List<MessageEntity> messages,
     final int messageCount,
     final String? lastMessagePreview,
@@ -315,6 +337,9 @@ abstract class _ConversationEntity implements ConversationEntity {
   @override
   @JsonKey(name: 'updated_at')
   DateTime get updatedAt;
+  @override
+  @JsonKey(name: 'is_pinned')
+  bool get isPinned;
   @override
   @JsonKey(includeToJson: false)
   List<MessageEntity> get messages;

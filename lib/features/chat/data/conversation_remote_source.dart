@@ -45,10 +45,18 @@ class ConversationRemoteSource {
     await _dio.delete('conversations/$id');
   }
 
-  Future<ConversationEntity> updateConversation(String id, String title) async {
+  Future<ConversationEntity> updateConversation(
+    String id, {
+    String? title,
+    bool? isPinned,
+  }) async {
+    final payload = <String, dynamic>{};
+    if (title != null) payload['title'] = title;
+    if (isPinned != null) payload['is_pinned'] = isPinned;
+
     final response = await _dio.patch(
       'conversations/$id',
-      data: {'title': title},
+      data: payload,
     );
     return ConversationEntity.fromJson(response.data);
   }

@@ -28,32 +28,18 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: () {
-        HapticFeedback.mediumImpact();
-        _showContextMenu(context);
-      },
-      child: Align(
-        alignment: _isUser ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          width: _isUser ? null : double.infinity,
-          constraints: BoxConstraints(
-            maxWidth: _isUser
-                ? (MediaQuery.sizeOf(context).width * 0.78).clamp(0.0, 660.0)
-                : double.infinity,
-          ),
-          margin: const EdgeInsets.symmetric(vertical: 6),
-          child: _isUser ? _userBubble(context) : _aiBubble(context),
+    return Align(
+      alignment: _isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        width: _isUser ? null : double.infinity,
+        constraints: BoxConstraints(
+          maxWidth: _isUser
+              ? (MediaQuery.sizeOf(context).width * 0.78).clamp(0.0, 660.0)
+              : double.infinity,
         ),
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        child: _isUser ? _userBubble(context) : _aiBubble(context),
       ),
-    );
-  }
-
-  void _showContextMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _MessageContextSheet(content: message.content),
     );
   }
 
@@ -124,10 +110,11 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _content(BuildContext context, Color textColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        MarkdownBody(
+    return SelectionArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MarkdownBody(
           data: _sanitizeMarkdown(message.content),
           selectable: false,
             builders: {
@@ -258,6 +245,7 @@ class MessageBubble extends StatelessWidget {
             ),
         ],
       ],
+    ),
     );
   }
 }
@@ -545,108 +533,6 @@ class _CitationBottomSheetState extends ConsumerState<_CitationBottomSheet> {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Long press context menu
-// ---------------------------------------------------------------------------
-class _MessageContextSheet extends StatelessWidget {
-  const _MessageContextSheet({required this.content});
-
-  final String content;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        border: Border(
-          top: BorderSide(
-            color: AppColors.accent.withValues(alpha: 0.15),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Drag handle
-          Container(
-            width: 36,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: AppColors.onSurfaceVariant.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          _ContextAction(
-            icon: Icons.copy_rounded,
-            label: 'Copiar',
-            onTap: () {
-              Clipboard.setData(ClipboardData(text: _cleanMarkdown(content)));
-              Navigator.of(context).pop();
-              _showCopiedSnackBar(context, 'Copiado!');
-            },
-          ),
-
-          const SizedBox(height: 4),
-
-          _ContextAction(
-            icon: Icons.share_rounded,
-            label: 'Compartilhar',
-            onTap: () {
-              Navigator.of(context).pop();
-              Share.share(content);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ContextAction extends StatelessWidget {
-  const _ContextAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Icon(icon, size: 22, color: AppColors.onSurface),
-              const SizedBox(width: 14),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: AppColors.onSurface,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -141,6 +141,7 @@ class _ChatShellState extends ConsumerState<ChatShell>
             },
             child: GestureDetector(
               onTap: _isPanelOpen ? _closePanel : null,
+              onHorizontalDragStart: _onDragStart,
               onHorizontalDragUpdate: _onDragUpdate,
               onHorizontalDragEnd: _onDragEnd,
               child: AbsorbPointer(
@@ -175,12 +176,29 @@ class _ChatShellState extends ConsumerState<ChatShell>
     );
   }
 
+  bool _isDragging = false;
+
+  void _onDragStart(DragStartDetails details) {
+    if (!_isPanelOpen) {
+      // Only initiate drag to open if touch started within edge zone (<= 40px from left)
+      if (details.globalPosition.dx > 40) {
+        _isDragging = false;
+        return;
+      }
+    }
+    _isDragging = true;
+  }
+
   void _onDragUpdate(DragUpdateDetails details) {
+    if (!_isDragging) return;
     final delta = details.primaryDelta ?? 0;
     _slideCtrl.value += delta / _panelWidth;
   }
 
   void _onDragEnd(DragEndDetails details) {
+    if (!_isDragging) return;
+    _isDragging = false;
+
     final velocity = details.primaryVelocity ?? 0;
 
     if (velocity > 300) {

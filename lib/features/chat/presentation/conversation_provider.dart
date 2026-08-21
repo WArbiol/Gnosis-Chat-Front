@@ -108,7 +108,11 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
                 .firstOrNull ??
             cachedList.where((c) => c.id == remoteConv.id).firstOrNull;
         if (existing != null && existing.messages.isNotEmpty) {
+          final effectiveTitle = (remoteConv.title.isNotEmpty && remoteConv.title != 'Nova conversa')
+              ? remoteConv.title
+              : existing.title;
           return remoteConv.copyWith(
+            title: effectiveTitle,
             messages: existing.messages,
             messageCount: existing.messages.length,
             lastMessagePreview: existing.lastMessagePreview ??
@@ -159,7 +163,13 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
           debugPrint('CONV: Polling received assistant response for $id!');
           _stopPolling();
           _ref.read(chatProvider.notifier).loadMessages(fullConv.messages);
-          syncMessagesForId(id, fullConv.messages);
+          syncMessagesForId(
+            id,
+            fullConv.messages,
+            explicitTitle: fullConv.title.isNotEmpty && fullConv.title != 'Nova conversa'
+                ? fullConv.title
+                : null,
+          );
         }
       } catch (e) {
         debugPrint('CONV: Error during polling for $id: $e');
@@ -232,8 +242,14 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
         }
       }
 
-      // Update local state with the loaded messages
-      syncMessagesForId(id, fullConv.messages);
+      // Update local state with the loaded messages and remote title
+      syncMessagesForId(
+        id,
+        fullConv.messages,
+        explicitTitle: fullConv.title.isNotEmpty && fullConv.title != 'Nova conversa'
+            ? fullConv.title
+            : null,
+      );
     } catch (e, st) {
       debugPrint('CONV: Error fetching conversation details: $e');
       if (state.activeId == id) {
@@ -275,7 +291,11 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
   }
 
   /// Updates a specific conversation by ID with messages locally.
-  void syncMessagesForId(String targetId, List<MessageEntity> messages) {
+  void syncMessagesForId(
+    String targetId,
+    List<MessageEntity> messages, {
+    String? explicitTitle,
+  }) {
     final exists = state.conversations.any((c) => c.id == targetId);
 
     List<ConversationEntity> updated;
@@ -283,9 +303,13 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
       updated = state.conversations.map((c) {
         if (c.id != targetId) return c;
 
-        final title = messages.isNotEmpty
-            ? _truncate(messages.first.content, 40)
-            : c.title;
+        // Preserve existing title if it has been customized/AI-generated
+        String title = explicitTitle ?? c.title;
+        if (explicitTitle == null && (title == 'Nova conversa' || title == 'Conversa' || title.isEmpty)) {
+          if (messages.isNotEmpty) {
+            title = _truncate(messages.first.content, 40);
+          }
+        }
 
         // Self-healing: if the backend title is still "Nova conversa" but we have full content (user + AI),
         // push the calculated title to the server to fix it permanently.
@@ -307,9 +331,11 @@ class ConversationNotifier extends StateNotifier<ConversationState> {
         );
       }).toList();
     } else {
+      final title = explicitTitle ??
+          (messages.isNotEmpty ? _truncate(messages.first.content, 40) : 'Conversa');
       final newConv = ConversationEntity(
         id: targetId,
-        title: messages.isNotEmpty ? _truncate(messages.first.content, 40) : 'Conversa',
+        title: title,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         messages: messages,

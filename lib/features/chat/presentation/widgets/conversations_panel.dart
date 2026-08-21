@@ -406,27 +406,9 @@ class _ConversationTileState extends ConsumerState<_ConversationTile> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Dismissible(
-        key: ValueKey(widget.conversation.id),
-        direction: DismissDirection.endToStart,
-        confirmDismiss: (_) => _confirmDelete(context),
-        onDismissed: (_) => widget.onDelete(),
-        background: Container(
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
-          decoration: BoxDecoration(
-            color: AppColors.flame.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(
-            Icons.delete_outline_rounded,
-            color: AppColors.flame,
-            size: 22,
-          ),
-        ),
-        child: MouseRegion(
-          onEnter: (_) => setState(() => _isHovered = true),
-          onExit: (_) => setState(() => _isHovered = false),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
@@ -605,8 +587,7 @@ class _ConversationTileState extends ConsumerState<_ConversationTile> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   static String _formatDate(DateTime date) {

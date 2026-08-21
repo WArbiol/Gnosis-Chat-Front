@@ -111,11 +111,10 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _content(BuildContext context, Color textColor) {
-    return SelectionArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MarkdownBody(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        MarkdownBody(
           data: _sanitizeMarkdown(message.content),
           selectable: false,
             builders: {
@@ -246,7 +245,6 @@ class MessageBubble extends StatelessWidget {
             ),
         ],
       ],
-    ),
     );
   }
 }

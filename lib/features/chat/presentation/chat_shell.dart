@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
@@ -180,30 +181,38 @@ class _ChatShellState extends ConsumerState<ChatShell>
 
   void _onDragStart(DragStartDetails details) {
     if (!_isPanelOpen) {
-      final messages = ref.read(chatProvider).valueOrNull ?? [];
-      final hasMessages = messages.isNotEmpty;
+      final isDesktopWeb = kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.macOS ||
+              defaultTargetPlatform == TargetPlatform.windows ||
+              defaultTargetPlatform == TargetPlatform.linux);
 
-      if (hasMessages) {
-        final screenWidth = MediaQuery.sizeOf(context).width;
-        const maxContentWidth = 850.0;
-        final leftMargin = screenWidth > maxContentWidth
-            ? (screenWidth - maxContentWidth) / 2.0
-            : 0.0;
-        final rightMargin = screenWidth > maxContentWidth
-            ? screenWidth - leftMargin
-            : screenWidth;
+      if (isDesktopWeb) {
+        final messages = ref.read(chatProvider).valueOrNull ?? [];
+        final hasMessages = messages.isNotEmpty;
 
-        final dx = details.globalPosition.dx;
-        final isEdge = dx <= 40;
-        final isInLeftGutter = dx < leftMargin;
-        final isInRightGutter = dx > rightMargin;
+        if (hasMessages) {
+          final screenWidth = MediaQuery.sizeOf(context).width;
+          const maxContentWidth = 850.0;
+          final leftMargin = screenWidth > maxContentWidth
+              ? (screenWidth - maxContentWidth) / 2.0
+              : 0.0;
+          final rightMargin = screenWidth > maxContentWidth
+              ? screenWidth - leftMargin
+              : screenWidth;
 
-        // Only block drag when the gesture starts directly over the central text content area
-        if (!isEdge && !isInLeftGutter && !isInRightGutter) {
-          _isDragging = false;
-          return;
+          final dx = details.globalPosition.dx;
+          final isEdge = dx <= 40;
+          final isInLeftGutter = dx < leftMargin;
+          final isInRightGutter = dx > rightMargin;
+
+          // Only block drag on Desktop Web when the gesture starts directly over the central text content area
+          if (!isEdge && !isInLeftGutter && !isInRightGutter) {
+            _isDragging = false;
+            return;
+          }
         }
       }
+      // On Mobile (iOS, Android, and mobile browsers): swipe is unrestricted across the entire screen!
     }
     _isDragging = true;
   }

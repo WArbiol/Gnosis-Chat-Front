@@ -303,7 +303,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                     final itemCount =
                         messages.length + (showTyping ? 1 : 0);
 
-                    return ListView.builder(
+                    final listView = ListView.builder(
                       controller: _scrollCtrl,
                       padding: EdgeInsets.only(
                         left: 16,
@@ -338,6 +338,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                         return const SizedBox.shrink();
                       },
                     );
+
+                    final isDesktopWeb = kIsWeb &&
+                        (defaultTargetPlatform == TargetPlatform.macOS ||
+                            defaultTargetPlatform == TargetPlatform.windows ||
+                            defaultTargetPlatform == TargetPlatform.linux);
+
+                    if (isDesktopWeb) {
+                      return SelectionArea(child: listView);
+                    }
+                    return listView;
                   },
                   loading: () => const Center(
                     child: SizedBox(

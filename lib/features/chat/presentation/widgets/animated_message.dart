@@ -16,39 +16,42 @@ class AnimatedMessage extends StatefulWidget {
 
 class _AnimatedMessageState extends State<AnimatedMessage>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-  late final Animation<double> _fadeAnim;
-  late final Animation<Offset> _slideAnim;
+  AnimationController? _ctrl;
+  Animation<double>? _fadeAnim;
+  Animation<Offset>? _slideAnim;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-      value: widget.animate ? 0 : 1,
-    );
-    _fadeAnim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.15),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
-
-    if (widget.animate) _ctrl.forward();
+    if (widget.animate) {
+      _ctrl = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 300),
+      );
+      _fadeAnim = CurvedAnimation(parent: _ctrl!, curve: Curves.easeOut);
+      _slideAnim = Tween<Offset>(
+        begin: const Offset(0, 0.15),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: _ctrl!, curve: Curves.easeOut));
+      _ctrl!.forward();
+    }
   }
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    _ctrl?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.animate || _ctrl == null) {
+      return RepaintBoundary(child: widget.child);
+    }
     return RepaintBoundary(
       child: FadeTransition(
-        opacity: _fadeAnim,
-        child: SlideTransition(position: _slideAnim, child: widget.child),
+        opacity: _fadeAnim!,
+        child: SlideTransition(position: _slideAnim!, child: widget.child),
       ),
     );
   }

@@ -110,6 +110,99 @@ class MessageBubble extends StatelessWidget {
     return cleaned;
   }
 
+  static final md.ExtensionSet _markdownExtensionSet = md.ExtensionSet(
+    [LatexBlockSyntax(), ...md.ExtensionSet.gitHubFlavored.blockSyntaxes],
+    [LatexInlineSyntax(), ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes],
+  );
+
+  static final Map<Color, MarkdownStyleSheet> _cachedStyleSheets = {};
+
+  static MarkdownStyleSheet _getStyleSheet(BuildContext context, Color textColor) {
+    return _cachedStyleSheets.putIfAbsent(textColor, () {
+      return MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+        p: TextStyle(
+          color: textColor,
+          fontSize: 16.5,
+          fontWeight: FontWeight.w400,
+          height: 1.55,
+          letterSpacing: -0.1,
+        ),
+        strong: TextStyle(
+          color: textColor,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.1,
+        ),
+        em: TextStyle(
+          color: textColor.withValues(alpha: 0.95),
+          fontStyle: FontStyle.italic,
+        ),
+        listBullet: TextStyle(
+          color: textColor,
+          fontSize: 16.5,
+          fontWeight: FontWeight.w500,
+        ),
+        h1: TextStyle(
+          color: textColor,
+          fontSize: 34,
+          fontWeight: FontWeight.w800,
+          height: 1.3,
+          letterSpacing: -0.5,
+        ),
+        h2: TextStyle(
+          color: textColor,
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          height: 1.3,
+          letterSpacing: -0.5,
+        ),
+        h3: TextStyle(
+          color: textColor,
+          fontSize: 23,
+          fontWeight: FontWeight.bold,
+          height: 1.3,
+        ),
+        h4: TextStyle(
+          color: textColor,
+          fontSize: 19,
+          fontWeight: FontWeight.bold,
+          height: 1.4,
+        ),
+        horizontalRuleDecoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              width: 2,
+              color: AppColors.onSurfaceVariant.withValues(alpha: 0.2),
+            ),
+          ),
+        ),
+        blockquote: TextStyle(
+          color: textColor.withValues(alpha: 0.85),
+          fontStyle: FontStyle.italic,
+          fontSize: 15,
+        ),
+        code: TextStyle(
+          color: textColor,
+          fontSize: 14.5,
+          backgroundColor: AppColors.surfaceVariant.withValues(alpha: 0.4),
+        ),
+        blockquoteDecoration: BoxDecoration(
+          color: AppColors.surfaceVariant.withValues(alpha: 0.25),
+          border: Border(
+            left: BorderSide(
+              color: AppColors.accent.withValues(alpha: 0.5),
+              width: 3,
+            ),
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        blockquotePadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 8,
+        ),
+      );
+    });
+  }
+
   Widget _content(BuildContext context, Color textColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,102 +210,14 @@ class MessageBubble extends StatelessWidget {
         MarkdownBody(
           data: _sanitizeMarkdown(message.content),
           selectable: false,
-            builders: {
-              'latex': LatexElementBuilder(
-                textStyle: TextStyle(color: textColor, fontSize: 16.5),
-              ),
-            },
-            extensionSet: md.ExtensionSet(
-              [LatexBlockSyntax(), ...md.ExtensionSet.gitHubFlavored.blockSyntaxes],
-              [LatexInlineSyntax(), ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes],
+          builders: {
+            'latex': LatexElementBuilder(
+              textStyle: TextStyle(color: textColor, fontSize: 16.5),
             ),
-            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
-                .copyWith(
-                  p: TextStyle(
-                    color: textColor,
-                    fontSize: 16.5,
-                    fontWeight: FontWeight.w400,
-                    height: 1.55,
-                    letterSpacing: -0.1,
-                  ),
-                  strong: TextStyle(
-                    color: textColor,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.1,
-                  ),
-                  em: TextStyle(
-                    color: textColor.withValues(alpha: 0.95),
-                    fontStyle: FontStyle.italic,
-                  ),
-                  listBullet: TextStyle(
-                    color: textColor,
-                    fontSize: 16.5,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  h1: TextStyle(
-                    color: textColor,
-                    fontSize: 34,
-                    fontWeight: FontWeight.w800,
-                    height: 1.3,
-                    letterSpacing: -0.5,
-                  ),
-                  h2: TextStyle(
-                    color: textColor,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    height: 1.3,
-                    letterSpacing: -0.5,
-                  ),
-                  h3: TextStyle(
-                    color: textColor,
-                    fontSize: 23,
-                    fontWeight: FontWeight.bold,
-                    height: 1.3,
-                  ),
-                  h4: TextStyle(
-                    color: textColor,
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    height: 1.4,
-                  ),
-                  horizontalRuleDecoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        width: 2,
-                        color: AppColors.onSurfaceVariant.withValues(
-                          alpha: 0.2,
-                        ),
-                      ),
-                    ),
-                  ),
-                  blockquote: TextStyle(
-                    color: textColor.withValues(alpha: 0.85),
-                    fontStyle: FontStyle.italic,
-                    fontSize: 15,
-                  ),
-                  code: TextStyle(
-                    color: textColor,
-                    fontSize: 14.5,
-                    backgroundColor: AppColors.surfaceVariant.withValues(
-                      alpha: 0.4,
-                    ),
-                  ),
-                  blockquoteDecoration: BoxDecoration(
-                    color: AppColors.surfaceVariant.withValues(alpha: 0.25),
-                    border: Border(
-                      left: BorderSide(
-                        color: AppColors.accent.withValues(alpha: 0.5),
-                        width: 3,
-                      ),
-                    ),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  blockquotePadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                ),
-          ),
+          },
+          extensionSet: _markdownExtensionSet,
+          styleSheet: _getStyleSheet(context, textColor),
+        ),
         if (message.citations.isNotEmpty) ...[
           const SizedBox(height: 8),
           Wrap(

@@ -69,12 +69,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
       if (_scrollCtrl.hasClients && _scrollCtrl.position.hasContentDimensions) {
         final distanceToBottom =
             _scrollCtrl.position.maxScrollExtent - _scrollCtrl.offset;
-        final isUp = distanceToBottom > 60.0;
-        if (_isUserScrolledUp != isUp) {
-          setState(() {
-            _isUserScrolledUp = isUp;
-          });
-        }
+        _isUserScrolledUp = distanceToBottom > 60.0;
       }
     });
   }
@@ -281,6 +276,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
             final listView = ListView.builder(
               controller: _scrollCtrl,
+              cacheExtent: 1000.0,
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
               padding: EdgeInsets.only(
                 left: 16,
                 right: 16,
@@ -422,40 +421,42 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
       ],
     );
 
-    final floatingOverlays = Stack(
-      children: [
-        // Custom floating glass AppBar (top layer with safe area)
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: SafeArea(
-            bottom: false,
-            child: PremiumAppBar(
-              glowAnim: _glowAnim,
-              user: user,
-              onMenuTap: widget.onMenuTap,
-              onProfileTap: widget.onProfileTap,
-            ),
-          ),
-        ),
-
-        // Premium input bar (bottom layer with safe area)
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: SafeArea(
-            top: false,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 850),
-              child: GlassInputBar(
-                controller: _queryCtrl,
-                hasText: _queryCtrl.text.trim().isNotEmpty,
-                onSend: _sendMessage,
+    final floatingOverlays = RepaintBoundary(
+      child: Stack(
+        children: [
+          // Custom floating glass AppBar (top layer with safe area)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: PremiumAppBar(
+                glowAnim: _glowAnim,
+                user: user,
+                onMenuTap: widget.onMenuTap,
+                onProfileTap: widget.onProfileTap,
               ),
             ),
           ),
-        ),
-      ],
+
+          // Premium input bar (bottom layer with safe area)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
+              top: false,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 850),
+                child: GlassInputBar(
+                  controller: _queryCtrl,
+                  hasText: _queryCtrl.text.trim().isNotEmpty,
+                  onSend: _sendMessage,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
 
     return Scaffold(

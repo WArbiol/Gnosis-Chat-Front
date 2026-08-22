@@ -290,7 +290,8 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
             borderColor: _hasFocus
                 ? AppColors.accent.withValues(alpha: 0.70)
                 : Colors.white.withValues(alpha: 0.20),
-            tintColor: const Color(0x66383838), // Pure neutral graphite gray (no blue tint)
+            tintColor: const Color(0x8C303034), // Slightly less transparent neutral graphite
+            blurSigma: 5.0,
             lightIntensity: 0.85,
             distortion: 0.12,
             distortionWidth: 20.0,

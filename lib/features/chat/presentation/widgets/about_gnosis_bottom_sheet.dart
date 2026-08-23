@@ -137,7 +137,7 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                           'Gnosis',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 23,
+                            fontSize: 25,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.5,
                           ),
@@ -145,13 +145,13 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: AppColors.onSurfaceVariant, size: 22),
+                      icon: const Icon(Icons.close_rounded, color: AppColors.onSurfaceVariant, size: 24),
                       onPressed: () => Navigator.of(context).pop(),
                       tooltip: 'Fechar',
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.white.withValues(alpha: 0.06),
                         padding: EdgeInsets.zero,
-                        minimumSize: const Size(34, 34),
+                        minimumSize: const Size(36, 36),
                       ),
                     ),
                   ],
@@ -165,7 +165,7 @@ class AboutGnosisBottomSheet extends StatelessWidget {
               Flexible(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 36),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -192,13 +192,13 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.explore_rounded, color: AppColors.accentLight, size: 20),
+                                Icon(Icons.explore_rounded, color: AppColors.accentLight, size: 22),
                                 SizedBox(width: 8),
                                 Text(
                                   'Um Mapa para o Invisível',
                                   style: TextStyle(
                                     color: AppColors.accentLight,
-                                    fontSize: 14.5,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 0.3,
                                   ),
@@ -212,22 +212,22 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                               'ela revela os mistérios do cosmos e responde à pergunta mais fascinante de todas: quem você realmente é.',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 13.5,
-                                height: 1.5,
+                                fontSize: 14.5,
+                                height: 1.55,
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 22),
 
                       // Section Title: As 4 Chaves da Sabedoria
                       const Text(
                         'As Quatro Chaves do Saber',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 14.5,
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.3,
                         ),
@@ -277,7 +277,7 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                               physics: const NeverScrollableScrollPhysics(),
                               mainAxisSpacing: 10,
                               crossAxisSpacing: 10,
-                              childAspectRatio: 2.2,
+                              childAspectRatio: 2.1,
                               children: items,
                             );
                           }
@@ -308,15 +308,15 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.chat_bubble_outline_rounded, color: AppColors.accent, size: 20),
+                            Icon(Icons.chat_bubble_outline_rounded, color: AppColors.accent, size: 22),
                             SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 'Faça uma pergunta sobre sonhos, símbolos ou espiritualidade e descubra o que a Gnosis tem a revelar.',
                                 style: TextStyle(
                                   color: AppColors.onSurfaceVariant,
-                                  fontSize: 12.5,
-                                  height: 1.4,
+                                  fontSize: 13.5,
+                                  height: 1.45,
                                 ),
                               ),
                             ),
@@ -333,7 +333,7 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                           onTap: () => _openUrl(context, 'https://gnosisbrasil.com'),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
@@ -359,8 +359,8 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                             child: Row(
                               children: [
                                 Container(
-                                  width: 38,
-                                  height: 38,
+                                  width: 42,
+                                  height: 42,
                                   decoration: BoxDecoration(
                                     color: AppColors.accent.withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
@@ -368,7 +368,7 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                                   child: const Icon(
                                     Icons.public_rounded,
                                     color: AppColors.accentLight,
-                                    size: 20,
+                                    size: 22,
                                   ),
                                 ),
                                 const SizedBox(width: 14),
@@ -380,16 +380,16 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                                         'Explore o Portal Gnosis Brasil',
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 14,
+                                          fontSize: 15,
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                      SizedBox(height: 2),
+                                      SizedBox(height: 3),
                                       Text(
                                         'Cursos, acervo e práticas gratuitas • gnosisbrasil.com',
                                         style: TextStyle(
                                           color: AppColors.accentLight,
-                                          fontSize: 11.5,
+                                          fontSize: 12.5,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -399,7 +399,7 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                                 const Icon(
                                   Icons.arrow_outward_rounded,
                                   color: AppColors.accentLight,
-                                  size: 18,
+                                  size: 20,
                                 ),
                               ],
                             ),
@@ -477,7 +477,7 @@ class _PillarCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
         color: const Color(0xFF16161D),
         borderRadius: BorderRadius.circular(14),
@@ -493,19 +493,19 @@ class _PillarCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(5),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: badgeBg,
-                  borderRadius: BorderRadius.circular(7),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: color, size: 15),
+                child: Icon(icon, color: color, size: 17),
               ),
               const SizedBox(width: 8),
               Text(
                 title,
                 style: TextStyle(
                   color: color,
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -516,8 +516,8 @@ class _PillarCard extends StatelessWidget {
             description,
             style: TextStyle(
               color: AppColors.onSurfaceVariant.withValues(alpha: 0.95),
-              fontSize: 11.5,
-              height: 1.3,
+              fontSize: 12.5,
+              height: 1.35,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -549,7 +549,7 @@ class _StoreButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
           decoration: BoxDecoration(
             color: const Color(0xFF181820),
             borderRadius: BorderRadius.circular(12),
@@ -561,7 +561,7 @@ class _StoreButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: 20),
+              Icon(icon, color: Colors.white, size: 21),
               const SizedBox(width: 8),
               Flexible(
                 child: Column(
@@ -572,7 +572,7 @@ class _StoreButton extends StatelessWidget {
                       storeName,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -581,7 +581,7 @@ class _StoreButton extends StatelessWidget {
                       badge,
                       style: TextStyle(
                         color: AppColors.accentLight.withValues(alpha: 0.9),
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

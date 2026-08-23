@@ -1,0 +1,7 @@
+# robots.txt for Pergunte à Gnosis (https://gnosischat.com)
+User-agent: *
+Allow: /
+Allow: /terms.html
+Allow: /privacy.html
+
+Sitemap: https://gnosischat.com/sitemap.xml

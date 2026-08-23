@@ -1,27 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Pergunte à Gnosis - Conhecimento sagrado revelado.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Primary SEO Meta Tags -->
+  <title>Pergunte à Gnosis | IA Gnóstica &amp; Sabedoria Sagrada</title>
+  <meta name="title" content="Pergunte à Gnosis | IA Gnóstica &amp; Sabedoria Sagrada">
+  <meta name="description" content="Explore o Gnosticismo, a Sabedoria Sagrada e o Esoterismo com o Pergunte à Gnosis. IA especializada nas obras de Samael Aun Weor, Lakhsmi Daimon, Pistis Sophia, Alquimia, Psicologia Revolucionária, Tarot e Cabala.">
+  <meta name="keywords" content="Gnosis, Gnosticismo, Samael Aun Weor, Lakhsmi Daimon, Esoterismo, Pistis Sophia, Alquimia, Psicologia Revolucionária, Tarot, Cabala, Autoconhecimento, Despertar da Consciência, Meditação, Kundalini, Inteligência Artificial Gnóstica, Pergunte à Gnosis">
+  <meta name="author" content="Pergunte à Gnosis">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <link rel="canonical" href="https://gnosischat.com/">
+
+  <!-- Theme & Security -->
   <meta name="theme-color" content="#070709">
   <meta name="referrer" content="no-referrer">
   <meta name="google-signin-client_id" content="971574732695-ndhmbf15ocp31buk94kgf5jo0jj3j0rq.apps.googleusercontent.com">
+
+  <!-- Open Graph / Facebook / WhatsApp / Telegram -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://gnosischat.com/">
+  <meta property="og:site_name" content="Pergunte à Gnosis">
+  <meta property="og:title" content="Pergunte à Gnosis | IA Gnóstica &amp; Sabedoria Sagrada">
+  <meta property="og:description" content="Explore o Gnosticismo, a Sabedoria Sagrada e o Esoterismo com o Pergunte à Gnosis. IA especializada nas obras de Samael Aun Weor, Lakhsmi Daimon, Pistis Sophia, Alquimia, Tarot e Autoconhecimento.">
+  <meta property="og:image" content="https://gnosischat.com/icons/Icon-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="Pergunte à Gnosis - Logotipo e Símbolo Gnóstico">
+  <meta property="og:locale" content="pt_BR">
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://gnosischat.com/">
+  <meta name="twitter:title" content="Pergunte à Gnosis | IA Gnóstica &amp; Sabedoria Sagrada">
+  <meta name="twitter:description" content="Explore o Gnosticismo, a Sabedoria Sagrada e o Esoterismo com o Pergunte à Gnosis. IA especializada nas obras de Samael Aun Weor, Lakhsmi Daimon, Pistis Sophia, Alquimia, Tarot e Autoconhecimento.">
+  <meta name="twitter:image" content="https://gnosischat.com/icons/Icon-512.png">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -29,10 +46,8 @@
   <meta name="apple-mobile-web-app-title" content="Gnosis">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>Pergunte à Gnosis</title>
+  <!-- Favicon & PWA Manifest -->
+  <link rel="icon" type="image/png" href="favicon.png">
   <link rel="manifest" href="manifest.json">
   
   <style>
@@ -44,6 +59,73 @@
       height: 100%;
     }
   </style>
+
+  <!-- Schema.org JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://gnosischat.com/#app",
+        "name": "Pergunte à Gnosis",
+        "url": "https://gnosischat.com/",
+        "applicationCategory": "EducationalApplication, LifestyleApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "description": "Plataforma de Inteligência Artificial e RAG especializado para estudo do Gnosticismo, Esoterismo e obras de Samael Aun Weor e Lakhsmi Daimon.",
+        "inLanguage": "pt-BR",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "BRL"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "Pergunte à Gnosis",
+          "url": "https://gnosischat.com/"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://gnosischat.com/#organization",
+        "name": "Pergunte à Gnosis",
+        "url": "https://gnosischat.com/",
+        "logo": "https://gnosischat.com/icons/Icon-512.png"
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://gnosischat.com/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "O que é o Pergunte à Gnosis?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "O Pergunte à Gnosis é um assistente de inteligência artificial de alta precisão doutrinária fundamentado em mais de 90 obras clássicas do gnosticismo moderno e esoterismo, incluindo os ensinamentos de Samael Aun Weor, Lakhsmi Daimon e a Pistis Sophia Desvelada."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Quais temas posso estudar no Pergunte à Gnosis?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Você pode consultar e estudar temas fundamentais como Psicologia Gnóstica (morte do ego e autoconhecimento), Alquimia e Tantrismo, Meditação, Tarot e Cabala, Antropologia Gnóstica, Cosmologia e Esoterismo prático."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "As respostas possuem referências bibliográficas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sim. Todas as respostas do assistente contêm citações diretas com o nome do livro, capítulo e página exata das fontes catalogadas no acervo sagrado."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
   
   <!-- Scripts do pdf.js exigidos pelo Syncfusion PDF Viewer para rodar na Web -->
   <script src="//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
@@ -130,6 +212,26 @@
       } catch (err) {}
     };
   </script>
+</head>
+<body>
+  <!-- Fallback semântico para buscadores (Googlebot/Bingbot) e leitores de acessibilidade -->
+  <noscript>
+    <main style="padding: 32px; color: #E1E1E6; background: #070709; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; line-height: 1.6;">
+      <h1>Pergunte à Gnosis | IA Gnóstica &amp; Sabedoria Sagrada</h1>
+      <p>O <strong>Pergunte à Gnosis</strong> é a plataforma de Inteligência Artificial para estudo doutrinário e esotérico, fundamentada nas obras originais do Venerável Mestre <strong>Samael Aun Weor</strong>, do V.M. <strong>Lakhsmi Daimon</strong> e de escrituras sagradas como a <strong>Pistis Sophia Desvelada</strong>.</p>
+      
+      <h2>Pilares de Estudo Gnóstico e Esoterismo:</h2>
+      <ul>
+        <li><strong>Psicologia Revolucionária:</strong> Autoconhecimento prático, observação do ego, dissolução dos agregados psicológicos e o despertar da consciência.</li>
+        <li><strong>Alquimia &amp; Tantrismo Branco:</strong> A ciência sagrada da transmutação das energias vitais e o caminho da autorrealização íntima do Ser.</li>
+        <li><strong>Tarot &amp; Cabala:</strong> O simbolismo dos 22 Arcanos Maiores, os Arcanos Menores, a Árvore da Vida e a ciência dos números sagrados.</li>
+        <li><strong>Mística &amp; Filosofia Sagrada:</strong> O conhecimento dos Arcontes, a redenção de Pistis Sophia, o Cristo Cósmico e o esoterismo gnóstico profundo.</li>
+      </ul>
+
+      <p>Com o <em>Pergunte à Gnosis</em>, você obtém respostas fundamentadas diretamente em mais de 90 livros, com citações precisas de capítulo e página.</p>
+      <p><em>Para acessar a experiência interativa em tempo real com busca vetorial e inteligência artificial, habilite o JavaScript em seu navegador.</em></p>
+    </main>
+  </noscript>
 
   <script src="flutter_bootstrap.js" async></script>
 </body>

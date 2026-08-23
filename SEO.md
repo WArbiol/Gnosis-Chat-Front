@@ -11,7 +11,7 @@ Se desejar alterar qualquer título, descrição, imagem ou palavra-chave, você
 | Campo | Valor Configurado | Objetivo |
 | :--- | :--- | :--- |
 | **Título da Página (`<title>`)** | `Pergunte à Gnosis \| IA Gnóstica & Sabedoria Sagrada` | 50-60 caracteres. Palavras-chave no início para alto ranqueamento. |
-| **Meta Description** | `Explore o Gnosticismo, a Sabedoria Sagrada e o Esoterismo com o Pergunte à Gnosis. IA especializada nas obras de Samael Aun Weor, Lakhsmi Daimon, Pistis Sophia, Alquimia, Psicologia Revolucionária, Tarot e Cabala.` | 150-160 caracteres com alta taxa de clique (CTR). |
+| **Meta Description** | `Explore a Gnosis e a Sabedoria Sagrada com o Pergunte à Gnosis. IA especializada nas obras de Samael Aun Weor, Lakhsmi Daimon, Pistis Sophia, Alquimia, Psicologia, Tarot, Cabala, Autoconhecimento e muito mais.` | 150-160 caracteres com alta taxa de clique (CTR). |
 | **Palavras-Chave (`keywords`)** | `Gnosis, Gnosticismo, Samael Aun Weor, Lakhsmi Daimon, Esoterismo, Pistis Sophia, Alquimia, Psicologia Revolucionária, Tarot, Cabala, Autoconhecimento, Despertar da Consciência, Meditação, Kundalini, Inteligência Artificial Gnóstica, Pergunte à Gnosis` | Termos mais buscados por estudantes e buscadores espirituais. |
 | **URL Canônica** | `https://gnosischat.com/` | Evita conteúdo duplicado entre subdomínios ou parâmetros de URL. |
 | **Idioma** | `pt-BR` | Define português brasileiro como idioma primário do conteúdo. |
@@ -24,7 +24,7 @@ Se desejar alterar qualquer título, descrição, imagem ou palavra-chave, você
 Quando um link do site é compartilhado no WhatsApp, Telegram, Facebook, LinkedIn ou Twitter/X, o seguinte card é exibido automaticamente:
 
 * **Título Social:** `Pergunte à Gnosis | IA Gnóstica & Sabedoria Sagrada`
-* **Descrição Social:** `Explore o Gnosticismo, a Sabedoria Sagrada e o Esoterismo com o Pergunte à Gnosis. IA especializada nas obras de Samael Aun Weor, Lakhsmi Daimon, Pistis Sophia, Alquimia, Tarot e Autoconhecimento.`
+* **Descrição Social:** `Explore a Gnosis e a Sabedoria Sagrada com o Pergunte à Gnosis. IA especializada nas obras de Samael Aun Weor, Lakhsmi Daimon, Pistis Sophia, Alquimia, Psicologia, Tarot, Cabala, Autoconhecimento e muito mais.`
 * **Imagem de Pré-Visualização (`og:image`):** `https://gnosischat.com/icons/Icon-512.png` (512x512 px)
 * **Formato Twitter Card:** `summary` (Card elegante com ícone e texto)
 

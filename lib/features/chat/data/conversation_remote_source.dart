@@ -233,7 +233,6 @@ class ConversationRemoteSource {
         rootUrl,
         options: Options(
           receiveTimeout: const Duration(seconds: 4),
-          sendTimeout: const Duration(seconds: 4),
         ),
       );
     } catch (_) {

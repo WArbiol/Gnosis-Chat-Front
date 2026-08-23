@@ -18,13 +18,13 @@ void main() {
       ),
     );
 
-    expect(find.text('O que é a Gnosis?'), findsOneWidget);
-    expect(find.text('Os Quatro Pilares do Saber'), findsOneWidget);
+    expect(find.text('Gnosis'), findsOneWidget);
+    expect(find.text('As Quatro Chaves do Saber'), findsOneWidget);
     expect(find.text('Ciência'), findsOneWidget);
     expect(find.text('Arte'), findsOneWidget);
     expect(find.text('Filosofia'), findsOneWidget);
-    expect(find.text('Religião (Religare)'), findsOneWidget);
-    expect(find.text('gnosisbrasil.com'), findsOneWidget);
+    expect(find.text('Mística & Religião'), findsOneWidget);
+    expect(find.textContaining('gnosisbrasil.com'), findsOneWidget);
     expect(find.text('App Store'), findsOneWidget);
     expect(find.text('Google Play'), findsOneWidget);
   });

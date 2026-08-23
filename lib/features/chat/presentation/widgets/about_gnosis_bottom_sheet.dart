@@ -77,34 +77,71 @@ class AboutGnosisBottomSheet extends StatelessWidget {
         child: Container(
           constraints: BoxConstraints(maxHeight: maxHeight),
           decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.92),
+            color: const Color(0xFF101014).withValues(alpha: 0.95),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             border: Border(
               top: BorderSide(
-                color: AppColors.accent.withValues(alpha: 0.25),
+                color: AppColors.accent.withValues(alpha: 0.3),
                 width: 1.2,
               ),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accent.withValues(alpha: 0.08),
-                blurRadius: 30,
-                offset: const Offset(0, -5),
-              ),
-            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Top Bar with Drag Handle and Close button
+              // Drag Handle
+              const SizedBox(height: 10),
+              const Center(child: _DragHandle()),
+              const SizedBox(height: 8),
+
+              // Header with Official Logo, Title & Close Button
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   children: [
-                    const SizedBox(width: 32),
-                    const Expanded(
-                      child: Center(
-                        child: _DragHandle(),
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.accent.withValues(alpha: 0.25),
+                            blurRadius: 16,
+                            spreadRadius: 1,
+                          ),
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                            blurRadius: 20,
+                          ),
+                        ],
+                      ),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: ShaderMask(
+                        shaderCallback: (bounds) => const LinearGradient(
+                          colors: [
+                            AppColors.accentLight,
+                            AppColors.accent,
+                            AppColors.accentLight,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ).createShader(bounds),
+                        child: const Text(
+                          'Gnosis',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 23,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                       ),
                     ),
                     IconButton(
@@ -114,149 +151,122 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.white.withValues(alpha: 0.06),
                         padding: EdgeInsets.zero,
-                        minimumSize: const Size(32, 32),
+                        minimumSize: const Size(34, 34),
                       ),
                     ),
                   ],
                 ),
               ),
 
+              const SizedBox(height: 12),
+              const Divider(color: Color(0x1FFFFFFF), height: 1),
+
               // Scrollable Content
               Flexible(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 36),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Header Emblem
-                      Center(
-                        child: Container(
-                          width: 68,
-                          height: 68,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                AppColors.accent.withValues(alpha: 0.25),
-                                AppColors.accent.withValues(alpha: 0.05),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.6, 1.0],
-                            ),
-                            border: Border.all(
-                              color: AppColors.accent.withValues(alpha: 0.35),
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.accent.withValues(alpha: 0.15),
-                                blurRadius: 20,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.auto_awesome_rounded,
-                              color: AppColors.accentLight,
-                              size: 32,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Title
-                      Center(
-                        child: ShaderMask(
-                          shaderCallback: (bounds) => const LinearGradient(
+                      // Magnetic Hook Card (Instigante e Empolgante)
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
                             colors: [
-                              AppColors.accentLight,
-                              AppColors.accent,
-                              AppColors.accentLight,
+                              AppColors.primaryDark.withValues(alpha: 0.25),
+                              const Color(0xFF16161F),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                          ).createShader(bounds),
-                          child: const Text(
-                            'O que é a Gnosis?',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.4,
+                          ),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: AppColors.accent.withValues(alpha: 0.25),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.explore_rounded, color: AppColors.accentLight, size: 20),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Um Mapa para o Invisível',
+                                  style: TextStyle(
+                                    color: AppColors.accentLight,
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            SizedBox(height: 10),
+                            Text(
+                              'A Gnosis não é uma crença cega nem teoria abstrata: é a chave viva do autoconhecimento. '
+                              'Guardada pelas grandes civilizações — do Egito e Grécia ao Oriente e Maias —, '
+                              'ela revela os mistérios do cosmos e responde à pergunta mais fascinante de todas: quem você realmente é.',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
 
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 20),
 
-                      Center(
-                        child: Text(
-                          'A Sabedoria Sagrada & O Conhecimento do Ser',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: AppColors.onSurfaceVariant.withValues(alpha: 0.9),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Introduction Card
-                      const _ContentCard(
-                        icon: Icons.lightbulb_outline_rounded,
-                        title: 'Conhecimento Vivo e Interior',
-                        content:
-                            'Etimologicamente, a palavra Gnosis provém do grego e significa "conhecimento iluminado e vivencial". '
-                            'Longe de ser uma mera crença, dogma ou filosofia convencional, a Gnosis é o funcionalismo natural da consciência humana — uma sabedoria eterna e universal presente nas grandes culturas e tradições sagradas da humanidade.',
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Section: Os 4 Pilares
+                      // Section Title: As 4 Chaves da Sabedoria
                       const Text(
-                        'Os Quatro Pilares do Saber',
+                        'As Quatro Chaves do Saber',
                         style: TextStyle(
-                          color: AppColors.accentLight,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
                           letterSpacing: 0.3,
                         ),
                       ),
 
                       const SizedBox(height: 12),
 
+                      // 2x2 Grid of Keys
                       LayoutBuilder(
                         builder: (context, constraints) {
-                          final isWide = constraints.maxWidth > 500;
+                          final isWide = constraints.maxWidth > 480;
                           final items = [
-                            const _PillarItem(
+                            const _PillarCard(
                               icon: Icons.biotech_rounded,
                               title: 'Ciência',
-                              description: 'A ciência do laboratório interior, que estuda as leis da Natureza e ensina o autoconhecimento prático no momento presente.',
+                              color: AppColors.primaryLight,
+                              badgeBg: Color(0x253A7BD5),
+                              description: 'O laboratório da mente e as leis ocultas da natureza.',
                             ),
-                            const _PillarItem(
+                            const _PillarCard(
                               icon: Icons.palette_outlined,
                               title: 'Arte',
-                              description: 'A Arte Régia que une a sabedoria das antigas civilizações à capacidade de esculpir as virtudes da Alma.',
+                              color: AppColors.flameLight,
+                              badgeBg: Color(0x25C94040),
+                              description: 'A beleza sagrada dos mistérios antigos e da alma.',
                             ),
-                            const _PillarItem(
+                            const _PillarCard(
                               icon: Icons.menu_book_rounded,
                               title: 'Filosofia',
-                              description: 'A sabedoria perene que responde às grandes inquietações existenciais ("Quem sou?", "Para que existo?") e guia a reflexão diária.',
+                              color: AppColors.accentLight,
+                              badgeBg: Color(0x25E8B730),
+                              description: 'Respostas reais para: "Quem sou eu?" e "Para onde vou?".',
                             ),
-                            const _PillarItem(
+                            const _PillarCard(
                               icon: Icons.spa_outlined,
-                              title: 'Religião (Religare)',
-                              description: 'O resgate da essência de "Religare": a união e reconexão íntima do coração humano com a sua própria Centelha Divina Interior.',
+                              title: 'Mística & Religião',
+                              color: Color(0xFF4EDB8C),
+                              badgeBg: Color(0x254CAF50),
+                              description: 'A reconexão direta do coração com a Centelha Divina.',
                             ),
                           ];
 
@@ -283,27 +293,47 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                         },
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 18),
 
-                      // Auto-Gnosis Card
-                      const _ContentCard(
-                        icon: Icons.self_improvement_rounded,
-                        title: 'Auto-Gnosis: Conhece-te a ti Mesmo',
-                        content:
-                            'O ponto central do ensinamento gnóstico é o autoconhecimento prático. '
-                            'Através da auto-observação, da meditação e da regeneração da energia interior, a Gnosis ensina a transformar o "chumbo" da personalidade no "ouro" puro do Espírito, despertando as mais nobres faculdades da alma.',
+                      // Action Hook: Pergunte e Descubra
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF14141A),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.chat_bubble_outline_rounded, color: AppColors.accent, size: 20),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Faça uma pergunta sobre sonhos, símbolos ou espiritualidade e descubra o que a Gnosis tem a revelar.',
+                                style: TextStyle(
+                                  color: AppColors.onSurfaceVariant,
+                                  fontSize: 12.5,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
-                      // Card Saiba Mais (gnosisbrasil.com)
+                      // Official Portal Link
                       Material(
                         color: Colors.transparent,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16),
                           onTap: () => _openUrl(context, 'https://gnosisbrasil.com'),
                           child: Container(
-                            padding: const EdgeInsets.all(18),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
@@ -316,14 +346,21 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: AppColors.accent.withValues(alpha: 0.35),
-                                width: 1,
+                                width: 1.2,
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.accent.withValues(alpha: 0.08),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  width: 44,
-                                  height: 44,
+                                  width: 38,
+                                  height: 38,
                                   decoration: BoxDecoration(
                                     color: AppColors.accent.withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
@@ -331,28 +368,28 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                                   child: const Icon(
                                     Icons.public_rounded,
                                     color: AppColors.accentLight,
-                                    size: 24,
+                                    size: 20,
                                   ),
                                 ),
-                                const SizedBox(width: 16),
+                                const SizedBox(width: 14),
                                 const Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Conheça o Portal Oficial',
+                                        'Explore o Portal Gnosis Brasil',
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                      SizedBox(height: 3),
+                                      SizedBox(height: 2),
                                       Text(
-                                        'gnosisbrasil.com',
+                                        'Cursos, acervo e práticas gratuitas • gnosisbrasil.com',
                                         style: TextStyle(
                                           color: AppColors.accentLight,
-                                          fontSize: 13,
+                                          fontSize: 11.5,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -362,7 +399,7 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                                 const Icon(
                                   Icons.arrow_outward_rounded,
                                   color: AppColors.accentLight,
-                                  size: 20,
+                                  size: 18,
                                 ),
                               ],
                             ),
@@ -370,75 +407,29 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 18),
 
-                      // Section: Baixe o Aplicativo (Web & Mobile)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.03),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.08),
-                            width: 1,
+                      // Section: Baixe o Aplicativo (Clean Store Buttons)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _StoreButton(
+                              icon: Icons.apple_rounded,
+                              storeName: 'App Store',
+                              badge: 'iOS',
+                              onTap: () => _showAppStoreMockNotice(context, 'App Store (iOS)'),
+                            ),
                           ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.phone_iphone_rounded,
-                                  color: AppColors.accent.withValues(alpha: 0.8),
-                                  size: 18,
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Aplicativo Móvel',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
-                              ],
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _StoreButton(
+                              icon: Icons.play_arrow_rounded,
+                              storeName: 'Google Play',
+                              badge: 'Android',
+                              onTap: () => _showAppStoreMockNotice(context, 'Google Play (Android)'),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Tenha o acervo e a sabedoria sagrada sempre ao seu alcance.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: AppColors.onSurfaceVariant.withValues(alpha: 0.8),
-                                fontSize: 12,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _StoreButton(
-                                    icon: Icons.apple_rounded,
-                                    storeName: 'App Store',
-                                    badge: 'iOS',
-                                    onTap: () => _showAppStoreMockNotice(context, 'App Store (iOS)'),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _StoreButton(
-                                    icon: Icons.play_arrow_rounded,
-                                    storeName: 'Google Play',
-                                    badge: 'Android',
-                                    onTap: () => _showAppStoreMockNotice(context, 'Google Play (Android)'),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -458,7 +449,7 @@ class _DragHandle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 38,
+      width: 36,
       height: 4,
       decoration: BoxDecoration(
         color: AppColors.onSurfaceVariant.withValues(alpha: 0.35),
@@ -468,73 +459,19 @@ class _DragHandle extends StatelessWidget {
   }
 }
 
-class _ContentCard extends StatelessWidget {
-  const _ContentCard({
+class _PillarCard extends StatelessWidget {
+  const _PillarCard({
     required this.icon,
     required this.title,
-    required this.content,
-  });
-
-  final IconData icon;
-  final String title;
-  final String content;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF18181C).withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: AppColors.accentLight, size: 18),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            content,
-            style: TextStyle(
-              color: AppColors.onSurface.withValues(alpha: 0.88),
-              fontSize: 13.5,
-              height: 1.5,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PillarItem extends StatelessWidget {
-  const _PillarItem({
-    required this.icon,
-    required this.title,
+    required this.color,
+    required this.badgeBg,
     required this.description,
   });
 
   final IconData icon;
   final String title;
+  final Color color;
+  final Color badgeBg;
   final String description;
 
   @override
@@ -542,49 +479,48 @@ class _PillarItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF141418).withValues(alpha: 0.75),
+        color: const Color(0xFF16161D),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: AppColors.accent.withValues(alpha: 0.15),
+          color: color.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: AppColors.accentLight, size: 16),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: badgeBg,
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: Icon(icon, color: color, size: 15),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: AppColors.onSurfaceVariant.withValues(alpha: 0.9),
-                    fontSize: 11.5,
-                    height: 1.35,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 6),
+          Text(
+            description,
+            style: TextStyle(
+              color: AppColors.onSurfaceVariant.withValues(alpha: 0.95),
+              fontSize: 11.5,
+              height: 1.3,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -615,10 +551,10 @@ class _StoreButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E1E24).withValues(alpha: 0.85),
+            color: const Color(0xFF181820),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.12),
+              color: Colors.white.withValues(alpha: 0.08),
               width: 1,
             ),
           ),

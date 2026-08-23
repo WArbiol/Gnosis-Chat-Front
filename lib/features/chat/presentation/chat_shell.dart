@@ -7,6 +7,7 @@ import 'package:gnosis_chat/features/chat/presentation/chat_screen.dart';
 import 'package:gnosis_chat/features/chat/presentation/conversation_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/conversations_panel.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/profile_bottom_sheet.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/about_gnosis_bottom_sheet.dart';
 
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 
@@ -97,6 +98,10 @@ class _ChatShellState extends ConsumerState<ChatShell>
     );
   }
 
+  void _showAboutGnosis() {
+    AboutGnosisBottomSheet.show(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     // Sync messages to active conversation whenever they change
@@ -154,6 +159,7 @@ class _ChatShellState extends ConsumerState<ChatShell>
                       ChatScreen(
                         onMenuTap: _togglePanel,
                         onProfileTap: _showProfile,
+                        onGnosisTap: _showAboutGnosis,
                       ),
                       // Scrim overlay when panel is open
                       AnimatedBuilder(

@@ -17,13 +17,20 @@ import 'package:gnosis_chat/features/chat/presentation/widgets/animated_message.
 import 'package:gnosis_chat/features/chat/presentation/widgets/empty_state.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/glass_input_bar.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/premium_app_bar.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/about_gnosis_bottom_sheet.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({super.key, this.onMenuTap, this.onProfileTap});
+  const ChatScreen({
+    super.key,
+    this.onMenuTap,
+    this.onProfileTap,
+    this.onGnosisTap,
+  });
 
   final VoidCallback? onMenuTap;
   final VoidCallback? onProfileTap;
+  final VoidCallback? onGnosisTap;
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -440,6 +447,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                 user: user,
                 onMenuTap: widget.onMenuTap,
                 onProfileTap: widget.onProfileTap,
+                onGnosisTap: widget.onGnosisTap ??
+                    () => AboutGnosisBottomSheet.show(context),
               ),
             ),
           ),

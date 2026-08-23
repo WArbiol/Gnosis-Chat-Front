@@ -12,12 +12,14 @@ class PremiumAppBar extends StatelessWidget {
     this.user,
     this.onMenuTap,
     this.onProfileTap,
+    this.onGnosisTap,
   });
 
   final Animation<double> glowAnim;
   final UserEntity? user;
   final VoidCallback? onMenuTap;
   final VoidCallback? onProfileTap;
+  final VoidCallback? onGnosisTap;
 
   @override
   Widget build(BuildContext context) {
@@ -70,28 +72,37 @@ class PremiumAppBar extends StatelessWidget {
               ),
             ),
 
-            // Gnosis Title Capsule
+            // Gnosis Title Capsule (Interactive)
             GnosisLiquidGlass(
               cornerRadius: 20,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
-              enableTouchFlex: false,
-              child: ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [
-                    AppColors.accent,
-                    AppColors.accentLight,
-                    AppColors.accent,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ).createShader(bounds),
-                child: Text(
-                  'Gnosis',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                    letterSpacing: 0.5,
+              enableTouchFlex: true,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: onGnosisTap,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                    child: ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [
+                          AppColors.accent,
+                          AppColors.accentLight,
+                          AppColors.accent,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ).createShader(bounds),
+                      child: Text(
+                        'Gnosis',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -159,9 +170,8 @@ class PremiumAppBar extends StatelessWidget {
             ),
           ),
 
-          // 2. Gnosis Title Capsule on Web
+          // 2. Gnosis Title Capsule on Web (Interactive)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
             decoration: BoxDecoration(
               color: const Color(0xF218181C),
               borderRadius: BorderRadius.circular(20),
@@ -177,13 +187,23 @@ class PremiumAppBar extends StatelessWidget {
                 ),
               ],
             ),
-            child: Text(
-              'Gnosis',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppColors.accentLight,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-                letterSpacing: 0.5,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: onGnosisTap,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                  child: Text(
+                    'Gnosis',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: AppColors.accentLight,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),

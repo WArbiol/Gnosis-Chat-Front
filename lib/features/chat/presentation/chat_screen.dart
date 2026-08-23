@@ -43,11 +43,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   @override
   void initState() {
     super.initState();
+    Future.microtask(() {
+      ref.read(conversationRemoteSourceProvider).warmupServer();
+    });
     _lifecycleListener = AppLifecycleListener(
       onResume: () {
         debugPrint('LIFECYCLE: App resumed. Refreshing session and data...');
         ref.read(authProvider.notifier).ensureValidSessionAndRefresh();
         ref.read(conversationProvider.notifier).loadConversations();
+        ref.read(conversationRemoteSourceProvider).warmupServer();
       },
     );
     _glowCtrl = AnimationController(

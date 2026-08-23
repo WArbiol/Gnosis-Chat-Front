@@ -222,4 +222,22 @@ class ConversationRemoteSource {
     final data = response.data as List;
     return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
+
+  Future<void> warmupServer() async {
+    try {
+      final baseUrl = _dio.options.baseUrl;
+      final rootUrl = baseUrl.endsWith('/api/v1/')
+          ? baseUrl.replaceAll('/api/v1/', '/health')
+          : '${baseUrl}health';
+      await _dio.get(
+        rootUrl,
+        options: Options(
+          receiveTimeout: const Duration(seconds: 4),
+          sendTimeout: const Duration(seconds: 4),
+        ),
+      );
+    } catch (_) {
+      // Warmup is strictly best-effort and silent
+    }
+  }
 }

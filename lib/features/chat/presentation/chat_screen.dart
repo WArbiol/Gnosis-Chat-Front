@@ -287,6 +287,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
             final listView = ListView.builder(
               controller: _scrollCtrl,
+              // ignore: deprecated_member_use
               cacheExtent: 1000.0,
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),

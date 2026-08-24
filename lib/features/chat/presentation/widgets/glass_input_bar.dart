@@ -279,22 +279,23 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
     }
 
     if (!kIsWeb) {
-      // Mobile native: liquid glass lens with pleasant slate-gray input tint
+      // Mobile native: subtle, ultra-premium liquid glass lens
       return SafeArea(
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
           child: GnosisLiquidGlass(
             cornerRadius: 28,
-            borderWidth: _hasFocus ? 1.4 : 0.85,
+            borderWidth: _hasFocus ? 1.2 : 0.75,
             borderColor: _hasFocus
-                ? AppColors.accent.withValues(alpha: 0.70)
-                : Colors.white.withValues(alpha: 0.20),
-            tintColor: const Color(0x8C303034), // Slightly less transparent neutral graphite
-            blurSigma: 5.0,
-            lightIntensity: 0.85,
-            distortion: 0.12,
-            distortionWidth: 20.0,
+                ? AppColors.accent.withValues(alpha: 0.60)
+                : Colors.white.withValues(alpha: 0.14),
+            tintColor: const Color(0x38181822), // Subtle translucent dark glass
+            blurSigma: 2.8,
+            shadowOpacity: 0.35,
+            lightIntensity: 0.55, // Refined, soft top specular sheen
+            distortion: 0.06, // Subtle, natural lens refraction
+            distortionWidth: 14.0,
             enableTouchFlex: false,
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: _buildInputBody(chips, activeFilters),

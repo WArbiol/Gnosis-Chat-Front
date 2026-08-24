@@ -164,15 +164,17 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
                   textInputAction: TextInputAction.newline,
                   style: const TextStyle(
                     color: AppColors.onSurface,
-                    fontSize: 15,
+                    fontSize: 16,
+                    letterSpacing: -0.1,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Pergunte à Gnosis...',
                     hintStyle: TextStyle(
                       color: AppColors.onSurfaceVariant.withValues(
-                        alpha: 0.5,
+                        alpha: 0.65,
                       ),
-                      fontSize: 15,
+                      fontSize: 16,
+                      letterSpacing: -0.1,
                     ),
                     filled: false,
                     border: InputBorder.none,
@@ -279,58 +281,52 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
     }
 
     if (!kIsWeb) {
-      // Mobile native: rich smoked liquid glass lens with soft diffusion & top specular reflection
-      return SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-          child: GnosisLiquidGlass(
-            cornerRadius: 28,
-            borderWidth: _hasFocus ? 1.2 : 0.75,
-            borderColor: _hasFocus
-                ? AppColors.accent.withValues(alpha: 0.60)
-                : Colors.white.withValues(alpha: 0.14),
-            tintColor: const Color(0xC0181820), // Rich dark smoked fumê (~75% opacity)
-            blurSigma: 14.0, // Deep creamy background diffusion
-            shadowOpacity: 0.35,
-            lightIntensity: 0.65, // Elegant Apple specular reflection
-            distortion: 0.04, // Gentle, natural edge refraction
-            distortionWidth: 12.0,
-            enableTouchFlex: false,
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-            child: _buildInputBody(chips, activeFilters),
-          ),
+      // Mobile native: rich smoked liquid glass lens positioned comfortably near bottom edge
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(14, 2, 14, 4),
+        child: GnosisLiquidGlass(
+          cornerRadius: 28,
+          borderWidth: _hasFocus ? 1.2 : 0.75,
+          borderColor: _hasFocus
+              ? AppColors.accent.withValues(alpha: 0.60)
+              : Colors.white.withValues(alpha: 0.14),
+          tintColor: const Color(0xC0181820), // Rich dark smoked fumê (~75% opacity)
+          blurSigma: 14.0, // Deep creamy background diffusion
+          shadowOpacity: 0.35,
+          lightIntensity: 0.65, // Elegant Apple specular reflection
+          distortion: 0.04, // Gentle, natural edge refraction
+          distortionWidth: 12.0,
+          enableTouchFlex: false,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: _buildInputBody(chips, activeFilters),
         ),
       );
     }
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            color: const Color(0xF6202024),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.35),
-                blurRadius: 18,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            border: Border.all(
-              color: _hasFocus
-                  ? AppColors.accent.withValues(alpha: 0.50)
-                  : Colors.white.withValues(alpha: 0.08),
-              width: _hasFocus ? 1.2 : 0.65,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 2, 14, 4),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          color: const Color(0xF6202024),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 18,
+              offset: const Offset(0, 4),
             ),
+          ],
+          border: Border.all(
+            color: _hasFocus
+                ? AppColors.accent.withValues(alpha: 0.50)
+                : Colors.white.withValues(alpha: 0.08),
+            width: _hasFocus ? 1.2 : 0.65,
           ),
-          child: _buildInputBody(chips, activeFilters),
         ),
+        child: _buildInputBody(chips, activeFilters),
       ),
     );
   }

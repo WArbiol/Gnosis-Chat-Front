@@ -298,7 +298,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                 top:
                     topPadding +
                     64, // Comfortably below floating header on start
-                bottom: bottomPadding + 110,
+                bottom: bottomPadding + 85,
               ),
               itemCount: itemCount,
               itemBuilder: (context, index) {

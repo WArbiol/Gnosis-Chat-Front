@@ -279,7 +279,7 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
     }
 
     if (!kIsWeb) {
-      // Mobile native: liquid glass lens with soft background diffusion & top specular reflection
+      // Mobile native: rich smoked liquid glass lens with soft diffusion & top specular reflection
       return SafeArea(
         top: false,
         child: Padding(
@@ -289,11 +289,11 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
             borderWidth: _hasFocus ? 1.2 : 0.75,
             borderColor: _hasFocus
                 ? AppColors.accent.withValues(alpha: 0.60)
-                : Colors.white.withValues(alpha: 0.16),
-            tintColor: const Color(0x66181822), // Dark, smoky translucent glass
-            blurSigma: 6.0, // Soft frosted background diffusion
-            shadowOpacity: 0.40,
-            lightIntensity: 0.60, // Clear Apple specular reflection
+                : Colors.white.withValues(alpha: 0.14),
+            tintColor: const Color(0xC0181820), // Rich dark smoked fumê (~75% opacity)
+            blurSigma: 14.0, // Deep creamy background diffusion
+            shadowOpacity: 0.35,
+            lightIntensity: 0.65, // Elegant Apple specular reflection
             distortion: 0.04, // Gentle, natural edge refraction
             distortionWidth: 12.0,
             enableTouchFlex: false,

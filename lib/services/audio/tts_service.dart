@@ -166,9 +166,10 @@ class TtsNotifier extends StateNotifier<TtsState> {
     }
 
     try {
+      debugPrint('🔊 [TTS] Speaking sentence [${_currentIndex + 1}/${_sentenceQueue.length}]: "$sentence"');
       await _flutterTts.speak(sentence);
     } catch (e) {
-      debugPrint('Native TTS speak error: $e');
+      debugPrint('❌ [TTS] Native TTS speak error: $e');
     }
   }
 
@@ -181,19 +182,42 @@ class TtsNotifier extends StateNotifier<TtsState> {
       await _flutterTts.setPitch(state.pitch);
 
       final dynamic voices = await _flutterTts.getVoices;
+      debugPrint('🎙️ [TTS] Listing available voices (${voices is List ? voices.length : 0} total found on device):');
       if (voices is List && voices.isNotEmpty) {
+        for (final v in voices) {
+          if (v is Map) {
+            final name = v['name'] ?? '';
+            final locale = v['locale'] ?? '';
+            final uri = v['voiceURI'] ?? v['identifier'] ?? '';
+            final gender = v['gender'] ?? '';
+            if (locale.toString().toLowerCase().contains('pt') ||
+                name.toString().toLowerCase().contains('siri') ||
+                uri.toString().toLowerCase().contains('siri')) {
+              debugPrint('   🗣️ PT/Siri Voice: name="$name", locale="$locale", uri="$uri", gender="$gender"');
+            }
+          }
+        }
+
         final selectedVoice = selectBestVoice(voices, defaultTargetPlatform);
         if (selectedVoice != null) {
           final voiceName = selectedVoice['name']?.toString() ?? '';
           final voiceLocale = selectedVoice['locale']?.toString() ?? 'pt-BR';
-          await _flutterTts.setVoice({
+          final voiceUri = selectedVoice['voiceURI']?.toString() ?? selectedVoice['identifier']?.toString() ?? '';
+          debugPrint('🎯 [TTS] CHOSEN VOICE -> name="$voiceName", locale="$voiceLocale", uri="$voiceUri"');
+
+          final setResult = await _flutterTts.setVoice({
             'name': voiceName,
             'locale': voiceLocale,
           });
+          debugPrint('✅ [TTS] setVoice completed with result: $setResult');
+        } else {
+          debugPrint('⚠️ [TTS] No specific Portuguese voice selected, using OS default voice for pt-BR');
         }
+      } else {
+        debugPrint('⚠️ [TTS] getVoices returned empty or non-list: $voices');
       }
-    } catch (e) {
-      debugPrint('TTS voice configuration error: $e');
+    } catch (e, stack) {
+      debugPrint('❌ [TTS] voice configuration error: $e\n$stack');
     }
   }
 

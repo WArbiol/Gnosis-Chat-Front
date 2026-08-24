@@ -23,7 +23,7 @@ void main() {
     expect(find.text('Ciência'), findsOneWidget);
     expect(find.text('Arte'), findsOneWidget);
     expect(find.text('Filosofia'), findsOneWidget);
-    expect(find.text('Mística & Religião'), findsOneWidget);
+    expect(find.text('Religião'), findsOneWidget);
     expect(find.textContaining('gnosisbrasil.com'), findsOneWidget);
     expect(find.text('App Store'), findsOneWidget);
     expect(find.text('Google Play'), findsOneWidget);

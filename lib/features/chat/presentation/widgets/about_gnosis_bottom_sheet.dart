@@ -263,10 +263,10 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                             ),
                             const _PillarCard(
                               icon: Icons.spa_outlined,
-                              title: 'Mística & Religião',
+                              title: 'Religião',
                               color: Color(0xFF4EDB8C),
                               badgeBg: Color(0x254CAF50),
-                              description: 'A reconexão direta do coração com a Centelha Divina.',
+                              description: 'O Religare do coração com a Centelha Divina.',
                             ),
                           ];
 

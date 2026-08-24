@@ -259,17 +259,26 @@ class TtsNotifier extends StateNotifier<TtsState> {
 
       if (!isPortuguese) continue;
 
+      final isLowQualitySynthetic =
+          voiceUri.contains('super-compact') ||
+          voiceUri.contains('eloquence');
+
       if (isIos) {
-        // iOS / iPhone: Top priority is Siri
+        // iOS / iPhone: Top priority is Siri or Voz da Siri
         if (combined.contains('siri') ||
             combined.contains('voz da siri') ||
+            name == 'voz 1' ||
+            name == 'voz 2' ||
+            name == 'voice 1' ||
+            name == 'voice 2' ||
             voiceUri.contains('siri')) {
           return v; // Immediate match for Siri on iOS
         }
 
-        // Secondary priority on iOS: Premium / Enhanced / Neural natural voices
+        // Secondary priority on iOS: Premium / Enhanced / Aprimorada / Neural natural voices
         if (combined.contains('premium') ||
             combined.contains('enhanced') ||
+            combined.contains('aprimorada') ||
             combined.contains('neural')) {
           bestPlatformVoice ??= v;
         }
@@ -311,11 +320,20 @@ class TtsNotifier extends StateNotifier<TtsState> {
           name.contains('wavenet-c') ||
           name.contains('wavenet-d');
 
-      if (isExplicitMale && bestMaleVoice == null) {
-        bestMaleVoice = v;
-      }
+      if (!isLowQualitySynthetic) {
+        if (isExplicitMale && bestMaleVoice == null) {
+          bestMaleVoice = v;
+        }
 
-      fallbackPtVoice ??= v;
+        fallbackPtVoice ??= v;
+      }
+    }
+
+    if (isIos) {
+      // On iOS: If no high-quality Siri/Enhanced voice was identified in getVoices,
+      // return null so we don't force a super-compact robotic fallback.
+      // Leaving voice unset lets iOS speak with the system-selected voice (Siri Voz 2).
+      return bestPlatformVoice ?? bestMaleVoice;
     }
 
     return bestPlatformVoice ?? bestMaleVoice ?? fallbackPtVoice;

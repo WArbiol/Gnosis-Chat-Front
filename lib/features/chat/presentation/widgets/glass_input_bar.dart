@@ -6,6 +6,7 @@ import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/glass_filter_sheet.dart';
+import 'package:gnosis_chat/shared/widgets/gnosis_liquid_glass.dart';
 
 class GlassInputBar extends ConsumerStatefulWidget {
   const GlassInputBar({
@@ -277,6 +278,32 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
       );
     }
 
+    if (!kIsWeb) {
+      // Mobile native: liquid glass lens with soft background diffusion & top specular reflection
+      return SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+          child: GnosisLiquidGlass(
+            cornerRadius: 28,
+            borderWidth: _hasFocus ? 1.2 : 0.75,
+            borderColor: _hasFocus
+                ? AppColors.accent.withValues(alpha: 0.60)
+                : Colors.white.withValues(alpha: 0.16),
+            tintColor: const Color(0x66181822), // Dark, smoky translucent glass
+            blurSigma: 6.0, // Soft frosted background diffusion
+            shadowOpacity: 0.40,
+            lightIntensity: 0.60, // Clear Apple specular reflection
+            distortion: 0.04, // Gentle, natural edge refraction
+            distortionWidth: 12.0,
+            enableTouchFlex: false,
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: _buildInputBody(chips, activeFilters),
+          ),
+        ),
+      );
+    }
+
     return SafeArea(
       top: false,
       child: Padding(
@@ -287,7 +314,7 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
-            color: const Color(0xF6202024), // Sleek, clean ChatGPT dark obsidian
+            color: const Color(0xF6202024),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.35),

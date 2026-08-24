@@ -381,14 +381,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                   Color(0x80000000), // ~50% passando pela altura dos botões
                   Colors.black, // 100% nítido abaixo do header
                   Colors.black,
-                  Colors.transparent,
+                  Color(0xB3000000), // ~70% começando a transição suave antes do input
+                  Color(0x33000000), // ~20% entrando na área do input
+                  Colors.transparent, // 0% fade total no rodapé
                 ],
                 stops: [
                   0.0,
                   0.08,
-                  0.15, // Transição aveludada e gradual
-                  0.96,
-                  1.0,
+                  0.15, // Transição aveludada no topo
+                  0.80, // 100% nítido até 80% da tela
+                  0.88, // Início do fade down suave antes de chegar no input
+                  0.94, // Bem escuro/suave atrás do miolo do input
+                  1.0,  // Transparente total na base
                 ],
               ).createShader(bounds);
             },
@@ -425,6 +429,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                       AppColors.background,
                       AppColors.background.withValues(alpha: 0),
                     ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        // Bottom fade overlay on Web (0ms GPU overhead)
+        if (kIsWeb)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: bottomPadding + 110,
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      AppColors.background,
+                      AppColors.background.withValues(alpha: 0.75),
+                      AppColors.background.withValues(alpha: 0),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
                   ),
                 ),
               ),

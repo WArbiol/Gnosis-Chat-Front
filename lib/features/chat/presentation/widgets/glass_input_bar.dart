@@ -6,7 +6,6 @@ import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/chat_provider.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/glass_filter_sheet.dart';
-import 'package:gnosis_chat/shared/widgets/gnosis_liquid_glass.dart';
 
 class GlassInputBar extends ConsumerStatefulWidget {
   const GlassInputBar({
@@ -278,56 +277,29 @@ class _GlassInputBarState extends ConsumerState<GlassInputBar> {
       );
     }
 
-    if (!kIsWeb) {
-      // Mobile native: subtle, ultra-premium liquid glass lens
-      return SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-          child: GnosisLiquidGlass(
-            cornerRadius: 28,
-            borderWidth: _hasFocus ? 1.2 : 0.75,
-            borderColor: _hasFocus
-                ? AppColors.accent.withValues(alpha: 0.60)
-                : Colors.white.withValues(alpha: 0.14),
-            tintColor: const Color(0x38181822), // Subtle translucent dark glass
-            blurSigma: 2.8,
-            shadowOpacity: 0.35,
-            lightIntensity: 0.55, // Refined, soft top specular sheen
-            distortion: 0.06, // Subtle, natural lens refraction
-            distortionWidth: 14.0,
-            enableTouchFlex: false,
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-            child: _buildInputBody(chips, activeFilters),
-          ),
-        ),
-      );
-    }
-
-    // Web: High-performance sleek dark glass layout (0ms GPU blur pass)
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+          duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(26),
-            color: const Color(0xF21C1C22),
+            borderRadius: BorderRadius.circular(28),
+            color: const Color(0xF6202024), // Sleek, clean ChatGPT dark obsidian
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.35),
-                blurRadius: 16,
+                blurRadius: 18,
                 offset: const Offset(0, 4),
               ),
             ],
             border: Border.all(
               color: _hasFocus
                   ? AppColors.accent.withValues(alpha: 0.50)
-                  : Colors.white.withValues(alpha: 0.20),
-              width: _hasFocus ? 1.5 : 1,
+                  : Colors.white.withValues(alpha: 0.08),
+              width: _hasFocus ? 1.2 : 0.65,
             ),
           ),
           child: _buildInputBody(chips, activeFilters),

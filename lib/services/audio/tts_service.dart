@@ -237,8 +237,17 @@ class TtsNotifier extends StateNotifier<TtsState> {
 
       if (isIos) {
         // iOS / iPhone: Top priority is Siri
-        if (combined.contains('siri')) {
+        if (combined.contains('siri') ||
+            combined.contains('voz da siri') ||
+            voiceUri.contains('siri')) {
           return v; // Immediate match for Siri on iOS
+        }
+
+        // Secondary priority on iOS: Premium / Enhanced / Neural natural voices
+        if (combined.contains('premium') ||
+            combined.contains('enhanced') ||
+            combined.contains('neural')) {
+          bestPlatformVoice ??= v;
         }
       } else if (isAndroid) {
         // Android: Top priority is pt-br-x-* voices

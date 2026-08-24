@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gnosis_chat/services/audio/tts_service.dart';
 
@@ -47,6 +48,60 @@ void main() {
       expect(sentences[1], equals('Ela é a força primordial do Ser!'));
       expect(sentences[2], equals('Como despertar esse poder?'));
       expect(sentences[3], equals('Pratique a auto-observação.'));
+    });
+  });
+
+  group('TtsNotifier.selectBestVoice', () {
+    final mockVoices = [
+      {'name': 'en-US-Jenny', 'locale': 'en-US', 'gender': 'female'},
+      {'name': 'es-ES-Alvaro', 'locale': 'es-ES', 'gender': 'male'},
+      {'name': 'Luciana', 'locale': 'pt-BR', 'gender': 'female'},
+      {'name': 'Felipe', 'locale': 'pt-BR', 'gender': 'male'},
+      {'name': 'Siri (pt-BR)', 'locale': 'pt-BR', 'gender': 'female', 'voiceURI': 'com.apple.ttsbundle.siri_pt-BR'},
+      {'name': 'pt-br-x-ptd-local', 'locale': 'pt-BR', 'gender': 'male'},
+      {'name': 'pt-br-x-afs-local', 'locale': 'pt-BR', 'gender': 'female'},
+    ];
+
+    test('prioritizes Siri voice on iOS', () {
+      final selected = TtsNotifier.selectBestVoice(mockVoices, TargetPlatform.iOS);
+      expect(selected, isNotNull);
+      expect(selected!['name'], equals('Siri (pt-BR)'));
+    });
+
+    test('falls back to male voice on iOS when Siri is missing', () {
+      final voicesWithoutSiri = mockVoices.where((v) => !v['name']!.contains('Siri')).toList();
+      final selected = TtsNotifier.selectBestVoice(voicesWithoutSiri, TargetPlatform.iOS);
+      expect(selected, isNotNull);
+      expect(selected!['name'], equals('Felipe'));
+    });
+
+    test('prioritizes pt-br-x-* voices on Android', () {
+      final selected = TtsNotifier.selectBestVoice(mockVoices, TargetPlatform.android);
+      expect(selected, isNotNull);
+      expect(selected!['name'], equals('pt-br-x-ptd-local'));
+    });
+
+    test('falls back to male voice on Android when pt-br-x-* is missing', () {
+      final voicesWithoutX = mockVoices.where((v) => !v['name']!.contains('pt-br-x')).toList();
+      final selected = TtsNotifier.selectBestVoice(voicesWithoutX, TargetPlatform.android);
+      expect(selected, isNotNull);
+      expect(selected!['name'], equals('Felipe'));
+    });
+
+    test('prioritizes natural male voices on Desktop / macOS / Windows', () {
+      final selected = TtsNotifier.selectBestVoice(mockVoices, TargetPlatform.macOS);
+      expect(selected, isNotNull);
+      expect(selected!['name'], equals('Felipe'));
+    });
+
+    test('returns null when voice list is empty or contains no Portuguese voices', () {
+      expect(TtsNotifier.selectBestVoice([], TargetPlatform.android), isNull);
+      expect(
+        TtsNotifier.selectBestVoice([
+          {'name': 'en-US-Jenny', 'locale': 'en-US'},
+        ], TargetPlatform.iOS),
+        isNull,
+      );
     });
   });
 }

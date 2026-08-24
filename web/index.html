@@ -172,18 +172,76 @@
         
         var voices = window.speechSynthesis.getVoices();
         if (voices && voices.length > 0) {
+          var ua = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
+          var isIOS = /iphone|ipad|ipod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+          var isAndroid = /android/.test(ua);
+
+          var bestVoice = null;
+          var maleVoice = null;
+          var fallbackPtVoice = null;
+
           for (var i = 0; i < voices.length; i++) {
             var v = voices[i];
             var name = (v.name || '').toLowerCase();
-            var lang = (v.lang || '').toLowerCase();
-            if (lang.indexOf('pt') !== -1 || name.indexOf('brazil') !== -1 || name.indexOf('brasil') !== -1) {
-              if (name.indexOf('antonio') !== -1 || name.indexOf('daniel') !== -1 || name.indexOf('felipe') !== -1 || name.indexOf('ricardo') !== -1 || name.indexOf('male') !== -1 || name.indexOf('standard-b') !== -1 || name.indexOf('wavenet-b') !== -1) {
-                u.voice = v;
-                break;
-              } else if (!u.voice) {
-                u.voice = v;
+            var lang = (v.lang || '').toLowerCase().replace(/_/g, '-');
+            var uri = (v.voiceURI || '').toLowerCase();
+            var combined = name + ' ' + uri + ' ' + lang;
+
+            var isPortuguese = lang.indexOf('pt') !== -1 ||
+                               combined.indexOf('brazil') !== -1 ||
+                               combined.indexOf('brasil') !== -1 ||
+                               combined.indexOf('portug') !== -1 ||
+                               combined.indexOf('pt-br') !== -1;
+
+            if (isPortuguese) {
+              if (isIOS) {
+                // On iOS (iPhone / iPad): Prioritize Siri pt-BR voice
+                if (combined.indexOf('siri') !== -1) {
+                  bestVoice = v;
+                  break; // Top priority found for iOS
+                }
+              } else if (isAndroid) {
+                // On Android (Chrome / Mobile Android): Prioritize pt-br-x-* voices
+                if (combined.indexOf('pt-br-x') !== -1 || combined.indexOf('pt_br_x') !== -1) {
+                  if (combined.indexOf('ptd') !== -1 || combined.indexOf('pte') !== -1 || combined.indexOf('afs') !== -1) {
+                    bestVoice = v;
+                    if (combined.indexOf('ptd') !== -1) break;
+                  } else if (!bestVoice) {
+                    bestVoice = v;
+                  }
+                }
+              }
+
+              // Check for natural male voice (Desktop priority & mobile fallback)
+              var isMale = (v.gender === 'male' || (v.gender && v.gender.indexOf('male') !== -1 && v.gender.indexOf('female') === -1)) ||
+                           combined.indexOf('antonio') !== -1 ||
+                           combined.indexOf('daniel') !== -1 ||
+                           combined.indexOf('felipe') !== -1 ||
+                           combined.indexOf('ricardo') !== -1 ||
+                           combined.indexOf('jorge') !== -1 ||
+                           combined.indexOf('fabio') !== -1 ||
+                           combined.indexOf('arthur') !== -1 ||
+                           (combined.indexOf('male') !== -1 && combined.indexOf('female') === -1) ||
+                           combined.indexOf('standard-b') !== -1 ||
+                           combined.indexOf('standard-c') !== -1 ||
+                           combined.indexOf('standard-d') !== -1 ||
+                           combined.indexOf('wavenet-b') !== -1 ||
+                           combined.indexOf('wavenet-c') !== -1 ||
+                           combined.indexOf('wavenet-d') !== -1;
+
+              if (isMale && !maleVoice) {
+                maleVoice = v;
+              }
+
+              if (!fallbackPtVoice) {
+                fallbackPtVoice = v;
               }
             }
+          }
+
+          var selectedVoice = bestVoice || maleVoice || fallbackPtVoice;
+          if (selectedVoice) {
+            u.voice = selectedVoice;
           }
         }
         

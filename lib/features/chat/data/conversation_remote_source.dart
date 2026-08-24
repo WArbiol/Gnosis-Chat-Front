@@ -102,14 +102,22 @@ class ConversationRemoteSource {
     _activeStreamingClient = client;
 
     try {
-      final response = await client.send(request);
+      final response = await client.send(request).timeout(
+        const Duration(seconds: 40),
+        onTimeout: () {
+          throw DioException(
+            requestOptions: RequestOptions(path: url.toString()),
+            message: 'O servidor demorou para responder. Por favor, tente novamente.',
+          );
+        },
+      );
 
       if (response.statusCode != 200) {
-      throw DioException(
-        requestOptions: RequestOptions(path: url.toString()),
-        message: 'Falha ao se conectar com o servidor (Status: ${response.statusCode}).',
-      );
-    }
+        throw DioException(
+          requestOptions: RequestOptions(path: url.toString()),
+          message: 'Falha ao se conectar com o servidor (Status: ${response.statusCode}).',
+        );
+      }
 
     String buffer = '';
     Map<String, dynamic>? finalData;

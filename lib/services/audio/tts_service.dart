@@ -182,51 +182,7 @@ class TtsNotifier extends StateNotifier<TtsState> {
 
       final dynamic voices = await _flutterTts.getVoices;
       if (voices is List && voices.isNotEmpty) {
-        Map<dynamic, dynamic>? bestMaleVoice;
-        Map<dynamic, dynamic>? fallbackPtVoice;
-
-        for (final v in voices) {
-          if (v is Map) {
-            final locale = (v['locale'] ?? '').toString().toLowerCase();
-            final name = (v['name'] ?? '').toString().toLowerCase();
-            final gender = (v['gender'] ?? '').toString().toLowerCase();
-
-            final isPortuguese =
-                locale.contains('pt') ||
-                name.contains('portug') ||
-                name.contains('brasil') ||
-                name.contains('brazil');
-
-            if (isPortuguese) {
-              final isExplicitMale =
-                  gender.contains('male') ||
-                  gender.contains('homem') ||
-                  gender.contains('masculin') ||
-                  name.contains('antonio') ||
-                  name.contains('daniel') ||
-                  name.contains('felipe') ||
-                  name.contains('ricardo') ||
-                  name.contains('jorge') ||
-                  name.contains('fabio') ||
-                  name.contains('male') ||
-                  name.contains('standard-b') ||
-                  name.contains('standard-c') ||
-                  name.contains('standard-d') ||
-                  name.contains('wavenet-b') ||
-                  name.contains('wavenet-c') ||
-                  name.contains('wavenet-d');
-
-              if (isExplicitMale) {
-                bestMaleVoice = v;
-                break;
-              } else {
-                fallbackPtVoice ??= v;
-              }
-            }
-          }
-        }
-
-        final selectedVoice = bestMaleVoice ?? fallbackPtVoice;
+        final selectedVoice = selectBestVoice(voices, defaultTargetPlatform);
         if (selectedVoice != null) {
           final voiceName = selectedVoice['name']?.toString() ?? '';
           final voiceLocale = selectedVoice['locale']?.toString() ?? 'pt-BR';
@@ -239,6 +195,97 @@ class TtsNotifier extends StateNotifier<TtsState> {
     } catch (e) {
       debugPrint('TTS voice configuration error: $e');
     }
+  }
+
+  /// Selects the best Portuguese (pt-BR) voice based on the target platform.
+  /// - iOS: Prioritizes Siri pt-BR voice, falling back to natural male voices or any pt-BR voice.
+  /// - Android: Prioritizes pt-br-x-* voices (Google TTS models), falling back to male voices or any pt-BR voice.
+  /// - Other / Desktop: Prioritizes natural male voices for calm, deep delivery.
+  static Map<dynamic, dynamic>? selectBestVoice(
+    List<dynamic> voices, [
+    TargetPlatform? platform,
+  ]) {
+    if (voices.isEmpty) return null;
+
+    final targetPlatform = platform ?? defaultTargetPlatform;
+    final isIos = targetPlatform == TargetPlatform.iOS;
+    final isAndroid = targetPlatform == TargetPlatform.android;
+
+    Map<dynamic, dynamic>? bestPlatformVoice;
+    Map<dynamic, dynamic>? bestMaleVoice;
+    Map<dynamic, dynamic>? fallbackPtVoice;
+
+    for (final v in voices) {
+      if (v is! Map) continue;
+
+      final locale =
+          (v['locale'] ?? '').toString().toLowerCase().replaceAll('_', '-');
+      final name = (v['name'] ?? '').toString().toLowerCase();
+      final gender = (v['gender'] ?? '').toString().toLowerCase();
+      final voiceUri =
+          (v['voiceURI'] ?? v['identifier'] ?? '').toString().toLowerCase();
+      final combined = '$name $voiceUri $locale';
+
+      final isPortuguese = locale.contains('pt') ||
+          combined.contains('portug') ||
+          combined.contains('brasil') ||
+          combined.contains('brazil') ||
+          combined.contains('pt-br') ||
+          combined.contains('pt_br');
+
+      if (!isPortuguese) continue;
+
+      if (isIos) {
+        // iOS / iPhone: Top priority is Siri
+        if (combined.contains('siri')) {
+          return v; // Immediate match for Siri on iOS
+        }
+      } else if (isAndroid) {
+        // Android: Top priority is pt-br-x-* voices
+        if (combined.contains('pt-br-x') || combined.contains('pt_br_x')) {
+          final isPreferredVariant = combined.contains('ptd') ||
+              combined.contains('pte') ||
+              combined.contains('afs');
+          if (isPreferredVariant) {
+            bestPlatformVoice = v;
+            if (combined.contains('ptd')) {
+              break; // Found top-tier masculine model
+            }
+          } else {
+            bestPlatformVoice ??= v;
+          }
+        }
+      }
+
+      final isMaleGender = gender == 'male' ||
+          gender == 'masculin' ||
+          gender == 'masculino' ||
+          gender == 'homem' ||
+          (gender.contains('male') && !gender.contains('female'));
+
+      final isExplicitMale = isMaleGender ||
+          name.contains('antonio') ||
+          name.contains('daniel') ||
+          name.contains('felipe') ||
+          name.contains('ricardo') ||
+          name.contains('jorge') ||
+          name.contains('fabio') ||
+          name.contains('arthur') ||
+          name.contains('standard-b') ||
+          name.contains('standard-c') ||
+          name.contains('standard-d') ||
+          name.contains('wavenet-b') ||
+          name.contains('wavenet-c') ||
+          name.contains('wavenet-d');
+
+      if (isExplicitMale && bestMaleVoice == null) {
+        bestMaleVoice = v;
+      }
+
+      fallbackPtVoice ??= v;
+    }
+
+    return bestPlatformVoice ?? bestMaleVoice ?? fallbackPtVoice;
   }
 
   /// Splits clean text into natural sentences for deterministic pause/resume.

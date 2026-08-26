@@ -128,6 +128,17 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
         }
       }
       await fetchUser();
+    } on sb.AuthException catch (e) {
+      debugPrint('AUTH: AuthException in ensureValidSessionAndRefresh: $e');
+      if (e.message.contains('Refresh Token') ||
+          e.code == 'refresh_token_not_found' ||
+          e.statusCode == '400') {
+        debugPrint('AUTH: Refresh token invalid or not found. Resetting session...');
+        await _repo.logout();
+        if (mounted) {
+          state = const app.AuthState.unauthenticated();
+        }
+      }
     } catch (e) {
       debugPrint('AUTH: Error during ensureValidSessionAndRefresh: $e');
     }
@@ -144,6 +155,21 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
       } else {
         debugPrint('AUTH: Fetch skipped (user null or unmounted)');
       }
+    } on sb.AuthException catch (e) {
+      debugPrint('AUTH: AuthException in fetchUser: $e');
+      if (e.message.contains('Refresh Token') ||
+          e.code == 'refresh_token_not_found' ||
+          e.statusCode == '400') {
+        debugPrint('AUTH: Dead token in fetchUser. Resetting to unauthenticated...');
+        await _repo.logout();
+        if (mounted) {
+          state = const app.AuthState.unauthenticated();
+        }
+        return;
+      }
+      if (mounted) {
+        state = app.AuthState.error(e.message);
+      }
     } catch (e) {
       debugPrint('AUTH: ERROR in fetchUser: $e');
       // If error might be due to stale token, attempt one fresh recovery refresh
@@ -155,6 +181,15 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
           final retryUser = await _repo.getCurrentUser();
           if (retryUser != null && mounted) {
             state = app.AuthState.authenticated(retryUser);
+            return;
+          }
+        } on sb.AuthException catch (authErr) {
+          if (authErr.message.contains('Refresh Token') ||
+              authErr.code == 'refresh_token_not_found') {
+            await _repo.logout();
+            if (mounted) {
+              state = const app.AuthState.unauthenticated();
+            }
             return;
           }
         } catch (_) {}

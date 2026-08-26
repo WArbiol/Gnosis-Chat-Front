@@ -112,93 +112,98 @@ O Flutter Web gera arquivos estáticos (`HTML`, `JS`, `WebAssembly`). O deploy n
   - **Reativação em 1 Clique:** Endpoint `POST /payments/reactivate` (`cancel_at_period_end=False`), permitindo reativar instantaneamente a renovação automática sem novo checkout.
 - [X] **Webhooks Assíncronos:** Stripe Webhook configurado no backend em produção (`POST /payments/webhook`) para sincronização automática com o Supabase.
 
-### 6.2. Configuração Mobile (RevenueCat)
+### 6.2. Configuração Mobile Unificada (RevenueCat)
 
 O **RevenueCat** é o gateway unificador de In-App Purchases (IAP) para iOS e Android. Ele abstrai toda a complexidade do StoreKit 2 (Apple) e Google Play Billing, gerenciando o ciclo de vida das assinaturas, recibos e renovações.
 
-#### 1. Arquitetura de Identificadores (Mapeamento)
+#### 1. Arquitetura de Identificadores (Mapeamento Unificado)
 
-| Entitlement RevenueCat | Produto Loja (Product ID)  | Descrição           | Preço Referência | Limite Mensal   |
-| ---------------------- | -------------------------- | --------------------- | ------------------ | --------------- |
-| `basic`              | `gnosis_basic_monthly`   | Acesso Básico Mensal | R$ 9,90 / mês     | 100 perguntas   |
-| `premium`            | `gnosis_premium_monthly` | Acesso Premium Mensal | R$ 29,90 / mês    | 1.000 perguntas |
+| Entitlement RevenueCat | Produto Loja (Product ID) | Descrição | Preço Referência | Limite Mensal |
+| :--- | :--- | :--- | :--- | :--- |
+| `basic` | `gnosis_basic_monthly` | Acesso Básico Mensal | R$ 9,90 / mês | 100 perguntas |
+| `premium` | `gnosis_premium_monthly` | Acesso Premium Mensal | R$ 29,90 / mês | 1.000 perguntas |
 
 ---
 
-#### 2. Passo a Passo no Dashboard do RevenueCat
+#### 2. Configuração da Apple App Store (iOS) - [Concluído]
 
-1. **Criar o Projeto:**
+1. **Assinaturas no App Store Connect:** Cadastradas no grupo `Planos de Acesso` (`gnosis_basic_monthly` a R$ 9,90 e `gnosis_premium_monthly` a R$ 29,90).
+2. **Chave In-App Purchase (StoreKit 2):**
+   - Gerada em *Usuários e Acesso > Integrações > Compras dentro do app*.
+   - Chave `.p8` baixada, `Key ID` e `Issuer ID` vinculados no RevenueCat no app `Pergunte à Gnosis (App Store)` com Bundle ID `com.gnosischat.gnosisChat`.
+3. **Chave SDK no Flutter:** `REVENUECAT_APPLE_KEY=appl_...` configurada no `.env`.
 
-   - Nome do projeto: `Pergunte à Gnosis`.
-   - Confirmar o e-mail de verificação da conta (clicar no link de confirmação).
-2. **Cadastrar os Aplicativos (Apps):**
+---
 
-   - **iOS (Apple App Store):**
-     - **App Name:** `Pergunte à Gnosis (App Store)`
-     - **Bundle ID:** `com.gnosischat.gnosisChat`
-     - **Custom URL Scheme:** `gnosis`
-     - **In-App Purchase Key (StoreKit 2):**
-       1. Acesse o [App Store Connect](https://appstoreconnect.apple.com) > **Usuários e Acesso** > **Integrações/Chaves** > **In-App Purchase**.
-       2. Clique em `+`, crie uma chave com o nome `RevenueCat Key` e baixe o arquivo `.p8` (guarde-o com segurança, download único).
-       3. Copie o **Key ID** (código de 10 caracteres) e o **Issuer ID** (UUID no topo da página).
-       4. No RevenueCat, faça upload do arquivo `.p8`, cole o `Key ID` e o `Issuer ID` e salve.
-   - **Android (Google Play):**
+#### 3. Configuração do Google Play (Android) - [Passo a Passo Detalhado]
+
+Para habilitar as compras no Android via Google Play Billing e RevenueCat:
+
+1. **Cadastrar Assinaturas no Google Play Console:**
+   - Acesse o [Google Play Console](https://play.google.com/console/) > Selecione o app `com.gnosischat.gnosis_chat`.
+   - No menu lateral, vá em **Monetizar com o Google Play > Produtos > Assinaturas**.
+   - **Criar 1ª Assinatura (Básico):**
+     - ID do produto: `gnosis_basic_monthly`
+     - Nome: `Plano Básico`
+     - Faturamento: Mensal recorrente (R$ 9,90 / mês).
+   - **Criar 2ª Assinatura (Premium):**
+     - ID do produto: `gnosis_premium_monthly`
+     - Nome: `Plano Premium`
+     - Faturamento: Mensal recorrente (R$ 29,90 / mês).
+
+2. **Criar a Service Account no Google Cloud Console:**
+   - Acesse o [Google Cloud Console](https://console.cloud.google.com/) no projeto vinculado à sua Play Console.
+   - Ative a **Google Play Android Developer API**.
+   - Vá em **IAM e administração > Contas de serviço** > **Criar conta de serviço**:
+     - Nome: `revenuecat-play-store`
+     - Clique em **Criar e continuar** > **Concluir**.
+   - Clique na conta criada > Aba **Chaves** > **Adicionar chave > Criar nova chave > JSON**.
+   - Baixe o arquivo `.json` gerado para o seu computador.
+
+3. **Conceder Permissões Financeiras no Google Play Console:**
+   - No Google Play Console, vá em **Acesso da API** (ou *Usuários e permissões*).
+   - Convide o e-mail da Service Account (`revenuecat-play-store@...`).
+   - Em **Permissões do App**, adicione o app `Pergunte à Gnosis`.
+   - Marque as permissões:
+     - *Ver dados financeiros, pedidos e relatórios de cancelamento.*
+     - *Gerenciar pedidos e assinaturas.*
+   - Clique em **Salvar alterações**.
+
+4. **Cadastrar o App Android no RevenueCat:**
+   - No RevenueCat, vá em **Project Settings > Apps > Add App > Google Play Store**:
      - **App Name:** `Pergunte à Gnosis (Google Play)`
-     - **Package Name:** `com.gnosischat.gnosis_chat`
-     - **Google Play Service Account Credentials JSON:**
-       1. No Google Cloud Console (projeto vinculado à Play Console), crie uma Service Account com permissão para gerenciar compras e assinaturas do Google Play.
-       2. Gere a chave privada em formato JSON.
-       3. No RevenueCat, faça o upload desse arquivo JSON e salve.
-3. **Configurar o Catálogo de Produtos:**
+     - **Google Play Package Name:** `com.gnosischat.gnosis_chat`
+     - **Service Account Credentials JSON:** Faça upload do arquivo `.json`.
+     - Clique em **Save changes**.
 
-   - **Entitlements (`Product catalog > Entitlements`):**
-     - Criar `basic` com descrição `Acesso Básico (100 perguntas/mês)`.
-     - Criar `premium` com descrição `Acesso Premium (1.000 perguntas/mês)`.
-   - **Products (`Product catalog > Products`):**
-     - Cadastrar `gnosis_basic_monthly` e vincular ao entitlement `basic`.
-     - Cadastrar `gnosis_premium_monthly` e vincular ao entitlement `premium`.
-   - **Offerings (`Product catalog > Offerings`):**
-     - Criar a Offering marcada como **Default** (Identifier: `default`).
-     - Adicionar os Packages:
-       - Package `$rc_monthly` (ou `basic`) → Produto `gnosis_basic_monthly`
-       - Package Custom (ex: `premium`) → Produto `gnosis_premium_monthly`
-4. **Obter Chaves de API (`API keys`):**
+5. **Anexar Produtos Google Play ao Catálogo no RevenueCat:**
+   - Em **Product catalog > Products**: Clique em `+ New` > Selecione o app Google Play > Cadastre `gnosis_basic_monthly` (vincule ao entitlement `basic`) e `gnosis_premium_monthly` (vincule ao entitlement `premium`).
+   - Em **Product catalog > Offerings > default**:
+     - No pacote `$rc_monthly`: Anexe o produto Google Play `gnosis_basic_monthly`.
+     - No pacote `premium`: Anexe o produto Google Play `gnosis_premium_monthly`.
 
-   - Copiar a **Public Apple API Key** (`appl_...`).
-   - Copiar a **Public Google API Key** (`goog_...`).
-   - Configurar no `.env` do Flutter (`gnosis-chat-front/.env`):
-     ```env
-     REVENUECAT_APPLE_KEY=appl_xxxxxxxxxxxxxxxxxxxx
-     REVENUECAT_GOOGLE_KEY=goog_xxxxxxxxxxxxxxxxxxxx
-     ```
-5. **Integração no Frontend Flutter:**
+6. **Chave SDK no Flutter:**
+   - No RevenueCat > **API keys**, copie a chave pública `goog_...` e configure no `.env` do Flutter (`REVENUECAT_GOOGLE_KEY=goog_...`).
 
-   - Pacote oficial: `purchases_flutter`.
-   - Inicialização em `main.dart`:
-     ```dart
-     if (!kIsWeb) {
-       final apiKey = Platform.isIOS
-           ? dotenv.env['REVENUECAT_APPLE_KEY']!
-           : dotenv.env['REVENUECAT_GOOGLE_KEY']!;
-       await Purchases.configure(
-         PurchasesConfiguration(apiKey)..appUserID = supabaseUser.id,
-       );
-     }
-     ```
-   - No `subscription_provider.dart`: Ao comprar em dispositivos móveis, chamar `Purchases.purchasePackage(package)`. Na Web (`kIsWeb`), redirecionar para o Stripe Checkout.
-6. **Webhooks Assíncronos no Backend (FastAPI):**
+---
 
-   - No RevenueCat, vá em **Integrations > Webhooks** e cadastre o endpoint:
-     `POST https://gnosischat.com/payments/revenuecat-webhook`
-   - Configurar a chave de autorização no cabeçalho (Webhook Authorization Header).
-   - O backend processa eventos (`INITIAL_PURCHASE`, `RENEWAL`, `CANCELLATION`, `EXPIRATION`) e sincroniza com a tabela `users` no Supabase:
-     ```json
-     {
-       "plan": "basic" | "premium",
-       "subscription_provider": "revenuecat",
-       "subscription_status": "active" | "canceled"
-     }
-     ```
+#### 4. Integração no Frontend Flutter (Pronta)
+
+* **Serviço Centralizado:** `lib/services/iap/revenue_cat_service.dart`.
+* **Inicialização Automática:** No `main.dart` ao iniciar no mobile nativo (`!kIsWeb`).
+* **Sincronização de Usuário:** Ao autenticar no `auth_provider.dart`, chama `RevenueCatService.logIn(userId)`.
+* **Checkout Reativo:** No `subscription_provider.dart`, compras no mobile disparam diretamente `RevenueCatService.purchasePlan(plan)` e na web utilizam o Stripe Checkout.
+
+---
+
+#### 5. Webhooks Assíncronos no Backend FastAPI (Pronto)
+
+* **Endpoint Ativo:** `POST /api/v1/payments/revenuecat-webhook`.
+* **Autenticação:** Header `Authorization: Bearer rc_whsec_gnosis_2026_secure`.
+* **Eventos Processados Automaticamente:**
+  - `INITIAL_PURCHASE` / `RENEWAL` / `UNCANCELLATION`: Atualiza `subscription_status = 'active'`, plano correspondente (`basic` ou `premium`), e reseta a cota de perguntas (`question_count = 0`).
+  - `CANCELLATION`: Marca `subscription_status = 'canceled'` mantendo o acesso até `current_period_end`.
+  - `EXPIRATION` / `REVOCATION`: Reverte o usuário para o plano gratuito (`plan = 'free'`).
 
 ### 6.3. Ciclo de Vida da Conta & Exclusão de Perfil (Account Deletion & UI/UX)
 

@@ -25,7 +25,8 @@ void main() {
     expect(find.text('Filosofia'), findsOneWidget);
     expect(find.text('Religião'), findsOneWidget);
     expect(find.textContaining('gnosisbrasil.com'), findsOneWidget);
-    expect(find.text('App Store'), findsOneWidget);
-    expect(find.text('Google Play'), findsOneWidget);
+    // On native platforms (kIsWeb is false during unit tests), store buttons must not render
+    expect(find.text('App Store'), findsNothing);
+    expect(find.text('Google Play'), findsNothing);
   });
 }

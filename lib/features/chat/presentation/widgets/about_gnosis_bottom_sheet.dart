@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -407,30 +408,32 @@ class AboutGnosisBottomSheet extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 18),
+                      if (kIsWeb) ...[
+                        const SizedBox(height: 18),
 
-                      // Section: Baixe o Aplicativo (Clean Store Buttons)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _StoreButton(
-                              icon: Icons.apple_rounded,
-                              storeName: 'App Store',
-                              badge: 'iOS',
-                              onTap: () => _showAppStoreMockNotice(context, 'App Store (iOS)'),
+                        // Section: Baixe o Aplicativo (Clean Store Buttons - Web Only)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _StoreButton(
+                                icon: Icons.apple_rounded,
+                                storeName: 'App Store',
+                                badge: 'iOS',
+                                onTap: () => _showAppStoreMockNotice(context, 'App Store (iOS)'),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _StoreButton(
-                              icon: Icons.play_arrow_rounded,
-                              storeName: 'Google Play',
-                              badge: 'Android',
-                              onTap: () => _showAppStoreMockNotice(context, 'Google Play (Android)'),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _StoreButton(
+                                icon: Icons.play_arrow_rounded,
+                                storeName: 'Google Play',
+                                badge: 'Android',
+                                onTap: () => _showAppStoreMockNotice(context, 'Google Play (Android)'),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

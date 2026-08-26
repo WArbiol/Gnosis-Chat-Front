@@ -26,7 +26,7 @@ Para que o aplicativo funcione em escala, a arquitetura de produção é distrib
 - **Banco Vetorial:** Qdrant Cloud (90 Obras Gnósticas).
 - **Frontend Web:** Cloudflare Pages (`gnosischat.com`), 100% gratuito e protegido pela rede global da Cloudflare.
 - **Mobile:** Publicado nativamente via App Store Connect e Google Play Console.
-- **Pagamentos:** Stripe Billing (Web, R$ 9,99/mês Básico e R$ 29,99/mês Premium) e RevenueCat (Mobile).
+- **Pagamentos:** Stripe Billing (Web, R$ 9,90/mês Básico e R$ 29,90/mês Premium) e RevenueCat (Mobile).
 
 ---
 
@@ -103,8 +103,8 @@ O Flutter Web gera arquivos estáticos (`HTML`, `JS`, `WebAssembly`). O deploy n
 ### 6.1. Configuração Web (Stripe Billing)
 
 - [X] **Modelos de Preço & Cotas:**
-  - **Plano Básico:** R$ 9,99/mês (100 perguntas/mês).
-  - **Plano Premium:** R$ 29,99/mês (1.000 perguntas/mês).
+  - **Plano Básico:** R$ 9,90/mês (100 perguntas/mês).
+  - **Plano Premium:** R$ 29,90/mês (1.000 perguntas/mês).
 - [X] **Integração Checkout & Redirecionamentos:** Stripe Checkout configurado com suporte a cartões nacionais e carteiras digitais (Apple Pay, Google Pay).
 - [X] **Ciclo de Cancelamento & Reativação:**
   - **Cancelamento:** `cancel_at_period_end=True` no Stripe. O acesso permanece 100% liberado até o `current_period_end`.

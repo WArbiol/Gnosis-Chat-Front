@@ -35,7 +35,7 @@ void main() {
 
       // Check contents
       expect(find.text('Fazer Upgrade para Premium?'), findsOneWidget);
-      expect(find.text('R\$ 29,99/mês'), findsOneWidget);
+      expect(find.text('R\$ 29,90/mês'), findsOneWidget);
       expect(find.text('1.000 perguntas/mês'), findsOneWidget);
       expect(find.text('Confirmar Upgrade'), findsOneWidget);
       expect(find.text('Voltar'), findsOneWidget);
@@ -76,7 +76,7 @@ void main() {
 
       // Check contents
       expect(find.text('Alterar para Plano Básico?'), findsOneWidget);
-      expect(find.text('R\$ 9,99/mês'), findsOneWidget);
+      expect(find.text('R\$ 9,90/mês'), findsOneWidget);
       expect(find.text('100 perguntas/mês'), findsOneWidget);
       expect(find.text('Confirmar Alteração'), findsOneWidget);
 

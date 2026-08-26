@@ -31,14 +31,14 @@ extension PlanDefaults on PlanType {
     PlanType.basic => const PlanEntity(
       type: PlanType.basic,
       displayName: 'Básico',
-      priceMonthly: 9.99,
+      priceMonthly: 9.90,
       questionLimit: 100,
       chamberLevel: 1,
     ),
     PlanType.premium => const PlanEntity(
       type: PlanType.premium,
       displayName: 'Premium',
-      priceMonthly: 29.99,
+      priceMonthly: 29.90,
       questionLimit: 1000,
       chamberLevel: 1,
     ),

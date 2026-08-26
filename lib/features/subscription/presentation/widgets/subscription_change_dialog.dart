@@ -41,11 +41,11 @@ class SubscriptionChangeDialog extends StatelessWidget {
 
     final title = isUpgrade ? 'Fazer Upgrade para Premium?' : 'Alterar para Plano Básico?';
     final subtitle = isUpgrade ? 'EXPANSÃO DE ACESSO' : 'AJUSTE DE PLANO';
-    final targetPrice = isUpgrade ? 'R\$ 29,99/mês' : 'R\$ 9,99/mês';
+    final targetPrice = isUpgrade ? 'R\$ 29,90/mês' : 'R\$ 9,90/mês';
     final targetQuota = isUpgrade ? '1.000 perguntas/mês' : '100 perguntas/mês';
     final explanation = isUpgrade
         ? 'Sua assinatura será atualizada para o Plano Premium. O novo valor será cobrado proporcionalmente e seu limite aumentará imediatamente.'
-        : 'Você está mudando do plano Premium para o Plano Básico. Seu novo valor será de R\$ 9,99/mês e o limite de perguntas será ajustado para 100 perguntas/mês.';
+        : 'Você está mudando do plano Premium para o Plano Básico. Seu novo valor será de R\$ 9,90/mês e o limite de perguntas será ajustado para 100 perguntas/mês.';
 
     final confirmButtonText = isUpgrade ? 'Confirmar Upgrade' : 'Confirmar Alteração';
 

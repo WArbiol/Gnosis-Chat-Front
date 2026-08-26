@@ -73,8 +73,8 @@ class TermsOfUseScreen extends StatelessWidget {
                   content:
                       'O Gnosis Chat oferece planos de acesso:\n\n'
                       '• Plano Gratuito: Cota de cortesia de 3 perguntas mensais.\n'
-                      '• Plano Básico (R\$ 9,99/mês): Cota mensal de 100 perguntas com citações de páginas exatas.\n'
-                      '• Plano Premium (R\$ 29,99/mês): Cota mensal de 1.000 perguntas e recursos avançados.\n\n'
+                      '• Plano Básico (R\$ 9,90/mês): Cota mensal de 100 perguntas com citações de páginas exatas.\n'
+                      '• Plano Premium (R\$ 29,90/mês): Cota mensal de 1.000 perguntas e recursos avançados.\n\n'
                       'Renovação Recorrente: As assinaturas pagas renovam-se automaticamente ao término de cada ciclo mensal, a menos que sejam canceladas pelo usuário antes da data de renovação.\n\n'
                       'Cancelamento Sem Burocracia: O usuário pode cancelar a renovação automática a qualquer momento no aplicativo. Ao cancelar, o plano e os benefícios contratados permanecem 100% ativos e disponíveis até a data final do ciclo vigente já pago.\n\n'
                       'Reativação Fácil: O usuário pode reativar a renovação de sua assinatura com 1 clique antes do término do período contratado.',

@@ -16,7 +16,7 @@ void main() {
       final plan = PlanType.basic.entity;
       expect(plan.type, equals(PlanType.basic));
       expect(plan.displayName, equals('Básico'));
-      expect(plan.priceMonthly, equals(9.99));
+      expect(plan.priceMonthly, equals(9.90));
       expect(plan.questionLimit, equals(100));
       expect(plan.chamberLevel, equals(1));
     });
@@ -25,7 +25,7 @@ void main() {
       final plan = PlanType.premium.entity;
       expect(plan.type, equals(PlanType.premium));
       expect(plan.displayName, equals('Premium'));
-      expect(plan.priceMonthly, equals(29.99));
+      expect(plan.priceMonthly, equals(29.90));
       expect(plan.questionLimit, equals(1000));
       expect(plan.chamberLevel, equals(1));
     });
@@ -34,7 +34,7 @@ void main() {
       final original = PlanType.basic.entity;
       final json = original.toJson();
       expect(json['type'], equals('basic'));
-      expect(json['priceMonthly'], equals(9.99));
+      expect(json['priceMonthly'], equals(9.90));
       expect(json['questionLimit'], equals(100));
 
       final deserialized = PlanEntity.fromJson(json);

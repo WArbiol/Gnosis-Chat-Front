@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gnosis_chat/features/auth/data/user_cache.dart';
 import 'package:gnosis_chat/features/chat/data/conversation_cache.dart';
+import 'package:gnosis_chat/services/iap/revenue_cat_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +37,12 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox<String>(ConversationCache.boxName);
   await Hive.openBox<String>(UserCache.boxName);
+
+  // Initialize In-App Purchases on mobile
+  if (!kIsWeb) {
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    await RevenueCatService.init(userId: currentUserId);
+  }
 
   runApp(const ProviderScope(child: GnosisApp()));
 }

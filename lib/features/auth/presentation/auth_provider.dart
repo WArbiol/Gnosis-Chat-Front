@@ -9,6 +9,7 @@ import 'package:gnosis_chat/features/auth/domain/social_provider.dart';
 import 'package:gnosis_chat/features/auth/domain/user_entity.dart';
 import 'package:gnosis_chat/features/chat/presentation/conversation_provider.dart';
 import 'package:gnosis_chat/services/api/api_client.dart';
+import 'package:gnosis_chat/services/iap/revenue_cat_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -138,6 +139,7 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
       final user = await _repo.getCurrentUser();
       if (user != null && mounted) {
         debugPrint('AUTH: Profile obtained. Plan: ${user.plan}, Avatar: ${user.avatarUrl}');
+        RevenueCatService.logIn(user.id);
         state = app.AuthState.authenticated(user);
       } else {
         debugPrint('AUTH: Fetch skipped (user null or unmounted)');
@@ -212,6 +214,7 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
 
     // Clear conversation state and cache
     _ref.read(conversationProvider.notifier).clearAll();
+    await RevenueCatService.logOut();
 
     state = const app.AuthState.unauthenticated();
   }
@@ -230,6 +233,7 @@ class AuthNotifier extends StateNotifier<app.AuthState> {
     } catch (_) {}
 
     _ref.read(conversationProvider.notifier).clearAll();
+    await RevenueCatService.logOut();
     state = const app.AuthState.unauthenticated();
   }
 

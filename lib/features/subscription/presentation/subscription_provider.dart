@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 
 import 'package:gnosis_chat/features/subscription/domain/plan_entity.dart';
 import 'package:gnosis_chat/services/api/api_client.dart';
+import 'package:gnosis_chat/services/iap/revenue_cat_service.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/shared/providers/user_provider.dart';
 
@@ -28,13 +29,24 @@ class SubscriptionNotifier extends StateNotifier<AsyncValue<PlanType>> {
       dotenv.env['STRIPE_PRICE_PREMIUM'] ?? 'price_1U4MJOPe2nJIREqq7ZIhgxlC',
   };
 
-  /// Create a Stripe Checkout Session and open it in the browser, or modify an existing subscription.
+  /// Checkout: uses RevenueCat (In-App Purchase) on Mobile, and Stripe Checkout on Web.
   Future<void> checkout(PlanType plan) async {
-    final priceId = _priceIdFor(plan);
-    if (priceId == null) return; // Free plan — no checkout needed
+    if (plan == PlanType.free) return;
 
     state = const AsyncValue.loading();
     try {
+      if (!kIsWeb) {
+        // Native Mobile: Buy directly in-app with RevenueCat (Apple/Google)
+        await RevenueCatService.purchasePlan(plan);
+        await _ref.read(authProvider.notifier).fetchUser();
+        state = AsyncValue.data(plan);
+        return;
+      }
+
+      // Web: Redirect to Stripe Checkout Session
+      final priceId = _priceIdFor(plan);
+      if (priceId == null) return;
+
       final dio = _ref.read(apiClientProvider).dio;
 
       final response = await dio.post(
@@ -59,8 +71,8 @@ class SubscriptionNotifier extends StateNotifier<AsyncValue<PlanType>> {
       if (await canLaunchUrl(uri)) {
         await launchUrl(
           uri,
-          mode: kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication,
-          webOnlyWindowName: kIsWeb ? '_self' : null,
+          mode: LaunchMode.platformDefault,
+          webOnlyWindowName: '_self',
         );
       } else {
         throw Exception('Não foi possível abrir o link de pagamento.');

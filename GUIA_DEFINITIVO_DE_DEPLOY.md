@@ -267,15 +267,75 @@ O **RevenueCat** é o gateway unificador de In-App Purchases (IAP) para iOS e An
 
 ## 8. Deploy Mobile: Android (Google Play)
 
-### 8.1. Burocracias Iniciais
+### 8.1. Burocracias Iniciais no Google Play Console
 
-1. Taxa única no [Google Play Console](https://play.google.com/console/).
-2. App Package (`com.gnosischat.gnosis_chat`) e Service Account para validação de assinaturas RevenueCat.
+1. **Conta de Desenvolvedor:** Taxa única de US$ 25 no [Google Play Console](https://play.google.com/console/).
+2. **Criar o App:**
+   - **Nome:** `Pergunte à Gnosis`
+   - **Idioma Padrão:** `Português (Brasil)`
+   - **Tipo:** `App` / `Gratuito` (com compras no app)
+   - **Package Name:** `com.gnosischat.gnosis_chat`
 
-### 8.2. Build e Submissão
+### 8.2. Configuração de Assinaturas no Google Play Console
 
-1. Compilação do pacote AAB: `flutter build appbundle`.
-2. Upload na esteira de Teste Fechado / Produção no Play Console.
+1. Acesse o app no Play Console > Menu lateral **Monetizar com o Google Play** > **Produtos** > **Assinaturas**.
+2. **Criar 1ª Assinatura (Plano Básico):**
+   - **ID do produto:** `gnosis_basic_monthly`
+   - **Nome:** `Plano Básico`
+   - **Plano básico de faturamento:** Renovação automática mensal (1 mês).
+   - **Preço:** R$ 9,90 / mês.
+3. **Criar 2ª Assinatura (Plano Premium):**
+   - **ID do produto:** `gnosis_premium_monthly`
+   - **Nome:** `Plano Premium`
+   - **Plano básico de faturamento:** Renovação automática mensal (1 mês).
+   - **Preço:** R$ 29,90 / mês.
+
+### 8.3. Conectar o Google Play ao RevenueCat (Service Account JSON)
+
+Para que o RevenueCat valide as compras do Google Play automaticamente:
+
+1. **Ativar a API no Google Cloud Console:**
+   - Acesse o [Google Cloud Console](https://console.cloud.google.com/) no mesmo projeto vinculado à sua conta Play Console.
+   - Ative a **Google Play Android Developer API**.
+2. **Criar a Service Account (Conta de Serviço):**
+   - Vá em **IAM e administração > Contas de serviço** > Clique em **Criar conta de serviço**.
+   - Nome: `revenuecat-play-store`.
+   - Clique em **Concluir**.
+3. **Gerar a Chave Privada JSON:**
+   - Clique na conta de serviço criada > Aba **Chaves** > **Adicionar chave** > **Criar nova chave** > Tipo **JSON**.
+   - Baixe o arquivo `.json` gerado para o seu computador.
+4. **Conceder Permissões no Google Play Console:**
+   - No Google Play Console > Menu lateral **Acesso da API** (ou *Usuários e permissões*).
+   - Convide o e-mail da conta de serviço recém-criada (`revenuecat-play-store@...`).
+   - Em **Permissões do App**, selecione o app `Pergunte à Gnosis`.
+   - Marque as permissões financeiras:
+     - *Ver dados financeiros, pedidos e relatórios de cancelamento.*
+     - *Gerenciar pedidos e assinaturas.*
+   - Clique em **Salvar alterações**.
+5. **Configurar no Dashboard do RevenueCat:**
+   - No RevenueCat > **Project Settings > Apps > Add App > Google Play Store**:
+     - **App Name:** `Pergunte à Gnosis (Google Play)`
+     - **Google Play Package Name:** `com.gnosischat.gnosis_chat`
+     - **Service Account Credentials JSON:** Faça o upload do arquivo `.json` baixado.
+     - Clique em **Save changes**.
+6. **Vincular Produtos à Offering Existente no RevenueCat:**
+   - Em **Product catalog > Products**: Cadastre `gnosis_basic_monthly` e `gnosis_premium_monthly` para o app Google Play e vincule aos entitlements `basic` e `premium`.
+   - Em **Product catalog > Offerings > default**: Anexe os produtos Google Play aos pacotes existentes (`$rc_monthly` e `premium`).
+7. **Obter a Public Google API Key:**
+   - No RevenueCat > **API keys**, copie a chave pública `goog_...` e configure no `.env` do Flutter (`REVENUECAT_GOOGLE_KEY=goog_...`).
+
+### 8.4. Build e Submissão do Pacote Android (AAB)
+
+1. **Configurar Chave de Assinatura (Keystore):**
+   - Gerar `key.jks` e configurar em `android/key.properties`.
+2. **Compilar Pacote Release:**
+   ```bash
+   flutter build appbundle --release
+   ```
+3. **Upload no Play Console:**
+   - No Play Console > **Produção** ou **Teste Fechado (Closed Testing)**.
+   - Criar nova versão e fazer upload do arquivo `build/app/outputs/bundle/release/app-release.aab`.
+   - Preencher a classificação de conteúdo, política de privacidade e enviar para revisão.
 
 ---
 

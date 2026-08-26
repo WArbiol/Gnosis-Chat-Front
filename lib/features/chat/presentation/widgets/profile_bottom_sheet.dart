@@ -193,7 +193,7 @@ class ProfileBottomSheet extends ConsumerWidget {
           style: TextStyle(color: AppColors.onSurface),
         ),
         content: const Text(
-          'Suas conversas serão perdidas ao sair.',
+          'Você poderá entrar novamente a qualquer momento para acessar seu histórico e conversas salvas.',
           style: TextStyle(color: AppColors.onSurfaceVariant),
         ),
         actions: [

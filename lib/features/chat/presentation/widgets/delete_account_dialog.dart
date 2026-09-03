@@ -209,33 +209,32 @@ class _DeleteAccountDialogState extends ConsumerState<DeleteAccountDialog> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Safe Primary Button: Keep Account
+                  // Safe Primary Button: Cancel / Keep Account (Solid & Prominent)
                   ElevatedButton(
                     onPressed: _isDeleting
                         ? null
                         : () => Navigator.of(context, rootNavigator: true).pop(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.surfaceVariant,
-                      foregroundColor: AppColors.onSurface,
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.surface,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
-                        side: BorderSide(
-                          color: AppColors.onSurfaceVariant.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
                       ),
-                      elevation: 0,
+                      elevation: 2,
                     ),
                     child: const Text(
-                      'Manter Conta',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      'Cancelar e Manter Minha Conta',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
 
-                  // Destructive Button: Confirm Deletion (Clean UX, no Material stadium overlay)
+                  // Destructive Button: Discreet secondary link
                   _DestructiveActionLink(
                     isDeleting: _isDeleting,
                     onTap: _handleDelete,
@@ -271,7 +270,7 @@ class _DestructiveActionLinkState extends State<_DestructiveActionLink> {
     if (widget.isDeleting) {
       return const Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(vertical: 8),
           child: SizedBox(
             width: 20,
             height: 20,
@@ -292,20 +291,20 @@ class _DestructiveActionLinkState extends State<_DestructiveActionLink> {
         onTap: widget.onTap,
         behavior: HitTestBehavior.opaque,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Center(
             child: AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 150),
               style: TextStyle(
                 color: _isHovered
                     ? AppColors.error
-                    : AppColors.error.withValues(alpha: 0.75),
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
+                    : AppColors.onSurfaceVariant.withValues(alpha: 0.6),
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
                 decoration: _isHovered ? TextDecoration.underline : TextDecoration.none,
                 decorationColor: AppColors.error.withValues(alpha: 0.8),
               ),
-              child: const Text('Sim, Excluir Definitivamente'),
+              child: const Text('Excluir conta definitivamente'),
             ),
           ),
         ),

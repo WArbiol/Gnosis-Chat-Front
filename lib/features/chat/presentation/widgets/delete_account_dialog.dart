@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/auth/presentation/auth_provider.dart';
 import 'package:gnosis_chat/shared/providers/user_provider.dart';
@@ -180,21 +181,57 @@ class _DeleteAccountDialogState extends ConsumerState<DeleteAccountDialog> {
                       width: 1,
                     ),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(
-                        Icons.warning_amber_rounded,
-                        color: Colors.amber,
-                        size: 20,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.amber,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Você possui uma assinatura via loja de aplicativos. Lembre-se de cancelá-la nos Ajustes do seu aparelho para evitar novas cobranças.',
+                              style: TextStyle(
+                                color: AppColors.onSurface.withValues(alpha: 0.9),
+                                fontSize: 12,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Você possui uma assinatura via loja de aplicativos. Lembre-se de cancelá-la nos Ajustes do seu aparelho.',
-                          style: TextStyle(
-                            color: AppColors.onSurface.withValues(alpha: 0.9),
-                            fontSize: 12,
-                            height: 1.3,
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          onPressed: () async {
+                            final url = user?.subscriptionProvider == 'apple'
+                                ? Uri.parse('https://apps.apple.com/account/subscriptions')
+                                : Uri.parse('https://play.google.com/store/account/subscriptions');
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url, mode: LaunchMode.externalApplication);
+                            }
+                          },
+                          icon: const Icon(Icons.open_in_new_rounded, size: 14, color: Colors.amber),
+                          label: Text(
+                            user?.subscriptionProvider == 'apple'
+                                ? 'Gerenciar na App Store'
+                                : 'Gerenciar na Play Store',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amber,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                         ),
                       ),

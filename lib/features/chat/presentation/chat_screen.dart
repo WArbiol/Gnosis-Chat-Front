@@ -122,6 +122,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     }
   }
 
+  Future<void> _sendSuggestedQuestion(String question) async {
+    _queryCtrl.text = question;
+    await _sendMessage();
+  }
+
   void _showUpgradeDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -279,7 +284,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                   ),
                 );
               }
-              return EmptyState(glowAnim: _glowAnim);
+              return EmptyState(
+                glowAnim: _glowAnim,
+                onSelectQuestion: _sendSuggestedQuestion,
+              );
             }
 
             final itemCount =

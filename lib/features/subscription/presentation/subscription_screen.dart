@@ -370,7 +370,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen>
       _showWarning('Sua assinatura é gerenciada pelo Google. Acesse a Play Store para alterá-la.');
       return true;
     } else if (provider == 'stripe' && !kIsWeb) {
-      _showWarning('Sua assinatura é gerenciada via Web. Acesse gnosis-chat.app no navegador para alterá-la.');
+      _showWarning('Sua assinatura é gerenciada via Web. Acesse gnosischat.com no navegador para alterá-la.');
       return true;
     }
     return false;

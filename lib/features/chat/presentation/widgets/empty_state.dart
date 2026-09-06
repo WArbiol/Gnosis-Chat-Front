@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.glowAnim});
+  const EmptyState({
+    super.key,
+    required this.glowAnim,
+    this.onSelectQuestion,
+  });
 
   final Animation<double> glowAnim;
+  final ValueChanged<String>? onSelectQuestion;
 
   @override
   Widget build(BuildContext context) {

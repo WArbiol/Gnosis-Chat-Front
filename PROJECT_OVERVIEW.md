@@ -90,7 +90,7 @@ QUERY (online, por mensagem do usuário):
   5. LangGraph Node 3 (Critique usando 3.1 Flash Lite): Avalia chunks vs Pergunta.
          ↳ Se suficiente: avança para o Writer.
          ↳ Se insuficiente: reporta ao Orchestrator com sugestões (loop máx. 2x).
-  6. LangGraph Node 4 (Writer usando Gemini 3.5 Flash): Escreve a resposta final com citações estruturadas.
+  6. LangGraph Node 4 (Writer usando Gemini 3.8 Flash): Escreve a resposta final com citações estruturadas.
   7. LangGraph Node 5 (Judge usando Gemini 3.1 Flash Lite): Audita resposta contra alucinações.
          ↳ Se aprovado: avança para o Recap.
          ↳ Se rejeitado: retorna ao Orchestrator para reescrita (loop máx. 1x).
@@ -141,7 +141,7 @@ QUERY (online, por mensagem do usuário):
 
 ### ADR-B5: Agentic RAG com Orquestrador Central e Limites de Sessão
 - **Decisão:** Orquestrador centralizado operando com múltiplos nós e loops reflexivos controlados por limites estritos na sessão.
-- **Modelos Usados:** `Gemini 3.1 Flash Lite` atua como cérebro de orquestração (rápido e barato), enquanto `Gemini 3.5 Flash` é usado pelo *Writer* para redação erudita.
+- **Modelos Usados:** `Gemini 3.1 Flash Lite` atua como cérebro de orquestração (rápido e barato), enquanto `Gemini 3.8 Flash` é usado pelo *Writer* para redação erudita.
 - **Re-Ranking:** Utilizamos a **Vertex AI Ranking API** para refinar de 30 para 10 chunks relevantes.
 
 ### ADR-B6: Persistência de Conversas — Optimistic Write

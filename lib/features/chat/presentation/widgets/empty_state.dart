@@ -7,10 +7,12 @@ class EmptyState extends StatelessWidget {
     super.key,
     required this.glowAnim,
     this.onSelectQuestion,
+    this.isInputFocused = false,
   });
 
   final Animation<double> glowAnim;
   final ValueChanged<String>? onSelectQuestion;
+  final bool isInputFocused;
 
   @override
   Widget build(BuildContext context) {
@@ -84,8 +86,24 @@ class EmptyState extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // Cosmic Ticker Slider
-            CosmicTicker(onSelectQuestion: onSelectQuestion),
+            // Cosmic Ticker Slider with fade down transition when input is active
+            AnimatedOpacity(
+              opacity: isInputFocused ? 0.0 : 1.0,
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeInOutCubic,
+              child: AnimatedSlide(
+                offset: isInputFocused ? const Offset(0, 0.3) : Offset.zero,
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeInOutCubic,
+                child: IgnorePointer(
+                  ignoring: isInputFocused,
+                  child: CosmicTicker(
+                    onSelectQuestion: onSelectQuestion,
+                    isPaused: isInputFocused,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

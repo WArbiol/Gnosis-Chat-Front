@@ -8,9 +8,11 @@ class CosmicTicker extends ConsumerStatefulWidget {
   const CosmicTicker({
     super.key,
     required this.onSelectQuestion,
+    this.isPaused = false,
   });
 
   final ValueChanged<String>? onSelectQuestion;
+  final bool isPaused;
 
   @override
   ConsumerState<CosmicTicker> createState() => _CosmicTickerState();
@@ -44,6 +46,7 @@ class _CosmicTickerState extends ConsumerState<CosmicTicker> {
               reverse: false,
               spacing: 12.0,
               onSelectQuestion: widget.onSelectQuestion,
+              isPaused: widget.isPaused,
             ),
             const SizedBox(height: 12),
             _MarqueeTrack(
@@ -52,6 +55,7 @@ class _CosmicTickerState extends ConsumerState<CosmicTicker> {
               reverse: true,
               spacing: 12.0,
               onSelectQuestion: widget.onSelectQuestion,
+              isPaused: widget.isPaused,
             ),
           ],
         );
@@ -69,6 +73,7 @@ class _MarqueeTrack extends StatefulWidget {
     required this.reverse,
     required this.spacing,
     required this.onSelectQuestion,
+    this.isPaused = false,
   });
 
   final List<SuggestedQuestion> questions;
@@ -76,6 +81,7 @@ class _MarqueeTrack extends StatefulWidget {
   final bool reverse;
   final double spacing;
   final ValueChanged<String>? onSelectQuestion;
+  final bool isPaused;
 
   @override
   State<_MarqueeTrack> createState() => _MarqueeTrackState();
@@ -138,7 +144,8 @@ class _MarqueeTrackState extends State<_MarqueeTrack>
     final deltaMicros = (elapsed - _lastElapsed).inMicroseconds;
     _lastElapsed = elapsed;
 
-    if (_isDragging ||
+    if (widget.isPaused ||
+        _isDragging ||
         _isPaused ||
         DateTime.now().isBefore(_dragPauseUntil) ||
         deltaMicros <= 0) {

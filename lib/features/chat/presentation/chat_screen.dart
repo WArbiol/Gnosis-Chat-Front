@@ -76,6 +76,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
       end: 0.7,
     ).animate(CurvedAnimation(parent: _glowCtrl, curve: Curves.easeInOut));
     _queryCtrl.addListener(() => setState(() {}));
+    _inputFocusNode.addListener(() {
+      if (mounted) setState(() {});
+    });
 
     _scrollCtrl.addListener(() {
       if (_scrollCtrl.hasClients && _scrollCtrl.position.hasContentDimensions) {
@@ -129,7 +132,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     _queryCtrl.selection = TextSelection.fromPosition(
       TextPosition(offset: question.length),
     );
-    _inputFocusNode.requestFocus();
   }
 
   void _showUpgradeDialog(BuildContext context) {
@@ -292,6 +294,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
               return EmptyState(
                 glowAnim: _glowAnim,
                 onSelectQuestion: _selectSuggestedQuestion,
+                isInputFocused: _inputFocusNode.hasFocus,
               );
             }
 

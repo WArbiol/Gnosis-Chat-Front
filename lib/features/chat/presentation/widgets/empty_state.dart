@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
 import 'package:gnosis_chat/features/chat/presentation/widgets/cosmic_ticker.dart';
 
-class EmptyState extends StatelessWidget {
+class EmptyState extends StatefulWidget {
   const EmptyState({
     super.key,
     required this.glowAnim,
@@ -15,6 +15,47 @@ class EmptyState extends StatelessWidget {
   final bool isInputFocused;
 
   @override
+  State<EmptyState> createState() => _EmptyStateState();
+}
+
+class _EmptyStateState extends State<EmptyState>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _fadeCtrl;
+  late final Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+      value: widget.isInputFocused ? 0.0 : 1.0,
+    );
+    _fadeAnim = CurvedAnimation(
+      parent: _fadeCtrl,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant EmptyState oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isInputFocused != oldWidget.isInputFocused) {
+      if (widget.isInputFocused) {
+        _fadeCtrl.reverse();
+      } else {
+        _fadeCtrl.forward();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _fadeCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
@@ -23,7 +64,7 @@ class EmptyState extends StatelessWidget {
           children: [
             // Logo with animated glow
             AnimatedBuilder(
-              animation: glowAnim,
+              animation: widget.glowAnim,
               builder: (context, child) {
                 return Container(
                   decoration: BoxDecoration(
@@ -31,14 +72,14 @@ class EmptyState extends StatelessWidget {
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.accent.withValues(
-                          alpha: glowAnim.value * 0.4,
+                          alpha: widget.glowAnim.value * 0.4,
                         ),
                         blurRadius: 60,
                         spreadRadius: 20,
                       ),
                       BoxShadow(
                         color: AppColors.primary.withValues(
-                          alpha: glowAnim.value * 0.2,
+                          alpha: widget.glowAnim.value * 0.2,
                         ),
                         blurRadius: 80,
                         spreadRadius: 10,
@@ -86,16 +127,16 @@ class EmptyState extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // Cosmic Ticker Slider with pure fade transition
-            AnimatedOpacity(
-              opacity: isInputFocused ? 0.0 : 1.0,
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeInOut,
-              child: IgnorePointer(
-                ignoring: isInputFocused,
-                child: CosmicTicker(
-                  onSelectQuestion: onSelectQuestion,
-                  isPaused: isInputFocused,
+            // Cosmic Ticker Slider with GPU-accelerated FadeTransition and RepaintBoundary
+            RepaintBoundary(
+              child: FadeTransition(
+                opacity: _fadeAnim,
+                child: IgnorePointer(
+                  ignoring: widget.isInputFocused,
+                  child: CosmicTicker(
+                    onSelectQuestion: widget.onSelectQuestion,
+                    isPaused: widget.isInputFocused,
+                  ),
                 ),
               ),
             ),

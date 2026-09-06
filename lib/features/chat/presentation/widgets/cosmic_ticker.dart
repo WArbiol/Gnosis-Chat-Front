@@ -183,87 +183,89 @@ class _MarqueeTrackState extends State<_MarqueeTrack>
 
     return SizedBox(
       height: 42,
-      child: ShaderMask(
-        shaderCallback: (rect) {
-          return const LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              Colors.transparent,
-              Colors.black,
-              Colors.black,
-              Colors.transparent,
-            ],
-            stops: [0.0, 0.10, 0.90, 1.0],
-          ).createShader(rect);
-        },
-        blendMode: BlendMode.dstIn,
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onHorizontalDragDown: (_) {
-            _isPaused = true;
-          },
-          onHorizontalDragStart: (_) {
-            _isDragging = true;
-          },
-          onHorizontalDragUpdate: (details) {
-            final delta = details.primaryDelta ?? 0;
-            if (delta == 0) return;
-
-            if (_cycleWidth <= 0) {
-              _measureCycle();
-            }
-            if (_cycleWidth <= 0) return;
-
-            _offset -= delta;
-            while (_offset >= _cycleWidth) {
-              _offset -= _cycleWidth;
-            }
-            while (_offset < 0) {
-              _offset += _cycleWidth;
-            }
-            _scrollController.jumpTo(_offset);
-          },
-          onHorizontalDragEnd: (_) {
-            _isDragging = false;
-            _isPaused = false;
-            _dragPauseUntil =
-                DateTime.now().add(const Duration(milliseconds: 1200));
-          },
-          onHorizontalDragCancel: () {
-            _isDragging = false;
-            _isPaused = false;
-            _dragPauseUntil =
-                DateTime.now().add(const Duration(milliseconds: 1200));
-          },
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const NeverScrollableScrollPhysics(),
-            child: Row(
-              children: [
-                _CycleRow(
-                  key: _cycleKey,
-                  questions: widget.questions,
-                  spacing: widget.spacing,
-                  onSelectQuestion: widget.onSelectQuestion,
-                ),
-                _CycleRow(
-                  questions: widget.questions,
-                  spacing: widget.spacing,
-                  onSelectQuestion: widget.onSelectQuestion,
-                ),
-                _CycleRow(
-                  questions: widget.questions,
-                  spacing: widget.spacing,
-                  onSelectQuestion: widget.onSelectQuestion,
-                ),
-                _CycleRow(
-                  questions: widget.questions,
-                  spacing: widget.spacing,
-                  onSelectQuestion: widget.onSelectQuestion,
-                ),
+      child: RepaintBoundary(
+        child: ShaderMask(
+          shaderCallback: (rect) {
+            return const LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Colors.transparent,
+                Colors.black,
+                Colors.black,
+                Colors.transparent,
               ],
+              stops: [0.0, 0.10, 0.90, 1.0],
+            ).createShader(rect);
+          },
+          blendMode: BlendMode.dstIn,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onHorizontalDragDown: (_) {
+              _isPaused = true;
+            },
+            onHorizontalDragStart: (_) {
+              _isDragging = true;
+            },
+            onHorizontalDragUpdate: (details) {
+              final delta = details.primaryDelta ?? 0;
+              if (delta == 0) return;
+
+              if (_cycleWidth <= 0) {
+                _measureCycle();
+              }
+              if (_cycleWidth <= 0) return;
+
+              _offset -= delta;
+              while (_offset >= _cycleWidth) {
+                _offset -= _cycleWidth;
+              }
+              while (_offset < 0) {
+                _offset += _cycleWidth;
+              }
+              _scrollController.jumpTo(_offset);
+            },
+            onHorizontalDragEnd: (_) {
+              _isDragging = false;
+              _isPaused = false;
+              _dragPauseUntil =
+                  DateTime.now().add(const Duration(milliseconds: 1200));
+            },
+            onHorizontalDragCancel: () {
+              _isDragging = false;
+              _isPaused = false;
+              _dragPauseUntil =
+                  DateTime.now().add(const Duration(milliseconds: 1200));
+            },
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              child: Row(
+                children: [
+                  _CycleRow(
+                    key: _cycleKey,
+                    questions: widget.questions,
+                    spacing: widget.spacing,
+                    onSelectQuestion: widget.onSelectQuestion,
+                  ),
+                  _CycleRow(
+                    questions: widget.questions,
+                    spacing: widget.spacing,
+                    onSelectQuestion: widget.onSelectQuestion,
+                  ),
+                  _CycleRow(
+                    questions: widget.questions,
+                    spacing: widget.spacing,
+                    onSelectQuestion: widget.onSelectQuestion,
+                  ),
+                  _CycleRow(
+                    questions: widget.questions,
+                    spacing: widget.spacing,
+                    onSelectQuestion: widget.onSelectQuestion,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

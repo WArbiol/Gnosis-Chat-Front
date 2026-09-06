@@ -40,21 +40,17 @@ class _CosmicTickerState extends ConsumerState<CosmicTicker> {
           children: [
             _MarqueeTrack(
               questions: _row1Questions!,
-              speed: 26.0,
+              speed: 11.0,
               reverse: false,
-              cardWidth: 260.0,
-              cardHeight: 58.0,
-              cardSpacing: 12.0,
+              spacing: 12.0,
               onSelectQuestion: widget.onSelectQuestion,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             _MarqueeTrack(
               questions: _row2Questions!,
-              speed: 22.0,
+              speed: 9.0,
               reverse: true,
-              cardWidth: 260.0,
-              cardHeight: 58.0,
-              cardSpacing: 12.0,
+              spacing: 12.0,
               onSelectQuestion: widget.onSelectQuestion,
             ),
           ],
@@ -71,18 +67,14 @@ class _MarqueeTrack extends StatefulWidget {
     required this.questions,
     required this.speed,
     required this.reverse,
-    required this.cardWidth,
-    required this.cardHeight,
-    required this.cardSpacing,
+    required this.spacing,
     required this.onSelectQuestion,
   });
 
   final List<SuggestedQuestion> questions;
   final double speed;
   final bool reverse;
-  final double cardWidth;
-  final double cardHeight;
-  final double cardSpacing;
+  final double spacing;
   final ValueChanged<String>? onSelectQuestion;
 
   @override
@@ -91,29 +83,43 @@ class _MarqueeTrack extends StatefulWidget {
 
 class _MarqueeTrackState extends State<_MarqueeTrack>
     with SingleTickerProviderStateMixin {
+  final GlobalKey _cycleKey = GlobalKey();
   late final ScrollController _scrollController;
   late final Ticker _ticker;
-  late double _offset;
+
+  double _offset = 0.0;
+  double _cycleWidth = 0.0;
   Duration _lastElapsed = Duration.zero;
+  bool _isDragging = false;
   bool _isPaused = false;
   bool _initialized = false;
-
-  double get _singleListWidth =>
-      widget.questions.length * (widget.cardWidth + widget.cardSpacing);
+  DateTime _dragPauseUntil = DateTime.fromMillisecondsSinceEpoch(0);
 
   @override
   void initState() {
     super.initState();
-    final initialOffset = widget.reverse ? _singleListWidth : 0.0;
-    _offset = initialOffset;
-    _scrollController = ScrollController(initialScrollOffset: initialOffset);
+    _scrollController = ScrollController();
     _ticker = createTicker(_onTick);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      _measureCycle();
+      if (widget.reverse && _cycleWidth > 0) {
+        _offset = _cycleWidth;
+        if (_scrollController.hasClients) {
+          _scrollController.jumpTo(_offset);
+        }
+      }
       _initialized = true;
       _ticker.start();
     });
+  }
+
+  void _measureCycle() {
+    final box = _cycleKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box != null && box.hasSize && box.size.width > 0) {
+      _cycleWidth = box.size.width;
+    }
   }
 
   @override
@@ -132,26 +138,32 @@ class _MarqueeTrackState extends State<_MarqueeTrack>
     final deltaMicros = (elapsed - _lastElapsed).inMicroseconds;
     _lastElapsed = elapsed;
 
-    if (_isPaused || deltaMicros <= 0) return;
+    if (_isDragging ||
+        _isPaused ||
+        DateTime.now().isBefore(_dragPauseUntil) ||
+        deltaMicros <= 0) {
+      return;
+    }
 
     final deltaSeconds = deltaMicros / 1000000.0;
-    // Guard against large jumps when resuming from background
-    if (deltaSeconds > 0.1) return;
+    if (deltaSeconds > 0.1) return; // Ignore large gaps (e.g. app in background)
 
-    final singleWidth = _singleListWidth;
-    if (singleWidth <= 0) return;
+    if (_cycleWidth <= 0) {
+      _measureCycle();
+      if (_cycleWidth <= 0) return;
+    }
 
     final move = widget.speed * deltaSeconds;
 
     if (widget.reverse) {
       _offset -= move;
-      if (_offset <= 0) {
-        _offset += singleWidth;
+      while (_offset <= 0) {
+        _offset += _cycleWidth;
       }
     } else {
       _offset += move;
-      if (_offset >= singleWidth) {
-        _offset -= singleWidth;
+      while (_offset >= _cycleWidth) {
+        _offset -= _cycleWidth;
       }
     }
 
@@ -163,7 +175,7 @@ class _MarqueeTrackState extends State<_MarqueeTrack>
     if (widget.questions.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
-      height: widget.cardHeight,
+      height: 42,
       child: ShaderMask(
         shaderCallback: (rect) {
           return const LinearGradient(
@@ -175,23 +187,75 @@ class _MarqueeTrackState extends State<_MarqueeTrack>
               Colors.black,
               Colors.transparent,
             ],
-            stops: [0.0, 0.06, 0.94, 1.0],
+            stops: [0.0, 0.05, 0.95, 1.0],
           ).createShader(rect);
         },
         blendMode: BlendMode.dstIn,
-        child: Listener(
-          onPointerDown: (_) => _isPaused = true,
-          onPointerUp: (_) => _isPaused = false,
-          onPointerCancel: (_) => _isPaused = false,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onHorizontalDragDown: (_) {
+            _isPaused = true;
+          },
+          onHorizontalDragStart: (_) {
+            _isDragging = true;
+          },
+          onHorizontalDragUpdate: (details) {
+            final delta = details.primaryDelta ?? 0;
+            if (delta == 0) return;
+
+            if (_cycleWidth <= 0) {
+              _measureCycle();
+            }
+            if (_cycleWidth <= 0) return;
+
+            _offset -= delta;
+            while (_offset >= _cycleWidth) {
+              _offset -= _cycleWidth;
+            }
+            while (_offset < 0) {
+              _offset += _cycleWidth;
+            }
+            _scrollController.jumpTo(_offset);
+          },
+          onHorizontalDragEnd: (_) {
+            _isDragging = false;
+            _isPaused = false;
+            _dragPauseUntil =
+                DateTime.now().add(const Duration(milliseconds: 1200));
+          },
+          onHorizontalDragCancel: () {
+            _isDragging = false;
+            _isPaused = false;
+            _dragPauseUntil =
+                DateTime.now().add(const Duration(milliseconds: 1200));
+          },
           child: SingleChildScrollView(
             controller: _scrollController,
             scrollDirection: Axis.horizontal,
             physics: const NeverScrollableScrollPhysics(),
             child: Row(
               children: [
-                ..._buildCards(widget.questions),
-                ..._buildCards(widget.questions),
-                ..._buildCards(widget.questions),
+                _CycleRow(
+                  key: _cycleKey,
+                  questions: widget.questions,
+                  spacing: widget.spacing,
+                  onSelectQuestion: widget.onSelectQuestion,
+                ),
+                _CycleRow(
+                  questions: widget.questions,
+                  spacing: widget.spacing,
+                  onSelectQuestion: widget.onSelectQuestion,
+                ),
+                _CycleRow(
+                  questions: widget.questions,
+                  spacing: widget.spacing,
+                  onSelectQuestion: widget.onSelectQuestion,
+                ),
+                _CycleRow(
+                  questions: widget.questions,
+                  spacing: widget.spacing,
+                  onSelectQuestion: widget.onSelectQuestion,
+                ),
               ],
             ),
           ),
@@ -199,102 +263,92 @@ class _MarqueeTrackState extends State<_MarqueeTrack>
       ),
     );
   }
+}
 
-  List<Widget> _buildCards(List<SuggestedQuestion> list) {
-    return list.map((q) {
-      return Padding(
-        padding: EdgeInsets.only(right: widget.cardSpacing),
-        child: _TickerCard(
-          question: q.question,
-          width: widget.cardWidth,
-          height: widget.cardHeight,
-          onTap: () => widget.onSelectQuestion?.call(q.question),
-        ),
-      );
-    }).toList();
+class _CycleRow extends StatelessWidget {
+  const _CycleRow({
+    super.key,
+    required this.questions,
+    required this.spacing,
+    required this.onSelectQuestion,
+  });
+
+  final List<SuggestedQuestion> questions;
+  final double spacing;
+  final ValueChanged<String>? onSelectQuestion;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: questions.map((q) {
+        return Padding(
+          padding: EdgeInsets.only(right: spacing),
+          child: _TickerPill(
+            question: q.question,
+            onTap: () => onSelectQuestion?.call(q.question),
+          ),
+        );
+      }).toList(),
+    );
   }
 }
 
-class _TickerCard extends StatelessWidget {
-  const _TickerCard({
+class _TickerPill extends StatelessWidget {
+  const _TickerPill({
     required this.question,
-    required this.width,
-    required this.height,
     required this.onTap,
   });
 
   final String question;
-  final double width;
-  final double height;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      height: height,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          splashColor: AppColors.accent.withValues(alpha: 0.2),
-          highlightColor: AppColors.accent.withValues(alpha: 0.1),
-          child: Ink(
-            decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: 0.75),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.accent.withValues(alpha: 0.28),
-                width: 1,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        splashColor: AppColors.accent.withValues(alpha: 0.2),
+        highlightColor: AppColors.accent.withValues(alpha: 0.1),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: AppColors.surface.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.accent.withValues(alpha: 0.3),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.35),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.auto_awesome_rounded,
+                size: 14,
+                color: AppColors.accent,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                question,
+                maxLines: 1,
+                style: const TextStyle(
+                  color: AppColors.onSurface,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.15,
                 ),
-              ],
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                Container(
-                  width: 26,
-                  height: 26,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.accent.withValues(alpha: 0.12),
-                    border: Border.all(
-                      color: AppColors.accent.withValues(alpha: 0.3),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.auto_awesome_rounded,
-                      size: 13,
-                      color: AppColors.accent,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    question,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.onSurface,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      height: 1.25,
-                      letterSpacing: 0.1,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

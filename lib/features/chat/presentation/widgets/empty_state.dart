@@ -86,21 +86,16 @@ class EmptyState extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // Cosmic Ticker Slider with fade down transition when input is active
+            // Cosmic Ticker Slider with pure fade transition
             AnimatedOpacity(
               opacity: isInputFocused ? 0.0 : 1.0,
-              duration: const Duration(milliseconds: 280),
-              curve: Curves.easeInOutCubic,
-              child: AnimatedSlide(
-                offset: isInputFocused ? const Offset(0, 0.3) : Offset.zero,
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeInOutCubic,
-                child: IgnorePointer(
-                  ignoring: isInputFocused,
-                  child: CosmicTicker(
-                    onSelectQuestion: onSelectQuestion,
-                    isPaused: isInputFocused,
-                  ),
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeInOut,
+              child: IgnorePointer(
+                ignoring: isInputFocused,
+                child: CosmicTicker(
+                  onSelectQuestion: onSelectQuestion,
+                  isPaused: isInputFocused,
                 ),
               ),
             ),

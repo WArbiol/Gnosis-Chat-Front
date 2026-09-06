@@ -187,7 +187,7 @@ class _MarqueeTrackState extends State<_MarqueeTrack>
               Colors.black,
               Colors.transparent,
             ],
-            stops: [0.0, 0.05, 0.95, 1.0],
+            stops: [0.0, 0.10, 0.90, 1.0],
           ).createShader(rect);
         },
         blendMode: BlendMode.dstIn,

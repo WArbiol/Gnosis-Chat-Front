@@ -28,12 +28,12 @@ class _EmptyStateState extends State<EmptyState>
     super.initState();
     _fadeCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 350),
       value: widget.isInputFocused ? 0.0 : 1.0,
     );
     _fadeAnim = CurvedAnimation(
       parent: _fadeCtrl,
-      curve: Curves.easeInOut,
+      curve: Curves.easeInOutCubic,
     );
   }
 

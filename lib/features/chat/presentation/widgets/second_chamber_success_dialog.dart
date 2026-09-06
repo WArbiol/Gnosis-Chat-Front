@@ -46,6 +46,7 @@ class SecondChamberSuccessDialog extends StatelessWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
+              constraints: const BoxConstraints(maxWidth: 440),
               padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
                 color: AppColors.surface.withValues(alpha: 0.92),

@@ -76,6 +76,7 @@ class _SecondChamberDialogState extends ConsumerState<SecondChamberDialog> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: Container(
+            constraints: const BoxConstraints(maxWidth: 460),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: AppColors.surface.withValues(alpha: 0.9),

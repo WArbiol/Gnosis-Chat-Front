@@ -200,6 +200,7 @@ class ProfileBottomSheet extends ConsumerWidget {
               child: child,
             ),
             child: Container(
+              constraints: const BoxConstraints(maxWidth: 420),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: AppColors.surface.withValues(alpha: 0.95),
@@ -362,6 +363,7 @@ class ProfileBottomSheet extends ConsumerWidget {
               child: child,
             ),
             child: Container(
+              constraints: const BoxConstraints(maxWidth: 420),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: AppColors.surface.withValues(alpha: 0.95),

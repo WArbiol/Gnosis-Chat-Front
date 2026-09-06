@@ -66,6 +66,7 @@ class _DeleteAccountDialogState extends ConsumerState<DeleteAccountDialog> {
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.symmetric(horizontal: 24),
         child: Container(
+          constraints: const BoxConstraints(maxWidth: 440),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: AppColors.surface.withValues(alpha: 0.95),

@@ -80,10 +80,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           // Content
           SafeArea(
             child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 40),
 
@@ -269,7 +271,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               ),
             ),
           ),
-        ],
+        ),
+      ],
       ),
     );
   }

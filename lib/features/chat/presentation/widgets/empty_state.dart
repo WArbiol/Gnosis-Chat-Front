@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gnosis_chat/core/constants/app_colors.dart';
+import 'package:gnosis_chat/features/chat/presentation/widgets/cosmic_ticker.dart';
 
 class EmptyState extends StatelessWidget {
   const EmptyState({
@@ -80,6 +81,11 @@ class EmptyState extends StatelessWidget {
                 letterSpacing: 0.3,
               ),
             ),
+
+            const SizedBox(height: 36),
+
+            // Cosmic Ticker Slider
+            CosmicTicker(onSelectQuestion: onSelectQuestion),
           ],
         ),
       ),

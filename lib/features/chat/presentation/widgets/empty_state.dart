@@ -82,7 +82,7 @@ class EmptyState extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 36),
+            const SizedBox(height: 28),
 
             // Cosmic Ticker Slider
             CosmicTicker(onSelectQuestion: onSelectQuestion),

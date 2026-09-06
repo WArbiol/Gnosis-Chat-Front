@@ -14,54 +14,63 @@ class GlassInputBar extends ConsumerStatefulWidget {
     required this.controller,
     required this.hasText,
     required this.onSend,
+    this.focusNode,
   });
 
   final TextEditingController controller;
   final bool hasText;
   final VoidCallback onSend;
+  final FocusNode? focusNode;
 
   @override
   ConsumerState<GlassInputBar> createState() => _GlassInputBarState();
 }
 
 class _GlassInputBarState extends ConsumerState<GlassInputBar> {
-  late final FocusNode _focusNode;
+  FocusNode? _internalFocusNode;
+  FocusNode get _focusNode => widget.focusNode ?? _internalFocusNode!;
   bool _hasFocus = false;
 
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode(
-      onKeyEvent: (node, event) {
-        final isDesktop = kIsWeb &&
-            (defaultTargetPlatform == TargetPlatform.macOS ||
-                defaultTargetPlatform == TargetPlatform.windows ||
-                defaultTargetPlatform == TargetPlatform.linux);
+    if (widget.focusNode == null) {
+      _internalFocusNode = FocusNode();
+    }
+    _focusNode.onKeyEvent = (node, event) {
+      final isDesktop = kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.macOS ||
+              defaultTargetPlatform == TargetPlatform.windows ||
+              defaultTargetPlatform == TargetPlatform.linux);
 
-        if (isDesktop && event is KeyDownEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.enter ||
-              event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-            if (HardwareKeyboard.instance.isShiftPressed) {
-              return KeyEventResult.ignored;
-            } else {
-              if (widget.hasText) {
-                widget.onSend();
-              }
-              return KeyEventResult.handled;
+      if (isDesktop && event is KeyDownEvent) {
+        if (event.logicalKey == LogicalKeyboardKey.enter ||
+            event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+          if (HardwareKeyboard.instance.isShiftPressed) {
+            return KeyEventResult.ignored;
+          } else {
+            if (widget.hasText) {
+              widget.onSend();
             }
+            return KeyEventResult.handled;
           }
         }
-        return KeyEventResult.ignored;
-      },
-    );
-    _focusNode.addListener(() {
+      }
+      return KeyEventResult.ignored;
+    };
+    _focusNode.addListener(_handleFocusChange);
+  }
+
+  void _handleFocusChange() {
+    if (mounted) {
       setState(() => _hasFocus = _focusNode.hasFocus);
-    });
+    }
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
+    _focusNode.removeListener(_handleFocusChange);
+    _internalFocusNode?.dispose();
     super.dispose();
   }
 

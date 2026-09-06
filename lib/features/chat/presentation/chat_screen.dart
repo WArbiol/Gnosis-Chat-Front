@@ -39,6 +39,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen>
     with SingleTickerProviderStateMixin {
   final _queryCtrl = TextEditingController();
+  final _inputFocusNode = FocusNode();
   final _scrollCtrl = ScrollController();
   late final AnimationController _glowCtrl;
   late final Animation<double> _glowAnim;
@@ -90,6 +91,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     _lifecycleListener.dispose();
     _glowCtrl.dispose();
     _queryCtrl.dispose();
+    _inputFocusNode.dispose();
     _scrollCtrl.dispose();
     super.dispose();
   }
@@ -122,9 +124,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     }
   }
 
-  Future<void> _sendSuggestedQuestion(String question) async {
+  void _selectSuggestedQuestion(String question) {
     _queryCtrl.text = question;
-    await _sendMessage();
+    _queryCtrl.selection = TextSelection.fromPosition(
+      TextPosition(offset: question.length),
+    );
+    _inputFocusNode.requestFocus();
   }
 
   void _showUpgradeDialog(BuildContext context) {
@@ -286,7 +291,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
               }
               return EmptyState(
                 glowAnim: _glowAnim,
-                onSelectQuestion: _sendSuggestedQuestion,
+                onSelectQuestion: _selectSuggestedQuestion,
               );
             }
 
@@ -500,6 +505,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                 constraints: const BoxConstraints(maxWidth: 850),
                 child: GlassInputBar(
                   controller: _queryCtrl,
+                  focusNode: _inputFocusNode,
                   hasText: _queryCtrl.text.trim().isNotEmpty,
                   onSend: _sendMessage,
                 ),
